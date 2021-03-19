@@ -7,34 +7,43 @@
         <version>1.7</version>
         <relativePath />
     </parent>
-    <artifactId>query-api</artifactId>
+    <artifactId>query</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
-        <version.microservice.base-rest-responses>1.2</version.microservice.base-rest-responses>
-        <version.validation-api>2.0.1.Final</version.validation-api>
+        <version.datawave>3.1.5-SNAPSHOT</version.datawave>
+        <version.microservice.audit-api>1.9</version.microservice.audit-api>
     </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
-                <artifactId>base-rest-responses</artifactId>
-                <version>${version.microservice.base-rest-responses}</version>
+                <artifactId>audit-api</artifactId>
+                <version>${version.microservice.audit-api}</version>
             </dependency>
             <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>${version.validation-api}</version>
+                <groupId>gov.nsa.datawave.webservices</groupId>
+                <artifactId>datawave-ws-client</artifactId>
+                <version>${version.datawave}</version>
+            </dependency>
+            <dependency>
+                <groupId>gov.nsa.datawave.webservices</groupId>
+                <artifactId>datawave-ws-common</artifactId>
+                <version>${version.datawave}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
-            <artifactId>base-rest-responses</artifactId>
+            <artifactId>audit-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
+            <groupId>gov.nsa.datawave.webservices</groupId>
+            <artifactId>datawave-ws-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.webservices</groupId>
+            <artifactId>datawave-ws-common</artifactId>
         </dependency>
     </dependencies>
     <repositories>
