@@ -3,20 +3,15 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:util="http://www.springframework.org/schema/util"
-       xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/util
-        http://www.springframework.org/schema/util/spring-util.xsd
-        http://www.springframework.org/schema/context
-        http://www.springframework.org/schema/context/spring-context.xsd">
-
-    <!-- Database properties are retrieved from the database.properties file
-    but can be overridden by system properties -->
-    <context:property-placeholder system-properties-mode="OVERRIDE" ignore-unresolvable="true" order="0" />
+        http://www.springframework.org/schema/util/spring-util.xsd">
 
     <bean id="baseQueryLogic" class="datawave.microservice.query.logic.BaseQueryLogic" abstract="true" >
+        <!-- This is injected via java -->
         <property name="markingFunctions" ref="markingFunctions" />
+        <!-- This is injected via java -->
         <property name="responseObjectFactory" ref="responseObjectFactory" />
     </bean>
 
@@ -46,39 +41,33 @@
         <property name="indexOnlyFilterFunctionsEnabled" value="${query.logic.logics.BaseEventQuery.indexOnlyFilterFunctionsEnabled}" />
         <property name="includeHierarchyFields" value="${query.logic.logics.BaseEventQuery.includeHierarchyFields}" />
 
-        <!-- This is injected via QueryLogicFactory.xml -->
-        <property name="hierarchyFieldOptions"  ref="BaseEventQueryHierarchyFieldOptions" />
+        <!-- This is injected via BaseEventQueryConfiguration.java and configured via configuration properties -->
+        <property name="hierarchyFieldOptions"  ref="baseEventQueryHierarchyFieldOptions" />
 
         <property name="baseIteratorPriority" value="${query.logic.logics.BaseEventQuery.baseIteratorPriority}" />
         <property name="maxIndexScanTimeMillis" value="${query.logic.logics.BaseEventQuery.maxIndexScanTimeMillis}" />
         <property name="collapseUids" value="${query.logic.logics.BaseEventQuery.collapseUids}" />
         <property name="collapseUidsThreshold" value="${query.logic.logics.BaseEventQuery.collapseUidsThreshold}"/>
         <property name="useEnrichers" value="${query.logic.logics.BaseEventQuery.useEnrichers}" />
-        <property name="contentFieldNames">
-            <util:list value-type="java.lang.String">
-                ${query.logic.logics.BaseEventQuery.contentFieldNames}
-            </util:list>
-        </property>
-        <property name="realmSuffixExclusionPatterns" >
-            <list value-type="java.lang.String">
-<!--                ${query.logic.logics.BaseEventQuery.realmSuffixExclusionPatterns}-->
-            </list>
-        </property>
-        <property name="minimumSelectivity" value="${query.logic.logics.BaseEventQuery.minimumSelectivity}" />
-        <property name="enricherClassNames">
-            <util:list value-type="java.lang.String">
-<!--                ${query.logic.logics.BaseEventQuery.enricherClassNames}-->
-            </util:list>
-        </property>
-        <property name="useFilters" value="${query.logic.logics.BaseEventQuery.useFilters}" />
-        <property name="filterClassNames">
-            <util:list value-type="java.lang.String">
-<!--                ${query.logic.logics.BaseEventQuery.filterClassNames}-->
-            </util:list>
-        </property>
 
-        <!-- This is injected via QueryLogicFactory.xml -->
-        <property name="filterOptions" ref="BaseEventQueryFilterOptions" />
+        <!-- This is injected via BaseEventQueryConfiguration.java and configured via configuration properties -->
+        <property name="contentFieldNames" ref="baseEventQueryContentFieldNames" />
+
+        <!-- This is injected via BaseEventQueryConfiguration.java and configured via configuration properties -->
+        <property name="realmSuffixExclusionPatterns" ref="baseEventQueryRealmSuffixExclusionPatterns" />
+
+        <property name="minimumSelectivity" value="${query.logic.logics.BaseEventQuery.minimumSelectivity}" />
+
+        <!-- This is injected via BaseEventQueryConfiguration.java and configured via configuration properties -->
+        <property name="enricherClassNames" ref="baseEventQueryEnricherClassNames" />
+
+        <property name="useFilters" value="${query.logic.logics.BaseEventQuery.useFilters}" />
+
+        <!-- This is injected via BaseEventQueryConfiguration.java and configured via configuration properties -->
+        <property name="filterClassNames" ref="baseEventQueryFilterClassNames" />
+
+        <!-- This is injected via BaseEventQueryConfiguration.java and configured via configuration properties -->
+        <property name="filterOptions" ref="baseEventQueryFilterOptions" />
 
         <property name="auditType" value="${query.logic.logics.BaseEventQuery.auditType}" />
         <property name="logicDescription" value="${query.logic.logics.BaseEventQuery.logicDescription}" />
@@ -115,9 +104,9 @@
         <!-- the zookeeper configuration (could be something like file:///opt/datawave/zookeeper-warehouse/conf/zoo.cfg, or the zookeeper list (somehost1:2181,somehost2:2181,…)-->
         <property name="zookeeperConfig" value="${query.logic.logics.BaseEventQuery.zookeeperConfig}" />
 
-        <!-- This is injected via QueryLogicFactory.xml -->
+        <!-- This is injected via BaseEventQueryConfiguration.java and configured via configuration properties -->
         <!-- the list of directories in which the ivarator puts its caches (selection always made on tserver side) -->
-        <property name="ivaratorCacheDirConfigs" ref="IvaratorCacheDirConfigs" />
+        <property name="ivaratorCacheDirConfigs" ref="baseEventQueryIvaratorCacheDirConfigs" />
 
         <!-- the hdfs location where FST's will be stored (see maxOrExpansionFstThreshold above) -->
         <property name="ivaratorFstHdfsBaseURIs" value ="${query.logic.logics.BaseEventQuery.zookeeperConfig}" />
@@ -130,16 +119,14 @@
         <!-- the scan time after which the buffer is flushed to a file. -->
         <property name="ivaratorCacheScanTimeoutMinutes" value="${query.logic.logics.BaseEventQuery.ivaratorCacheScanTimeoutMinutes}" />
 
-        <!-- This is injected via QueryLogicFactory.xml -->
-        <property name="eventQueryDataDecoratorTransformer" ref="EventQueryDataDecoratorTransformer" />
+        <!-- This is injected via BaseEventQueryConfiguration.java and configured via configuration properties -->
+        <property name="eventQueryDataDecoratorTransformer" ref="baseEventQueryEventQueryDataDecoratorTransformer" />
 
         <property name="modelTableName" value="${query.logic.logics.BaseEventQuery.modelTableName}" />
         <property name="modelName" value="${query.logic.logics.BaseEventQuery.modelName}" />
-        <property name="querySyntaxParsers">
-            <util:map key-type="java.lang.String" value-type="datawave.query.language.parser.QueryParser">
-<!--                ${query.logic.logics.BaseEventQuery.querySyntaxParsers}-->
-            </util:map>
-        </property>
+
+        <!-- This is injected via QueryLogicFactoryConfiguration.java and configured via configuration properties -->
+        <property name="querySyntaxParsers" ref="baseEventQuerySyntaxParsers" />
 
         <!-- This is injected via QueryLogicFactory.xml -->
         <property name="queryPlanner" ref="DefaultQueryPlanner" />
@@ -154,27 +141,6 @@
         <property name="selectorExtractor" ref="DatawaveSelectorExtractor" />
 
         <property name="evaluationOnlyFields" value="${query.logic.logics.BaseEventQuery.evaluationOnlyFields}" />
-    </bean>
-
-    <util:map id="BaseEventQueryHierarchyFieldOptions" value-type="java.lang.String">
-<!--        ${query.logic.logics.BaseEventQuery.hierarchyFieldOptions}-->
-    </util:map>
-
-    <util:map id="BaseEventQueryFilterOptions">
-<!--        ${query.logic.logics.BaseEventQuery.filterOptions}-->
-    </util:map>
-
-    <util:list id="IvaratorCacheDirConfigs">
-<!--        ${query.logic.logics.BaseEventQuery.IvaratorCacheDirConfigs}-->
-    </util:list>
-
-    <bean id="EventQueryDataDecoratorTransformer" scope="prototype" class="datawave.query.transformer.EventQueryDataDecoratorTransformer">
-        <property name="dataDecorators">
-            <util:map key-type="java.lang.String"
-                 value-type="datawave.query.transformer.EventQueryDataDecorator">
-<!--                ${query.logic.logics.BaseEventQuery.eventQueryDataDecorators}-->
-            </util:map>
-        </property>
     </bean>
 
     <bean id="DefaultQueryPlanner" scope="prototype" class="datawave.query.planner.DefaultQueryPlanner" >
@@ -196,6 +162,61 @@
     </bean>
 
     <bean id="metadataHelperQueryModelProvider" scope="prototype" class="datawave.query.planner.MetadataHelperQueryModelProvider" />
+
+    <!-- A list of lucene to jexl query functions -->
+    <util:list id="allowedFunctions" value-type="datawave.query.language.functions.jexl.JexlQueryFunction">
+        <bean class="datawave.query.language.functions.jexl.IsNull"/>
+        <bean class="datawave.query.language.functions.jexl.IsNotNull"/>
+        <bean class="datawave.query.language.functions.jexl.Include"/>
+        <bean class="datawave.query.language.functions.jexl.Exclude"/>
+        <bean class="datawave.query.language.functions.jexl.Text"/>
+        <bean class="datawave.query.language.functions.jexl.GeoFunction"/>
+        <bean class="datawave.query.language.functions.jexl.Loaded"/>
+        <bean class="datawave.query.language.functions.jexl.DateFunction"/>
+        <bean class="datawave.query.language.functions.jexl.OccurrenceFunction"/>
+        <bean class="datawave.query.language.functions.jexl.MatchesInGroupFunction"/>
+        <bean class="datawave.query.language.functions.jexl.MatchesInGroupLeft"/>
+        <bean class="datawave.query.language.functions.jexl.GetAllMatches"/>
+        <bean class="datawave.query.language.functions.jexl.MatchesAtLeastCountOf"/>
+        <bean class="datawave.query.language.functions.jexl.TimeFunction"/>
+        <bean class="datawave.query.language.functions.jexl.Jexl"/>
+        <bean class="datawave.query.language.functions.jexl.Options"/>
+        <bean class="datawave.query.language.functions.jexl.Unique"/>
+        <bean class="datawave.query.language.functions.jexl.Geowave.Contains"/>
+        <bean class="datawave.query.language.functions.jexl.Geowave.CoveredBy"/>
+        <bean class="datawave.query.language.functions.jexl.Geowave.Covers"/>
+        <bean class="datawave.query.language.functions.jexl.Geowave.Crosses"/>
+        <bean class="datawave.query.language.functions.jexl.Geowave.Intersects"/>
+        <bean class="datawave.query.language.functions.jexl.Geowave.Overlaps"/>
+        <bean class="datawave.query.language.functions.jexl.Geowave.Within"/>
+        <bean class="datawave.query.language.functions.jexl.EvaluationOnly">
+            <property name="parser" ref="LuceneToJexlQueryParser"/>
+        </bean>
+    </util:list>
+
+    <bean id="LuceneToJexlQueryParser" scope="prototype" class="datawave.query.language.parser.jexl.LuceneToJexlQueryParser">
+        <!-- This is injected via QueryLogicFactoryConfiguration.java and configured via configuration properties -->
+        <property name="skipTokenizeUnfieldedFields" ref="skipTokenizeUnfieldedFields"/>
+        <!-- This is injected via QueryLogicFactory.xml -->
+        <property name="allowedFunctions" ref="allowedFunctions"/>
+    </bean>
+
+    <bean id="LuceneToJexlUUIDQueryParser" scope="prototype" class="datawave.query.language.parser.jexl.LuceneToJexlUUIDQueryParser">
+        <!-- This is injected via QueryLogicFactoryConfiguration.java and configured via configuration properties -->
+        <property name="uuidTypes" ref="uuidTypes" />
+        <!-- This is injected via QueryLogicFactory.xml -->
+        <property name="allowedFunctions" ref="allowedFunctions"/>
+    </bean>
+
+    <bean id="TokenizedLuceneToJexlQueryParser" scope="prototype" class="datawave.query.language.parser.jexl.LuceneToJexlQueryParser">
+        <property name="tokenizeUnfieldedQueries" value="true" />
+        <!-- This is injected via QueryLogicFactoryConfiguration.java and configured via configuration properties -->
+        <property name="skipTokenizeUnfieldedFields" ref="skipTokenizeFields"/>
+        <!-- This is injected via QueryLogicFactoryConfiguration.java and configured via configuration properties -->
+        <property name="tokenizedFields" ref="tokenizedFields"/>
+        <!-- This is injected via QueryLogicFactory.xml -->
+        <property name="allowedFunctions" ref="allowedFunctions"/>
+    </bean>
 
     <bean id="DatawaveSelectorExtractor" scope="prototype" class="datawave.audit.DatawaveSelectorExtractor" />
 
