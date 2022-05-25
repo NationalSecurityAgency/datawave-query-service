@@ -2,8 +2,7 @@
 
 [![Apache License][li]][ll] ![Build Status](https://github.com/NationalSecurityAgency/datawave/workflows/Tests/badge.svg)
 
-The query api service is a DATAWAVE microservice that provides
-query capabilities.
+The query service is a user-facing DATAWAVE microservice that serves as the main REST interface for DataWave query functionality.  
 
 ### Query Context
 
@@ -59,8 +58,9 @@ query capabilities.
 
 TBD
 
-[getting-started]:https://github.com/NationalSecurityAgency/datawave-microservices-root/blob/master/README.md#getting-started
-[pki-dir]:https://github.com/NationalSecurityAgency/datawave-spring-boot-starter/blob/master/src/main/resources/pki
+For now, refer to the [Datawave Docker Compose Readme][getting-started]
+
+[getting-started]:https://github.com/NationalSecurityAgency/datawave/blob/feature/queryMicroservices/docker/README.md#datawave-docker-compose
 
 [li]: http://img.shields.io/badge/license-ASL-blue.svg
 [ll]: https://www.apache.org/licenses/LICENSE-2.0
