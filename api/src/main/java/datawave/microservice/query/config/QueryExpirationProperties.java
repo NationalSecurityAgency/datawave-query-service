@@ -40,6 +40,8 @@ public class QueryExpirationProperties {
     private long shortCircuitTimeout = Math.round(0.97 * callTimeout);
     @NotNull
     private TimeUnit shortCircuitTimeUnit = TimeUnit.MINUTES;
+    @Positive
+    private int maxLongRunningTimeoutRetries = 3;
     
     public long getIdleTimeout() {
         return idleTimeout;
@@ -200,4 +202,13 @@ public class QueryExpirationProperties {
     public void setShortCircuitTimeUnit(TimeUnit shortCircuitTimeUnit) {
         this.shortCircuitTimeUnit = shortCircuitTimeUnit;
     }
+    
+    public int getMaxLongRunningTimeoutRetries() {
+        return maxLongRunningTimeoutRetries;
+    }
+    
+    public void setMaxLongRunningTimeoutRetries(int maxLongRunningTimeoutRetries) {
+        this.maxLongRunningTimeoutRetries = maxLongRunningTimeoutRetries;
+    }
+    
 }
