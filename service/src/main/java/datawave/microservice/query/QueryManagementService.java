@@ -155,7 +155,9 @@ public class QueryManagementService implements QueryRequestHandler {
      * Gets a list of descriptions for the configured query logics, sorted by query logic name.
      * <p>
      * The descriptions include things like the audit type, optional and required parameters, required roles, and response class.
-     *
+     * 
+     * @param currentUser
+     *            the user who called this method, not null
      * @return the query logic descriptions
      */
     public QueryLogicResponse listQueryLogic(ProxiedUserDetails currentUser) {

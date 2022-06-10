@@ -6,6 +6,7 @@ import datawave.microservice.query.lookup.LookupService;
 import datawave.microservice.query.stream.StreamingProperties;
 import datawave.microservice.query.stream.StreamingService;
 import datawave.microservice.query.stream.listener.CountingResponseBodyEmitterListener;
+import datawave.microservice.query.stream.listener.StreamingResponseListener;
 import datawave.microservice.query.translateid.TranslateIdService;
 import datawave.microservice.query.web.annotation.EnrichQueryMetrics;
 import datawave.microservice.query.web.filter.BaseMethodStatsFilter;
@@ -66,6 +67,9 @@ public class QueryController {
         this.queryMetricsEnrichmentContext = queryMetricsEnrichmentContext;
     }
     
+    /**
+     * @see QueryManagementService#listQueryLogic(ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.listQueryLogic", absolute = true)
     @RequestMapping(path = "listQueryLogic", method = {RequestMethod.GET},
                     produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml", "application/x-yaml", "text/html"})
@@ -73,6 +77,9 @@ public class QueryController {
         return queryManagementService.listQueryLogic(currentUser);
     }
     
+    /**
+     * @see QueryManagementService#define(String, MultiValueMap, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.defineQuery", absolute = true)
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.CREATE)
     @RequestMapping(path = "{queryLogic}/define", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
@@ -82,6 +89,9 @@ public class QueryController {
         return queryManagementService.define(queryLogic, parameters, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#create(String, MultiValueMap, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.createQuery", absolute = true)
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.CREATE)
     @RequestMapping(path = "{queryLogic}/create", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
@@ -91,6 +101,9 @@ public class QueryController {
         return queryManagementService.create(queryLogic, parameters, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#plan(String, MultiValueMap, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.planQuery", absolute = true)
     @RequestMapping(path = "{queryLogic}/plan", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -99,6 +112,9 @@ public class QueryController {
         return queryManagementService.plan(queryLogic, parameters, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#predict(String, MultiValueMap, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.predictQuery", absolute = true)
     @RequestMapping(path = "{queryLogic}/predict", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -107,6 +123,10 @@ public class QueryController {
         return queryManagementService.predict(queryLogic, parameters, currentUser);
     }
     
+    /**
+     * @see LookupService#lookupUUID(MultiValueMap, ProxiedUserDetails)
+     * @see LookupService#lookupUUID(MultiValueMap, ProxiedUserDetails, StreamingResponseListener)
+     */
     @Timed(name = "dw.query.lookupUUID", absolute = true)
     @RequestMapping(path = "lookupUUID/{uuidType}/{uuid}", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -125,6 +145,10 @@ public class QueryController {
         }
     }
     
+    /**
+     * @see LookupService#lookupUUID(MultiValueMap, ProxiedUserDetails)
+     * @see LookupService#lookupUUID(MultiValueMap, ProxiedUserDetails, StreamingResponseListener)
+     */
     @Timed(name = "dw.query.lookupUUIDBatch", absolute = true)
     @RequestMapping(path = "lookupUUID", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -140,6 +164,10 @@ public class QueryController {
         }
     }
     
+    /**
+     * @see LookupService#lookupContentUUID(MultiValueMap, ProxiedUserDetails)
+     * @see LookupService#lookupContentUUID(MultiValueMap, ProxiedUserDetails, StreamingResponseListener)
+     */
     @Timed(name = "dw.query.lookupContentUUID", absolute = true)
     @RequestMapping(path = "lookupContentUUID/{uuidType}/{uuid}", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -158,6 +186,10 @@ public class QueryController {
         }
     }
     
+    /**
+     * @see LookupService#lookupContentUUID(MultiValueMap, ProxiedUserDetails)
+     * @see LookupService#lookupContentUUID(MultiValueMap, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.lookupContentUUIDBatch", absolute = true)
     @RequestMapping(path = "lookupContentUUID", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -173,6 +205,9 @@ public class QueryController {
         }
     }
     
+    /**
+     * @see TranslateIdService#translateId(String, MultiValueMap, ProxiedUserDetails)
+     */
     @RequestMapping(path = "translateId/{id}", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public BaseQueryResponse translateId(@PathVariable String id, @RequestParam MultiValueMap<String,String> parameters,
@@ -180,6 +215,9 @@ public class QueryController {
         return translateIdService.translateId(id, parameters, currentUser);
     }
     
+    /**
+     * @see TranslateIdService#translateIds(MultiValueMap, ProxiedUserDetails)
+     */
     // TODO: Shouldn't the case for this path be the same as the singular call?
     @RequestMapping(path = "translateIDs", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -188,6 +226,9 @@ public class QueryController {
         return translateIdService.translateIds(parameters, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#createAndNext(String, MultiValueMap, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.createAndNext", absolute = true)
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.CREATE_AND_NEXT)
     @RequestMapping(path = "{queryLogic}/createAndNext", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
@@ -197,6 +238,9 @@ public class QueryController {
         return queryManagementService.createAndNext(queryLogic, parameters, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#next(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.next", absolute = true)
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.NEXT)
     @RequestMapping(path = "{queryId}/next", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
@@ -205,6 +249,9 @@ public class QueryController {
         return queryManagementService.next(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#cancel(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.cancel", absolute = true)
     @RequestMapping(path = "{queryId}/cancel", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -212,6 +259,9 @@ public class QueryController {
         return queryManagementService.cancel(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#adminCancel(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.adminCancel", absolute = true)
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "{queryId}/adminCancel", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml",
@@ -220,6 +270,9 @@ public class QueryController {
         return queryManagementService.adminCancel(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#close(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.close", absolute = true)
     @RequestMapping(path = "{queryId}/close", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -227,6 +280,9 @@ public class QueryController {
         return queryManagementService.close(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#adminClose(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.adminClose", absolute = true)
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "{queryId}/adminClose", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml",
@@ -235,6 +291,9 @@ public class QueryController {
         return queryManagementService.adminClose(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#reset(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.reset", absolute = true)
     @RequestMapping(path = "{queryId}/reset", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -242,6 +301,9 @@ public class QueryController {
         return queryManagementService.reset(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#remove(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.remove", absolute = true)
     @RequestMapping(path = "{queryId}/remove", method = {RequestMethod.DELETE}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -249,6 +311,9 @@ public class QueryController {
         return queryManagementService.remove(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#adminRemove(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.adminRemove", absolute = true)
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "{queryId}/adminRemove", method = {RequestMethod.DELETE}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
@@ -257,6 +322,9 @@ public class QueryController {
         return queryManagementService.adminRemove(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#update(String, MultiValueMap, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.update", absolute = true)
     @RequestMapping(path = "{queryId}/update", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -265,6 +333,9 @@ public class QueryController {
         return queryManagementService.update(queryId, parameters, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#duplicate(String, MultiValueMap, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.duplicate", absolute = true)
     @RequestMapping(path = "{queryId}/duplicate", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -273,6 +344,9 @@ public class QueryController {
         return queryManagementService.duplicate(queryId, parameters, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#list(String, String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.list", absolute = true)
     @RequestMapping(path = "list", method = {RequestMethod.GET}, produces = {"text/xml", "application/json", "text/yaml", "text/x-yaml", "application/x-yaml",
             "application/x-protobuf", "application/x-protostuff"})
@@ -281,6 +355,9 @@ public class QueryController {
         return queryManagementService.list(queryId, queryName, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#adminList(String, String, String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.adminList", absolute = true)
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "adminList", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml",
@@ -290,6 +367,9 @@ public class QueryController {
         return queryManagementService.adminList(queryId, queryName, user, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#list(String, String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.get", absolute = true)
     @RequestMapping(path = "{queryId}", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml",
             "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -297,6 +377,9 @@ public class QueryController {
         return queryManagementService.list(queryId, null, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#plan(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.plan", absolute = true)
     @RequestMapping(path = "{queryId}/plan", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -304,6 +387,9 @@ public class QueryController {
         return queryManagementService.plan(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#predictions(String, ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.predictions", absolute = true)
     @RequestMapping(path = "{queryId}/predictions", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -311,6 +397,9 @@ public class QueryController {
         return queryManagementService.predictions(queryId, currentUser);
     }
     
+    /**
+     * @see QueryManagementService#adminCancelAll(ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.adminCancelAll", absolute = true)
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "adminCancelAll", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
@@ -319,6 +408,9 @@ public class QueryController {
         return queryManagementService.adminCancelAll(currentUser);
     }
     
+    /**
+     * @see QueryManagementService#adminCloseAll(ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.adminCloseAll", absolute = true)
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "adminCloseAll", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
@@ -327,6 +419,9 @@ public class QueryController {
         return queryManagementService.adminCloseAll(currentUser);
     }
     
+    /**
+     * @see QueryManagementService#adminRemoveAll(ProxiedUserDetails)
+     */
     @Timed(name = "dw.query.adminRemoveAll", absolute = true)
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "adminRemoveAll", method = {RequestMethod.DELETE}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
@@ -335,6 +430,9 @@ public class QueryController {
         return queryManagementService.adminRemoveAll(currentUser);
     }
     
+    /**
+     * @see StreamingService#createAndExecute(String, MultiValueMap, ProxiedUserDetails, StreamingResponseListener)
+     */
     @Timed(name = "dw.query.createAndExecuteQuery", absolute = true)
     @RequestMapping(path = "{queryLogic}/createAndExecute", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
@@ -351,6 +449,9 @@ public class QueryController {
         return createStreamingResponse(emitter, contentType);
     }
     
+    /**
+     * @see StreamingService#execute(String, ProxiedUserDetails, StreamingResponseListener)
+     */
     @Timed(name = "dw.query.executeQuery", absolute = true)
     @RequestMapping(path = "{queryId}/execute", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
