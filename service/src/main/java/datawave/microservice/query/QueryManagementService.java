@@ -344,16 +344,12 @@ public class QueryManagementService implements QueryRequestHandler {
     }
     
     /**
-     * Creates a query using the given query logic and parameters, but only for planning purposes.
+     * Generates a query plan using the given query logic and parameters.
      * <p>
      * Created queries will begin planning immediately. <br>
      * Auditing is performed if we are expanding indices. <br>
      * Query plan will be returned in the response.<br>
      * Updates can be made to any parameter which doesn't affect the scope of the query using {@link #update}. <br>
-     * Stop a running query gracefully using {@link #close} or forcefully using {@link #cancel}. <br>
-     * Stop, and restart a running query using {@link #reset}. <br>
-     * Create a copy of a running query using {@link #duplicate}. <br>
-     * Aside from a limited set of admin actions, only the query owner can act on a running query.
      *
      * @param queryLogicName
      *            the requested query logic, not null
@@ -402,16 +398,12 @@ public class QueryManagementService implements QueryRequestHandler {
     }
     
     /**
-     * Creates a query using the given query logic and parameters, but only for prediction purposes.
+     * Generates a query prediction using the given query logic and parameters.
      * <p>
      * Created queries will begin predicting immediately. <br>
      * Auditing is not performed. <br>
      * Query prediction will be returned in the response.<br>
      * Updates can be made to any parameter which doesn't affect the scope of the query using {@link #update}. <br>
-     * Stop a running query gracefully using {@link #close} or forcefully using {@link #cancel}. <br>
-     * Stop, and restart a running query using {@link #reset}. <br>
-     * Create a copy of a running query using {@link #duplicate}. <br>
-     * Aside from a limited set of admin actions, only the query owner can act on a running query.
      *
      * @param queryLogicName
      *            the requested query logic, not null
@@ -1199,7 +1191,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if query lock acquisition fails
      * @throws QueryException
-     *             if the cancel call is interrupted
+     *             if the close call is interrupted
      * @throws QueryException
      *             if there is an unknown error
      */
@@ -1900,7 +1892,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * Gets the plan for the given query for the calling user.
      *
      * @param queryId
-     *            the query id, may be null
+     *            the query id, not null
      * @param currentUser
      *            the user who called this method, not null
      * @return the query plan for the matching query
@@ -1940,7 +1932,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * Gets the predictions for the given query for the calling user.
      *
      * @param queryId
-     *            the query id, may be null
+     *            the query id, not null
      * @param currentUser
      *            the user who called this method, not null
      * @return the query predictions for the matching query
