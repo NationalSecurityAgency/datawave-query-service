@@ -21,6 +21,7 @@
                 <li>
                     <a href="#">REST Docs</a>
                     <ul class="menu vertical">
+                        <li><a th:href="@{{baseUri}/swagger-ui.html(baseUri=${@environment.getProperty('datawave.web.accumulo.uri')})}">Accumulo</a></li>
                         <li><a th:href="@{{baseUri}/swagger-ui.html(baseUri=${@environment.getProperty('datawave.web.cache.uri')})}">Cache</a></li>
                         <li><a th:href="@{{baseUri}/swagger-ui.html(baseUri=${@environment.getProperty('datawave.web.authorization.uri')})}">Authorization</a></li>
                         <li><a th:href="@{{baseUri}/swagger-ui.html(baseUri=${@environment.getProperty('datawave.web.audit.uri')})}">Audit</a></li>
@@ -35,6 +36,7 @@
                 <li>
                     <a href="#">Javadoc</a>
                     <ul class="menu vertical">
+                        <li><a th:href="@{{baseUri}/javadoc/index.html(baseUri=${@environment.getProperty('datawave.web.accumulo.uri')})}">Accumulo</a></li>
                         <li><a th:href="@{{baseUri}/javadoc/index.html(baseUri=${@environment.getProperty('datawave.web.cache.uri')})}">Cache</a></li>
                         <li><a th:href="@{{baseUri}/javadoc/index.html(baseUri=${@environment.getProperty('datawave.web.authorization.uri')})}">Authorization</a></li>
                         <li><a th:href="@{{baseUri}/javadoc/index.html(baseUri=${@environment.getProperty('datawave.web.audit.uri')})}">Audit</a></li>
