@@ -10,6 +10,13 @@
     <artifactId>query-service</artifactId>
     <version>1.0-SNAPSHOT</version>
     <description>DATAWAVE Query Microservice</description>
+    <url>https://github.com/NationalSecurityAgency/datawave-query-service</url>
+    <scm>
+        <connection>scm:git:https://github.com/NationalSecurityAgency/datawave-query-service.git</connection>
+        <developerConnection>scm:git:git@github.com:NationalSecurityAgency/datawave-query-service.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/NationalSecurityAgency/datawave-query-service</url>
+    </scm>
     <properties>
         <start-class>datawave.microservice.query.QueryService</start-class>
         <version.microservice.query-api>1.0-SNAPSHOT</version.microservice.query-api>
