@@ -1,5 +1,7 @@
 package datawave.microservice.query.runner;
 
+import datawave.core.query.cache.ResultsPage;
+import datawave.core.query.logic.QueryLogic;
 import datawave.microservice.query.config.NextCallProperties;
 import datawave.microservice.query.config.QueryExpirationProperties;
 import datawave.microservice.query.config.QueryProperties;
@@ -12,8 +14,6 @@ import datawave.microservice.query.storage.TaskStates;
 import datawave.microservice.query.util.QueryStatusUpdateUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetric;
-import datawave.services.query.cache.ResultsPage;
-import datawave.services.query.logic.QueryLogic;
 import datawave.webservice.query.data.ObjectSizeOf;
 import datawave.webservice.query.exception.QueryException;
 import org.slf4j.Logger;

@@ -46,6 +46,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter
 
 import java.util.List;
 
+import static datawave.core.query.logic.lookup.LookupQueryLogic.LOOKUP_KEY_VALUE_DELIMITER;
 import static datawave.microservice.query.QueryParameters.QUERY_AUTHORIZATIONS;
 import static datawave.microservice.query.QueryParameters.QUERY_BEGIN;
 import static datawave.microservice.query.QueryParameters.QUERY_END;
@@ -64,7 +65,6 @@ import static datawave.microservice.query.lookup.LookupService.LOOKUP_STREAMING;
 import static datawave.microservice.query.lookup.LookupService.LOOKUP_UUID_PAIRS;
 import static datawave.microservice.query.translateid.TranslateIdService.TRANSLATE_ID;
 import static datawave.query.QueryParameters.QUERY_SYNTAX;
-import static datawave.services.query.logic.lookup.LookupQueryLogic.LOOKUP_KEY_VALUE_DELIMITER;
 
 @Tag(name = "Query Controller /v1", description = "DataWave Query Management",
                 externalDocs = @ExternalDocumentation(description = "Query Service Documentation",

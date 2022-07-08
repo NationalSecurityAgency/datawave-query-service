@@ -1,6 +1,9 @@
 package datawave.microservice.query.lookup;
 
 import com.google.common.collect.Iterables;
+import datawave.core.query.logic.QueryLogic;
+import datawave.core.query.logic.QueryLogicFactory;
+import datawave.core.query.logic.lookup.LookupQueryLogic;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.authorization.util.AuthorizationsUtil;
 import datawave.microservice.query.DefaultQueryParameters;
@@ -10,9 +13,6 @@ import datawave.microservice.query.stream.StreamingService;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
 import datawave.query.data.UUIDType;
 import datawave.security.util.ProxiedEntityUtils;
-import datawave.services.query.logic.QueryLogic;
-import datawave.services.query.logic.QueryLogicFactory;
-import datawave.services.query.logic.lookup.LookupQueryLogic;
 import datawave.webservice.query.exception.BadRequestQueryException;
 import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.NoResultsQueryException;
@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import static datawave.core.query.logic.lookup.LookupQueryLogic.LOOKUP_KEY_VALUE_DELIMITER;
 import static datawave.microservice.query.QueryParameters.QUERY_AUTHORIZATIONS;
 import static datawave.microservice.query.QueryParameters.QUERY_BEGIN;
 import static datawave.microservice.query.QueryParameters.QUERY_END;
@@ -46,7 +47,6 @@ import static datawave.microservice.query.QueryParameters.QUERY_LOGIC_NAME;
 import static datawave.microservice.query.QueryParameters.QUERY_NAME;
 import static datawave.microservice.query.QueryParameters.QUERY_STRING;
 import static datawave.query.QueryParameters.QUERY_SYNTAX;
-import static datawave.services.query.logic.lookup.LookupQueryLogic.LOOKUP_KEY_VALUE_DELIMITER;
 
 @Service
 public class LookupService {

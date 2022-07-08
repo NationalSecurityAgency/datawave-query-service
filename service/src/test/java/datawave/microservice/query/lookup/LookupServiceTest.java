@@ -1,6 +1,7 @@
 package datawave.microservice.query.lookup;
 
 import com.google.common.collect.Iterables;
+import datawave.core.query.logic.QueryKey;
 import datawave.marking.ColumnVisibilitySecurityMarking;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
@@ -10,7 +11,6 @@ import datawave.microservice.query.messaging.QueryResultsPublisher;
 import datawave.microservice.query.messaging.Result;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
-import datawave.services.query.logic.QueryKey;
 import datawave.webservice.query.result.event.DefaultEvent;
 import datawave.webservice.query.result.event.DefaultField;
 import datawave.webservice.query.result.event.Metadata;
