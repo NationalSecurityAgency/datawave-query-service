@@ -291,7 +291,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * <p>
      * Created queries will start running immediately. <br>
      * Auditing is performed before the query is started. <br>
-     * Query results can be retrieved using {@link #next}.<br>
+     * Query results can be retrieved using {@link #executeNext}.<br>
      * Updates can be made to any parameter which doesn't affect the scope of the query using {@link #update}. <br>
      * Stop a running query gracefully using {@link #close} or forcefully using {@link #cancel}. <br>
      * Stop, and restart a running query using {@link #reset}. <br>
@@ -640,7 +640,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * <p>
      * Created queries will start running immediately. <br>
      * Auditing is performed before the query is started. <br>
-     * Subsequent query results can be retrieved using {@link #next}. <br>
+     * Subsequent query results can be retrieved using {@link #executeNext}. <br>
      * Updates can be made to any parameter which doesn't affect the scope of the query using {@link #update}. <br>
      * Stop a running query gracefully using {@link #close} or forcefully using {@link #cancel}. <br>
      * Stop, and restart a running query using {@link #reset}. <br>
@@ -687,7 +687,7 @@ public class QueryManagementService implements QueryRequestHandler {
         String queryId = null;
         try {
             queryId = create(queryLogicName, parameters, currentUser).getResult();
-            return next(queryId, currentUser.getPrimaryUser().getRoles());
+            return executeNext(queryId, currentUser);
         } catch (Exception e) {
             // TODO: QueryException results in VoidResponse. This differs from the original RestAPI where an exception was returned in a
             // DefaultEventQueryResponse.
@@ -751,7 +751,7 @@ public class QueryManagementService implements QueryRequestHandler {
             
             // make sure the state is created
             if (queryStatus.getQueryState() == CREATE) {
-                return next(queryId, currentUser.getPrimaryUser().getRoles());
+                return executeNext(queryId, currentUser);
             } else {
                 throw new BadRequestQueryException("Cannot call next on a query that is not running", HttpStatus.SC_BAD_REQUEST + "-1");
             }
@@ -781,8 +781,8 @@ public class QueryManagementService implements QueryRequestHandler {
      *
      * @param queryId
      *            the query id, not null
-     * @param userRoles
-     *            the roles of the user who called this method, not null
+     * @param currentUser
+     *            the user who called this method, not null
      * @return a base query response containing the next page of results
      * @throws NotFoundQueryException
      *             if the query cannot be found
@@ -801,7 +801,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if query logic creation fails
      */
-    private BaseQueryResponse next(String queryId, Collection<String> userRoles) throws InterruptedException, QueryException {
+    private BaseQueryResponse executeNext(String queryId, ProxiedUserDetails currentUser) throws InterruptedException, QueryException {
         // before we spin up a separate thread, make sure we are allowed to call next
         boolean success = false;
         QueryStatus queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, queryStatusUpdateUtil::claimNextCall);
@@ -811,7 +811,7 @@ public class QueryManagementService implements QueryRequestHandler {
             
             // get the query logic
             String queryLogicName = queryStatus.getQuery().getQueryLogicName();
-            QueryLogic<?> queryLogic = queryLogicFactory.getQueryLogic(queryStatus.getQuery().getQueryLogicName(), userRoles);
+            QueryLogic<?> queryLogic = queryLogicFactory.getQueryLogic(queryStatus.getQuery().getQueryLogicName(), currentUser);
             
             // update query metrics
             BaseQueryMetric baseQueryMetric = getBaseQueryMetric();
@@ -2352,7 +2352,7 @@ public class QueryManagementService implements QueryRequestHandler {
     protected QueryLogic<?> createQueryLogic(String queryLogicName, ProxiedUserDetails currentUser) throws BadRequestQueryException {
         // will throw IllegalArgumentException if not defined
         try {
-            return queryLogicFactory.getQueryLogic(queryLogicName, currentUser.getPrimaryUser().getRoles());
+            return queryLogicFactory.getQueryLogic(queryLogicName, currentUser);
         } catch (Exception e) {
             log.error("Failed to get query logic for {}", queryLogicName, e);
             throw new BadRequestQueryException(DatawaveErrorCode.QUERY_LOGIC_ERROR, e);
