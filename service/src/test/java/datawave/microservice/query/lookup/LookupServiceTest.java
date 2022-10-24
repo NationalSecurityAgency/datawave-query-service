@@ -58,16 +58,6 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     @Autowired
     public LookupProperties lookupProperties;
     
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
-    
     @Test
     public void testLookupUUIDSuccess() throws Exception {
         ProxiedUserDetails authUser = createUserDetails();

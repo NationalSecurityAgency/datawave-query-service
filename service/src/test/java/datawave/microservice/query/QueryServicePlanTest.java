@@ -38,16 +38,6 @@ public class QueryServicePlanTest extends AbstractQueryServiceTest {
     @Autowired
     public ApplicationEventPublisher eventPublisher;
     
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
-    
     @Test
     public void testPlanSuccess() throws ParseException, IOException, ExecutionException, InterruptedException {
         ProxiedUserDetails authUser = createUserDetails();

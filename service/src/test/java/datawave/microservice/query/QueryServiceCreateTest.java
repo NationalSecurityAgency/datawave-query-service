@@ -39,15 +39,6 @@ import static datawave.webservice.query.QueryImpl.BEGIN_DATE;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryServiceTest", RemoteAuthorizationServiceUserDetailsService.ACTIVATION_PROFILE})
 public class QueryServiceCreateTest extends AbstractQueryServiceTest {
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
     
     @Test
     public void testCreateSuccess() throws ParseException, IOException {

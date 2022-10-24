@@ -47,16 +47,6 @@ import java.util.concurrent.TimeUnit;
 @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryServiceTest", RemoteAuthorizationServiceUserDetailsService.ACTIVATION_PROFILE})
 public class StreamingServiceTest extends AbstractQueryServiceTest {
     
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
-    
     @Test
     public void testExecuteSuccess() throws Throwable {
         ProxiedUserDetails authUser = createUserDetails();
