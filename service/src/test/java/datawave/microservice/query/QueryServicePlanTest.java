@@ -54,7 +54,7 @@ public class QueryServicePlanTest extends AbstractQueryServiceTest {
                         .submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
         
         long startTime = System.currentTimeMillis();
-        while (queryRequestEvents.size() == 0 && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(5)) {
+        while (queryRequestEvents.size() == 0 && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
             Thread.sleep(500);
         }
         

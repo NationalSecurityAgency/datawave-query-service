@@ -160,7 +160,7 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
         
         long startTime = System.currentTimeMillis();
         QueryStatus queryStatus = null;
-        while (queryStatus == null && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(5)) {
+        while (queryStatus == null && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
             queryStatus = queryStorageCache.getQueryStatus().stream().filter(x -> x.getQuery().getQuery().equals(query)).findAny().orElse(null);
             if (queryStatus == null) {
                 Thread.sleep(500);
