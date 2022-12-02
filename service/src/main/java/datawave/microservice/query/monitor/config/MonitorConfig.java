@@ -16,6 +16,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.function.Function;
+
 @EnableCaching
 @EnableScheduling
 @Configuration
@@ -25,13 +27,13 @@ public class MonitorConfig {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     
     @Bean
-    public MonitorStatusCache monitorStatusCache(CacheInspector cacheInspector, CacheManager cacheManager) {
+    public MonitorStatusCache monitorStatusCache(Function<CacheManager,CacheInspector> cacheInspectorFactory, CacheManager cacheManager) {
         log.debug("Using " + cacheManager.getClass() + " for caching");
         LockableCacheInspector lockableCacheInspector;
         if (cacheManager instanceof HazelcastCacheManager)
             lockableCacheInspector = new LockableHazelcastCacheInspector(cacheManager);
         else
-            lockableCacheInspector = new UniversalLockableCacheInspector(cacheInspector);
+            lockableCacheInspector = new UniversalLockableCacheInspector(cacheInspectorFactory.apply(cacheManager));
         return new MonitorStatusCache(lockableCacheInspector);
     }
 }

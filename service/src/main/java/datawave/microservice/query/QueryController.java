@@ -70,7 +70,7 @@ import static datawave.query.QueryParameters.QUERY_SYNTAX;
                 externalDocs = @ExternalDocumentation(description = "Query Service Documentation",
                                 url = "https://github.com/NationalSecurityAgency/datawave-query-service"))
 @RestController
-@RequestMapping(path = "/v1", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/v1/query", produces = MediaType.APPLICATION_JSON_VALUE)
 public class QueryController {
     private final QueryManagementService queryManagementService;
     private final LookupService lookupService;
@@ -106,7 +106,7 @@ public class QueryController {
             description = "Defined queries cannot be started and run.<br>" +
                     "Auditing is not performed when defining a query.<br>" +
                     "Updates can be made to any parameter using <strong>update</strong>.<br>" +
-                    "Create a runnable query from a defined query using <strong>duplicate</strong> or <strong>reset</strong>.<br>" +
+                    "Create a runnable query from a defined query using <strong>duplicate</strong>, <strong>reset</strong>, or <strong>mapreduce/submit</strong>.<br>" +
                     "Delete a defined query using <strong>remove</strong>.<br>" +
                     "Aside from a limited set of admin actions, only the query owner can act on a defined query.")
     @ApiResponses({

@@ -505,11 +505,7 @@ public class QueryManagementService implements QueryRequestHandler {
         String userId = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         log.trace("{} has authorizations {}", userId, currentUser.getPrimaryUser().getAuths());
         
-        // set some audit parameters which are used internally
-        String userDn = currentUser.getPrimaryUser().getDn().subjectDN();
-        setInternalAuditParameters(queryLogicName, userDn, parameters);
-        
-        Query query = createQuery(queryLogicName, parameters, userDn, getDNs(currentUser), queryId);
+        Query query = createQuery(queryLogicName, parameters, currentUser, queryId);
         
         // TODO: Downgrade the auths before or after auditing???
         // downgrade the auths
@@ -620,7 +616,7 @@ public class QueryManagementService implements QueryRequestHandler {
                         
                         // did the request fail?
                         QueryStatus queryStatus = queryStorageCache.getQueryStatus(request.getQueryId());
-                        if (queryStorageCache.getQueryStatus(request.getQueryId()).getQueryState() == FAIL) {
+                        if (queryStatus.getQueryState() == FAIL) {
                             log.error("Query {} failed for queryId {}: {}", request.getMethod().name(), request.getQueryId(), queryStatus.getFailureMessage());
                             throw new QueryException(queryStatus.getErrorCode(), "Query " + request.getMethod().name() + " failed for queryId "
                                             + request.getQueryId() + ": " + queryStatus.getFailureMessage());
@@ -1616,8 +1612,7 @@ public class QueryManagementService implements QueryRequestHandler {
                             validateQuery(queryLogicName, currentParams, currentUser);
                             
                             // create a new query object
-                            String userDn = currentUser.getPrimaryUser().getDn().subjectDN();
-                            Query query = createQuery(queryLogicName, currentParams, userDn, getDNs(currentUser), queryId);
+                            Query query = createQuery(queryLogicName, currentParams, currentUser, queryId);
                             
                             // save the new query object in the cache
                             queryStatusUpdateUtil.lockedUpdate(queryId, status -> status.setQuery(query));
@@ -1968,7 +1963,7 @@ public class QueryManagementService implements QueryRequestHandler {
         }
     }
     
-    private QueryStatus validateRequest(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public QueryStatus validateRequest(String queryId, ProxiedUserDetails currentUser) throws QueryException {
         return validateRequest(queryId, currentUser, false);
     }
     
@@ -1987,7 +1982,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws UnauthorizedQueryException
      *             if the user doesn't own the query
      */
-    private QueryStatus validateRequest(String queryId, ProxiedUserDetails currentUser, boolean adminOverride)
+    public QueryStatus validateRequest(String queryId, ProxiedUserDetails currentUser, boolean adminOverride)
                     throws NotFoundQueryException, UnauthorizedQueryException {
         // does the query exist?
         QueryStatus queryStatus = queryStorageCache.getQueryStatus(queryId);
@@ -1995,7 +1990,7 @@ public class QueryManagementService implements QueryRequestHandler {
             throw new NotFoundQueryException(DatawaveErrorCode.NO_QUERY_OBJECT_MATCH, MessageFormat.format("{0}", queryId));
         }
         
-        // admins requests can operate on any query, regardless of ownership
+        // admin requests can operate on any query, regardless of ownership
         if (!adminOverride) {
             // does the current user own this query?
             String userId = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getDn().subjectDN());
@@ -2003,6 +1998,7 @@ public class QueryManagementService implements QueryRequestHandler {
             if (!query.getOwner().equals(userId)) {
                 throw new UnauthorizedQueryException(DatawaveErrorCode.QUERY_OWNER_MISMATCH, MessageFormat.format("{0} != {1}", userId, query.getOwner()));
             }
+            // TODO: JWO: Should we update lastUsedMillis since the user interacted with this query? I think yes...
         }
         
         return queryStatus;
@@ -2062,40 +2058,86 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws BadRequestQueryException
      *             if there is an error auditing the query
      */
-    protected void audit(Query query, QueryLogic<?> queryLogic, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    public void audit(Query query, QueryLogic<?> queryLogic, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
                     throws BadRequestQueryException {
-        Auditor.AuditType auditType = queryLogic.getAuditType(query);
+        List<String> selectors = null;
+        try {
+            selectors = queryLogic.getSelectors(query);
+        } catch (Exception e) {
+            log.error("Error accessing query selector", e);
+        }
+        
+        // @formatter:off
+        audit(query.getId().toString(),
+                queryLogic.getAuditType(query),
+                queryLogic.getLogicName(),
+                query.getQuery(),
+                selectors,
+                parameters,
+                currentUser);
+        // @formatter:on
+    }
+    
+    /**
+     * Creates and submits an audit record to the audit service.
+     * <p>
+     * The audit request submission will fail if the audit service is unable to validate the audit message.
+     *
+     * @param auditId
+     *            the id to use when auditing, not null
+     * @param auditType
+     *            the audit type, not null
+     * @param logicName
+     *            the logic name, not null
+     * @param query
+     *            the query, not null
+     * @param selectors
+     *            the list of selectors, may be null
+     * @param parameters
+     *            the query parameters, not null
+     * @param currentUser
+     *            the user who called this method, not null
+     * @throws BadRequestQueryException
+     *             if the audit parameters fail validation
+     * @throws BadRequestQueryException
+     *             if there is an error auditing the query
+     */
+    public void audit(String auditId, Auditor.AuditType auditType, String logicName, String query, List<String> selectors,
+                    MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws BadRequestQueryException {
+        
+        // if we haven't already, validate the markings
+        if (getSecurityMarking().toColumnVisibilityString() == null) {
+            validateSecurityMarkings(parameters);
+        }
+        
+        // set some audit parameters which are used internally
+        setInternalAuditParameters(logicName, currentUser.getPrimaryUser().getDn().subjectDN(), parameters);
         
         parameters.add(PrivateAuditConstants.AUDIT_TYPE, auditType.name());
         if (auditType != Auditor.AuditType.NONE) {
             // audit the query before execution
             try {
-                try {
-                    List<String> selectors = queryLogic.getSelectors(query);
-                    if (selectors != null && !selectors.isEmpty()) {
-                        parameters.put(PrivateAuditConstants.SELECTORS, selectors);
-                    }
-                } catch (Exception e) {
-                    log.error("Error accessing query selector", e);
+                if (selectors != null && !selectors.isEmpty()) {
+                    parameters.put(PrivateAuditConstants.SELECTORS, selectors);
                 }
                 
                 // is the user didn't set an audit id, use the query id
                 if (!parameters.containsKey(AuditParameters.AUDIT_ID)) {
-                    parameters.set(AuditParameters.AUDIT_ID, query.getId().toString());
+                    parameters.set(AuditParameters.AUDIT_ID, auditId);
                 }
                 
                 // @formatter:off
                 AuditClient.Request auditRequest = new AuditClient.Request.Builder()
                         .withParams(parameters)
-                        .withQueryExpression(query.getQuery())
+                        .withQueryExpression(query)
                         .withProxiedUserDetails(currentUser)
                         .withMarking(getSecurityMarking())
                         .withAuditType(auditType)
-                        .withQueryLogic(queryLogic.getLogicName())
+                        .withQueryLogic(logicName)
                         .build();
                 // @formatter:on
                 
-                log.info("[{}] Sending audit request with parameters {}", query.getId(), auditRequest);
+                log.info("[{}] Sending audit request with parameters {}", auditId, auditRequest);
                 
                 auditClient.submit(auditRequest);
             } catch (IllegalArgumentException e) {
@@ -2208,27 +2250,28 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the requested query logic, not null
      * @param parameters
      *            the query parameters, not null
-     * @param userDn
-     *            the user dn, not null
-     * @param dnList
-     *            the user dn list, not null
+     * @param currentUser
+     *            the current user, not null
      * @param queryId
      *            the desired query id, may be null
      * @return an instantiated query object
      */
-    protected Query createQuery(String queryLogicName, MultiValueMap<String,String> parameters, String userDn, List<String> dnList, String queryId) {
+    protected Query createQuery(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser, String queryId) {
+        String userDn = currentUser.getPrimaryUser().getDn().subjectDN();
+        List<String> dnList = getDNs(currentUser);
+        
         QueryParameters queryParameters = getQueryParameters();
         SecurityMarking securityMarking = getSecurityMarking();
         
-        Query q = responseObjectFactory.getQueryImpl();
-        q.initialize(userDn, dnList, queryLogicName, queryParameters, queryParameters.getUnknownParameters(parameters));
-        q.setColumnVisibility(securityMarking.toColumnVisibilityString());
-        q.setUncaughtExceptionHandler(new QueryUncaughtExceptionHandler());
-        Thread.currentThread().setUncaughtExceptionHandler(q.getUncaughtExceptionHandler());
+        Query query = responseObjectFactory.getQueryImpl();
+        query.initialize(userDn, dnList, queryLogicName, queryParameters, queryParameters.getUnknownParameters(parameters));
+        query.setColumnVisibility(securityMarking.toColumnVisibilityString());
+        query.setUncaughtExceptionHandler(new QueryUncaughtExceptionHandler());
+        Thread.currentThread().setUncaughtExceptionHandler(query.getUncaughtExceptionHandler());
         if (queryId != null) {
-            q.setId(UUID.fromString(queryId));
+            query.setId(UUID.fromString(queryId));
         }
-        return q;
+        return query;
     }
     
     /**
@@ -2252,7 +2295,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws BadRequestQueryException
      *             if security marking validation fails
      */
-    protected QueryLogic<?> validateQuery(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    public QueryLogic<?> validateQuery(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
                     throws BadRequestQueryException, UnauthorizedQueryException {
         // validate the query parameters
         validateParameters(queryLogicName, parameters);
@@ -2433,7 +2476,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws BadRequestQueryException
      *             if security marking validation fails
      */
-    protected void validateSecurityMarkings(MultiValueMap<String,String> parameters) throws BadRequestQueryException {
+    public void validateSecurityMarkings(MultiValueMap<String,String> parameters) throws BadRequestQueryException {
         try {
             getSecurityMarking().validate(parameters);
         } catch (IllegalArgumentException e) {
@@ -2454,7 +2497,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @param parameters
      *            the query parameters, not null
      */
-    protected void setInternalAuditParameters(String queryLogicName, String userDn, MultiValueMap<String,String> parameters) {
+    public void setInternalAuditParameters(String queryLogicName, String userDn, MultiValueMap<String,String> parameters) {
         // Set private audit-related parameters, stripping off any that the user might have passed in first.
         // These are parameters that aren't passed in by the user, but rather are computed from other sources.
         PrivateAuditConstants.stripPrivateParameters(parameters);

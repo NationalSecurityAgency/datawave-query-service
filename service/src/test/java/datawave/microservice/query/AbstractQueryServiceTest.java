@@ -357,7 +357,7 @@ public abstract class AbstractQueryServiceTest {
     }
     
     protected UriComponentsBuilder uriBuilder(String path) {
-        return UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/query/v1/" + path);
+        return UriComponentsBuilder.newInstance().scheme("https").host("localhost").port(webServicePort).path("/query/v1/query/" + path);
     }
     
     protected UriComponents createUri(String path) {
