@@ -30,15 +30,6 @@ import java.util.concurrent.Future;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryServiceTest", RemoteAuthorizationServiceUserDetailsService.ACTIVATION_PROFILE})
 public class QueryServiceResetTest extends AbstractQueryServiceTest {
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
     
     @Test
     public void testResetSuccess_resetOnDefined() throws Exception {

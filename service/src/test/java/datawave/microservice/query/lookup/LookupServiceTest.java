@@ -58,16 +58,6 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     @Autowired
     public LookupProperties lookupProperties;
     
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
-    
     @Test
     public void testLookupUUIDSuccess() throws Exception {
         ProxiedUserDetails authUser = createUserDetails();
@@ -82,7 +72,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         
         // get the lookup query id
         long startTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - startTime) < 5000 && queryId == null) {
+        while ((System.currentTimeMillis() - startTime) < 10000 && queryId == null) {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
@@ -173,7 +163,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         
         // get the lookup query id
         long startTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - startTime) < 5000 && queryId == null) {
+        while ((System.currentTimeMillis() - startTime) < 10000 && queryId == null) {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
@@ -265,7 +255,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         
         // get the lookup query id
         long startTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - startTime) < 5000 && queryId == null) {
+        while ((System.currentTimeMillis() - startTime) < 10000 && queryId == null) {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
@@ -290,7 +280,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         Set<String> contentQueryIds = null;
         // wait for the initial event query to be closed
         startTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - startTime) < 5000 && contentQueryIds == null) {
+        while ((System.currentTimeMillis() - startTime) < 10000 && contentQueryIds == null) {
             final String eventQueryId = queryId;
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() == 1 + Math.ceil((double) pageSize / lookupProperties.getBatchLookupLimit())) {
@@ -406,7 +396,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         
         // get the lookup query id
         long startTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - startTime) < 5000 && queryId == null) {
+        while ((System.currentTimeMillis() - startTime) < 10000 && queryId == null) {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
@@ -432,7 +422,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         Set<String> contentQueryIds = null;
         // wait for the initial event query to be closed
         startTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - startTime) < 5000 && contentQueryIds == null) {
+        while ((System.currentTimeMillis() - startTime) < 10000 && contentQueryIds == null) {
             final String eventQueryId = queryId;
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() == 1 + Math.ceil((double) pageSize / lookupProperties.getBatchLookupLimit())) {
@@ -460,7 +450,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         for (String contentQueryId : contentQueryIds) {
             QueryStatus status = queryStorageCache.getQueryStatus(contentQueryId);
             startTime = System.currentTimeMillis();
-            while ((System.currentTimeMillis() - startTime) < 5000 && status.getNumResultsConsumed() < pageSize) {
+            while ((System.currentTimeMillis() - startTime) < 10000 && status.getNumResultsConsumed() < pageSize) {
                 Thread.sleep(500);
                 status = queryStorageCache.getQueryStatus(contentQueryId);
             }

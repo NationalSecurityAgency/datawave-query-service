@@ -38,16 +38,6 @@ public class QueryServicePlanTest extends AbstractQueryServiceTest {
     @Autowired
     public ApplicationEventPublisher eventPublisher;
     
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
-    
     @Test
     public void testPlanSuccess() throws ParseException, IOException, ExecutionException, InterruptedException {
         ProxiedUserDetails authUser = createUserDetails();
@@ -64,7 +54,7 @@ public class QueryServicePlanTest extends AbstractQueryServiceTest {
                         .submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
         
         long startTime = System.currentTimeMillis();
-        while (queryRequestEvents.size() == 0 && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(5)) {
+        while (queryRequestEvents.size() == 0 && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
             Thread.sleep(500);
         }
         

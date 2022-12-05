@@ -30,7 +30,9 @@ import datawave.webservice.result.QueryLogicResponse;
 import datawave.webservice.result.VoidResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -128,6 +130,7 @@ public abstract class AbstractQueryServiceTest {
     protected List<String> auditIds;
     protected MockRestServiceServer mockServer;
     
+    @BeforeEach
     public void setup() {
         auditIds = new ArrayList<>();
         
@@ -142,6 +145,7 @@ public abstract class AbstractQueryServiceTest {
         queryRequestEvents.clear();
     }
     
+    @AfterEach
     public void teardown() throws Exception {
         queryStorageCache.clear();
         queryRequestEvents.clear();

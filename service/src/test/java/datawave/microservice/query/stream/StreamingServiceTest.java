@@ -47,16 +47,6 @@ import java.util.concurrent.TimeUnit;
 @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryServiceTest", RemoteAuthorizationServiceUserDetailsService.ACTIVATION_PROFILE})
 public class StreamingServiceTest extends AbstractQueryServiceTest {
     
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
-    
     @Test
     public void testExecuteSuccess() throws Throwable {
         ProxiedUserDetails authUser = createUserDetails();
@@ -170,7 +160,7 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
         
         long startTime = System.currentTimeMillis();
         QueryStatus queryStatus = null;
-        while (queryStatus == null && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(5)) {
+        while (queryStatus == null && (System.currentTimeMillis() - startTime) < TimeUnit.SECONDS.toMillis(10)) {
             queryStatus = queryStorageCache.getQueryStatus().stream().filter(x -> x.getQuery().getQuery().equals(query)).findAny().orElse(null);
             if (queryStatus == null) {
                 Thread.sleep(500);

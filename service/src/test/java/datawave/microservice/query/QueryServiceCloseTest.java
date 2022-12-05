@@ -35,15 +35,6 @@ import java.util.concurrent.TimeoutException;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles({"QueryStarterDefaults", "QueryStarterOverrides", "QueryServiceTest", RemoteAuthorizationServiceUserDetailsService.ACTIVATION_PROFILE})
 public class QueryServiceCloseTest extends AbstractQueryServiceTest {
-    @BeforeEach
-    public void setup() {
-        super.setup();
-    }
-    
-    @AfterEach
-    public void teardown() throws Exception {
-        super.teardown();
-    }
     
     @Test
     public void testCloseSuccess() throws Exception {
@@ -111,7 +102,7 @@ public class QueryServiceCloseTest extends AbstractQueryServiceTest {
                 nextFuture.get(500, TimeUnit.MILLISECONDS);
             } catch (TimeoutException e) {
                 nextCallActive = queryStorageCache.getQueryStatus(queryId).getActiveNextCalls() > 0;
-                if (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - currentTimeMillis) > 5) {
+                if (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - currentTimeMillis) > 10) {
                     throw e;
                 }
             }
