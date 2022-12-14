@@ -75,6 +75,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static datawave.microservice.query.QueryParameters.QUERY_MAX_CONCURRENT_TASKS;
@@ -97,6 +98,7 @@ public abstract class AbstractQueryServiceTest {
     protected static final String TEST_VISIBILITY_MARKING = "ALL";
     protected static final long TEST_MAX_RESULTS_OVERRIDE = 369L;
     protected static final long TEST_PAGESIZE = 123L;
+    protected static final long TEST_WAIT_TIME_MILLIS = TimeUnit.SECONDS.toMillis(30);
     
     @LocalServerPort
     protected int webServicePort;

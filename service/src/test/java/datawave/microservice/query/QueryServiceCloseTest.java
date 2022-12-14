@@ -102,7 +102,7 @@ public class QueryServiceCloseTest extends AbstractQueryServiceTest {
                 nextFuture.get(500, TimeUnit.MILLISECONDS);
             } catch (TimeoutException e) {
                 nextCallActive = queryStorageCache.getQueryStatus(queryId).getActiveNextCalls() > 0;
-                if (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - currentTimeMillis) > 10) {
+                if ((System.currentTimeMillis() - currentTimeMillis) > TEST_WAIT_TIME_MILLIS) {
                     throw e;
                 }
             }
