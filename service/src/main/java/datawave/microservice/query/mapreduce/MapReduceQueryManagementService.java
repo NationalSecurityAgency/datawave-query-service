@@ -1,6 +1,5 @@
 package datawave.microservice.query.mapreduce;
 
-import datawave.core.common.audit.PrivateAuditConstants;
 import datawave.core.query.logic.QueryLogic;
 import datawave.microservice.authorization.user.ProxiedUserDetails;
 import datawave.microservice.authorization.util.AuthorizationsUtil;
@@ -178,31 +177,6 @@ public class MapReduceQueryManagementService implements MapReduceQueryRequestHan
             log.error("Unknown error submitting oozie workflow", e);
             throw new QueryException(DatawaveErrorCode.QUERY_SETUP_ERROR, e, "Unknown error submitting oozie workflow.");
         }
-        
-        // REST ENDPOINT SIDE
-        // X get the oozie workflow param (this should be moved to the validation step)
-        
-        // X get the parameters parameter
-        
-        // X get the oozie job by name from the configured jobs
-        
-        // X make sure the user has the required roles & auths
-        
-        // X audit
-        
-        // MAP REDUCE QUERY SERVICE SIDE
-        // create the oozie client
-        
-        // create the oozie configuration (OOZIE API)
-        
-        // initialize the oozie job (OOZIE API)
-        
-        // validate the workflow parameters (OOZIE API)
-        
-        // run the oozie job (OOZIE API)
-        
-        // save the results dir, and base dir, and save the state
-        // if unable to persist, kill the job
     }
     
     public GenericResponse<String> submit(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
