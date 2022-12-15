@@ -41,9 +41,10 @@ management:
     web:
       base-path: "/mgmt"
 
-query:
-  messaging:
-    backend: hazelcast
+datawave:
+  query:
+    messaging:
+      backend: hazelcast
 
 logging:
   level:

@@ -76,6 +76,8 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
+            } else {
+                Thread.sleep(500);
             }
         }
         
@@ -167,6 +169,8 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
+            } else {
+                Thread.sleep(500);
             }
         }
         
@@ -259,6 +263,8 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
+            } else {
+                Thread.sleep(500);
             }
         }
         
@@ -400,6 +406,8 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
+            } else {
+                Thread.sleep(500);
             }
         }
         
