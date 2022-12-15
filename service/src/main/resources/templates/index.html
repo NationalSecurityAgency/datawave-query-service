@@ -52,7 +52,7 @@
                     <ul class="menu vertical">
                         <li><a th:href="@{{baseUri}/data/v1/(baseUri=${@environment.getProperty('datawave.web.dictionary.uri')})}">Data Dictionary</a></li>
                         <li><a th:href="@{{baseUri}/edge/v1/(baseUri=${@environment.getProperty('datawave.web.dictionary.uri')})}">Edge Dictionary</a></li>
-                        <li><a th:href="@{/v1/listQueryLogic}">Deployed Query Logics</a></li>
+                        <li><a th:href="@{/v1/query/listQueryLogic}">Deployed Query Logics</a></li>
                         <li><a th:href="@{{baseUri}/v1/listEffectiveAuthorizations(baseUri=${@environment.getProperty('datawave.web.authorization.uri')})}">My Effective Authorizations</a></li>
                         <li><a th:href="@{{baseUri}/v1/admin/listUsers(baseUri=${@environment.getProperty('datawave.web.authorization.uri')})}">Cached Credentials</a></li>
                     </ul>
