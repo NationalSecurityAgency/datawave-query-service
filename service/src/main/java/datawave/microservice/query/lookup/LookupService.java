@@ -4,7 +4,7 @@ import com.google.common.collect.Iterables;
 import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.core.query.logic.lookup.LookupQueryLogic;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.authorization.util.AuthorizationsUtil;
 import datawave.microservice.query.DefaultQueryParameters;
 import datawave.microservice.query.QueryManagementService;
@@ -110,7 +110,7 @@ public class LookupService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public void lookupUUID(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
+    public void lookupUUID(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: lookupUUID from {} with params: {}", user, parameters);
@@ -162,7 +162,7 @@ public class LookupService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse lookupUUID(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse lookupUUID(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: lookupUUID from {} with params: {}", user, parameters);
@@ -216,7 +216,7 @@ public class LookupService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public <T> T lookupContentUUID(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser, StreamingResponseListener listener)
+    public <T> T lookupContentUUID(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -270,7 +270,7 @@ public class LookupService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse lookupContentUUID(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse lookupContentUUID(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: lookupContentUUID from {} with params: {}", user, parameters);
@@ -289,7 +289,7 @@ public class LookupService {
         }
     }
     
-    private <T> T lookup(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
+    private <T> T lookup(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
         List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
         if (lookupTerms == null || lookupTerms.isEmpty()) {
             log.error("Unable to validate lookupUUID parameters: No UUID Pairs");
@@ -306,12 +306,12 @@ public class LookupService {
     }
     
     private BaseQueryResponse lookupEvents(MultiValueMap<String,String> lookupTermMap, LookupQueryLogic<?> lookupQueryLogic,
-                    MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+                    MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         return lookupEvents(lookupTermMap, lookupQueryLogic, parameters, currentUser, null);
     }
     
     private <T> T lookupEvents(MultiValueMap<String,String> lookupTermMap, LookupQueryLogic<?> lookupQueryLogic, MultiValueMap<String,String> parameters,
-                    ProxiedUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
+                    DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
         String queryId = null;
         try {
             // add the query logic name and query string to our parameters
@@ -421,7 +421,7 @@ public class LookupService {
     }
     
     @SuppressWarnings("ConstantConditions")
-    protected void setupEventQueryParameters(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) {
+    protected void setupEventQueryParameters(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         final String queryName = user + "-" + UUID.randomUUID().toString();
         
@@ -455,7 +455,7 @@ public class LookupService {
         }
     }
     
-    private <T> T lookupContent(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser, StreamingResponseListener listener)
+    private <T> T lookupContent(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException {
         List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
         if (lookupTerms == null || lookupTerms.isEmpty()) {
@@ -503,7 +503,7 @@ public class LookupService {
                         + String.join(CONTENT_QUERY_VALUE_DELIMITER, eventMetadata.getRow(), eventMetadata.getDataType(), eventMetadata.getInternalId());
     }
     
-    private <T> T lookupContent(Set<String> contentLookupTerms, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser,
+    private <T> T lookupContent(Set<String> contentLookupTerms, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser,
                     StreamingResponseListener listener) throws QueryException {
         // create queries from the content lookup terms
         List<String> contentQueries = createContentQueries(contentLookupTerms);
@@ -548,7 +548,7 @@ public class LookupService {
         return contentQueries;
     }
     
-    protected void setContentQueryParameters(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) {
+    protected void setContentQueryParameters(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         
         setOptionalQueryParameters(parameters);
@@ -571,7 +571,7 @@ public class LookupService {
         parameters.set(QUERY_AUTHORIZATIONS, userAuths);
     }
     
-    protected EventQueryResponseBase runContentQuery(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) {
+    protected EventQueryResponseBase runContentQuery(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) {
         EventQueryResponseBase mergedResponse = null;
         String queryId = null;
         boolean isQueryFinished = false;

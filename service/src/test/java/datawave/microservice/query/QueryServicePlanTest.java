@@ -1,13 +1,11 @@
 package datawave.microservice.query;
 
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.result.GenericResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +26,6 @@ import java.text.ParseException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -40,7 +37,7 @@ public class QueryServicePlanTest extends AbstractQueryServiceTest {
     
     @Test
     public void testPlanSuccess() throws ParseException, IOException, ExecutionException, InterruptedException {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         UriComponents uri = createUri("EventQuery/plan");
         MultiValueMap<String,String> map = createParams();
         

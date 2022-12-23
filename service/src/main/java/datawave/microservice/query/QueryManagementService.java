@@ -8,7 +8,7 @@ import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.marking.SecurityMarking;
 import datawave.microservice.audit.AuditClient;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.authorization.util.AuthorizationsUtil;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.messaging.QueryResultsManager;
@@ -160,7 +160,7 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the user who called this method, not null
      * @return the query logic descriptions
      */
-    public QueryLogicResponse listQueryLogic(ProxiedUserDetails currentUser) {
+    public QueryLogicResponse listQueryLogic(DatawaveUserDetails currentUser) {
         log.info("Request: listQueryLogic from {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()));
         
         QueryLogicResponse response = new QueryLogicResponse();
@@ -264,7 +264,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> define(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    public GenericResponse<String> define(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -320,7 +320,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> create(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    public GenericResponse<String> create(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -373,7 +373,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> plan(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+    public GenericResponse<String> plan(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: {}/plan from {} with params: {}", queryLogicName, user, parameters);
@@ -427,7 +427,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> predict(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    public GenericResponse<String> predict(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -459,7 +459,7 @@ public class QueryManagementService implements QueryRequestHandler {
         }
     }
     
-    private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser,
+    private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser,
                     QueryStatus.QUERY_STATE queryType) throws QueryException {
         return storeQuery(queryLogicName, parameters, currentUser, queryType, null);
     }
@@ -497,7 +497,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser,
+    private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser,
                     QueryStatus.QUERY_STATE queryType, String queryId) throws BadRequestQueryException, QueryException {
         // validate query and get a query logic
         QueryLogic<?> queryLogic = validateQuery(queryLogicName, parameters, currentUser);
@@ -671,7 +671,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse createAndNext(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    public BaseQueryResponse createAndNext(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -738,7 +738,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse next(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse next(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: next from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         try {
@@ -797,7 +797,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if query logic creation fails
      */
-    private BaseQueryResponse executeNext(String queryId, ProxiedUserDetails currentUser) throws InterruptedException, QueryException {
+    private BaseQueryResponse executeNext(String queryId, DatawaveUserDetails currentUser) throws InterruptedException, QueryException {
         // before we spin up a separate thread, make sure we are allowed to call next
         boolean success = false;
         QueryStatus queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, queryStatusUpdateUtil::claimNextCall);
@@ -912,7 +912,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse cancel(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse cancel(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: cancel from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         return cancel(queryId, currentUser, false);
@@ -941,7 +941,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse adminCancel(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminCancel(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: adminCancel from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         return cancel(queryId, currentUser, true);
@@ -967,7 +967,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse adminCancelAll(ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminCancelAll(DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: adminCancelAll from {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()));
         
         try {
@@ -1017,7 +1017,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    private VoidResponse cancel(String queryId, ProxiedUserDetails currentUser, boolean adminOverride) throws QueryException {
+    private VoidResponse cancel(String queryId, DatawaveUserDetails currentUser, boolean adminOverride) throws QueryException {
         try {
             // make sure the query is valid, and the user can act on it
             QueryStatus queryStatus = validateRequest(queryId, currentUser, adminOverride);
@@ -1136,7 +1136,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse close(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse close(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: close from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         return close(queryId, currentUser, false);
@@ -1165,7 +1165,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse adminClose(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminClose(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: adminClose from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         return close(queryId, currentUser, true);
@@ -1191,7 +1191,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse adminCloseAll(ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminCloseAll(DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: adminCloseAll from {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()));
         
         try {
@@ -1240,7 +1240,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    private VoidResponse close(String queryId, ProxiedUserDetails currentUser, boolean adminOverride) throws QueryException {
+    private VoidResponse close(String queryId, DatawaveUserDetails currentUser, boolean adminOverride) throws QueryException {
         try {
             // make sure the query is valid, and the user can act on it
             QueryStatus queryStatus = validateRequest(queryId, currentUser, adminOverride);
@@ -1353,7 +1353,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> reset(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public GenericResponse<String> reset(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: reset from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         try {
@@ -1401,7 +1401,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse remove(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse remove(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: remove from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         return remove(queryId, currentUser, false);
@@ -1425,7 +1425,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse adminRemove(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminRemove(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: adminRemove from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         return remove(queryId, currentUser, true);
@@ -1446,7 +1446,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public VoidResponse adminRemoveAll(ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminRemoveAll(DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: adminRemoveAll from {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()));
         
         try {
@@ -1489,7 +1489,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    private VoidResponse remove(String queryId, ProxiedUserDetails currentUser, boolean adminOverride) throws QueryException {
+    private VoidResponse remove(String queryId, DatawaveUserDetails currentUser, boolean adminOverride) throws QueryException {
         try {
             // make sure the query is valid, and the user can act on it
             QueryStatus queryStatus = validateRequest(queryId, currentUser, adminOverride);
@@ -1563,7 +1563,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> update(String queryId, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+    public GenericResponse<String> update(String queryId, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: {}/update from {} with params: {}", queryId, user, parameters);
@@ -1681,7 +1681,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> duplicate(String queryId, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+    public GenericResponse<String> duplicate(String queryId, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: {}/duplicate from {} with params: {}", queryId, user, parameters);
@@ -1744,7 +1744,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if query storage fails
      */
-    private TaskKey duplicate(QueryStatus queryStatus, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+    private TaskKey duplicate(QueryStatus queryStatus, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         // recreate the query parameters
         MultiValueMap<String,String> currentParams = new LinkedMultiValueMap<>();
         currentParams.addAll(queryStatus.getQuery().toMap());
@@ -1810,7 +1810,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public QueryImplListResponse list(String queryId, String queryName, ProxiedUserDetails currentUser) throws QueryException {
+    public QueryImplListResponse list(String queryId, String queryName, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: list from {} for queryId: {}, queryName: {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId,
                         queryName);
         
@@ -1835,7 +1835,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public QueryImplListResponse adminList(String queryId, String queryName, String userId, ProxiedUserDetails currentUser) throws QueryException {
+    public QueryImplListResponse adminList(String queryId, String queryName, String userId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: adminList from {} for queryId: {}, queryName: {}, userId: {}",
                         ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId, queryName, userId);
         
@@ -1902,7 +1902,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> plan(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public GenericResponse<String> plan(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: plan from {} for queryId: {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         try {
@@ -1942,7 +1942,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> predictions(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public GenericResponse<String> predictions(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: predictions from {} for queryId: {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), queryId);
         
         try {
@@ -1963,7 +1963,7 @@ public class QueryManagementService implements QueryRequestHandler {
         }
     }
     
-    public QueryStatus validateRequest(String queryId, ProxiedUserDetails currentUser) throws QueryException {
+    public QueryStatus validateRequest(String queryId, DatawaveUserDetails currentUser) throws QueryException {
         return validateRequest(queryId, currentUser, false);
     }
     
@@ -1982,7 +1982,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws UnauthorizedQueryException
      *             if the user doesn't own the query
      */
-    public QueryStatus validateRequest(String queryId, ProxiedUserDetails currentUser, boolean adminOverride)
+    public QueryStatus validateRequest(String queryId, DatawaveUserDetails currentUser, boolean adminOverride)
                     throws NotFoundQueryException, UnauthorizedQueryException {
         // does the query exist?
         QueryStatus queryStatus = queryStorageCache.getQueryStatus(queryId);
@@ -2058,7 +2058,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws BadRequestQueryException
      *             if there is an error auditing the query
      */
-    public void audit(Query query, QueryLogic<?> queryLogic, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    public void audit(Query query, QueryLogic<?> queryLogic, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
                     throws BadRequestQueryException {
         List<String> selectors = null;
         try {
@@ -2103,7 +2103,7 @@ public class QueryManagementService implements QueryRequestHandler {
      *             if there is an error auditing the query
      */
     public void audit(String auditId, Auditor.AuditType auditType, String logicName, String query, List<String> selectors,
-                    MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws BadRequestQueryException {
+                    MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws BadRequestQueryException {
         
         // if we haven't already, validate the markings
         if (getSecurityMarking().toColumnVisibilityString() == null) {
@@ -2130,7 +2130,7 @@ public class QueryManagementService implements QueryRequestHandler {
                 AuditClient.Request auditRequest = new AuditClient.Request.Builder()
                         .withParams(parameters)
                         .withQueryExpression(query)
-                        .withProxiedUserDetails(currentUser)
+                        .withDatawaveUserDetails(currentUser)
                         .withMarking(getSecurityMarking())
                         .withAuditType(auditType)
                         .withQueryLogic(logicName)
@@ -2256,7 +2256,7 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the desired query id, may be null
      * @return an instantiated query object
      */
-    protected Query createQuery(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser, String queryId) {
+    protected Query createQuery(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, String queryId) {
         String userDn = currentUser.getPrimaryUser().getDn().subjectDN();
         List<String> dnList = getDNs(currentUser);
         
@@ -2295,7 +2295,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws BadRequestQueryException
      *             if security marking validation fails
      */
-    public QueryLogic<?> validateQuery(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    public QueryLogic<?> validateQuery(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
                     throws BadRequestQueryException, UnauthorizedQueryException {
         // validate the query parameters
         validateParameters(queryLogicName, parameters);
@@ -2392,7 +2392,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws BadRequestQueryException
      *             if the user does not have the required roles for the query logic
      */
-    protected QueryLogic<?> createQueryLogic(String queryLogicName, ProxiedUserDetails currentUser) throws BadRequestQueryException {
+    protected QueryLogic<?> createQueryLogic(String queryLogicName, DatawaveUserDetails currentUser) throws BadRequestQueryException {
         // will throw IllegalArgumentException if not defined
         try {
             return queryLogicFactory.getQueryLogic(queryLogicName, currentUser);
@@ -2422,7 +2422,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws UnauthorizedQueryException
      *             if the user doesn't have access to the requested query logic
      */
-    protected void validateQueryLogic(QueryLogic<?> queryLogic, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser)
+    protected void validateQueryLogic(QueryLogic<?> queryLogic, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
                     throws BadRequestQueryException, UnauthorizedQueryException {
         try {
             queryLogic.validate(parameters);
@@ -2552,7 +2552,7 @@ public class QueryManagementService implements QueryRequestHandler {
         return baseQueryMetricOverride;
     }
     
-    public List<String> getDNs(ProxiedUserDetails user) {
+    public List<String> getDNs(DatawaveUserDetails user) {
         return user.getProxiedUsers().stream().map(u -> u.getDn().subjectDN()).collect(Collectors.toList());
     }
 }

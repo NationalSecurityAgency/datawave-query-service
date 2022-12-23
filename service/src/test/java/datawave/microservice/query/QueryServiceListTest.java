@@ -1,15 +1,13 @@
 package datawave.microservice.query;
 
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.query.Query;
 import datawave.webservice.query.result.logic.QueryLogicDescription;
 import datawave.webservice.result.QueryImplListResponse;
 import datawave.webservice.result.QueryLogicResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,8 +38,8 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testListSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails altAuthUser = createAltUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails altAuthUser = createAltUserDetails();
         
         // define a bunch of queries as the original user
         List<String> queryIds = new ArrayList<>();
@@ -83,7 +81,7 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testListSuccess_filterOnQueryId() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a bunch of queries as the original user
         List<String> queryIds = new ArrayList<>();
@@ -113,7 +111,7 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testListSuccess_filterOnQueryName() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         String uniqueQueryName = "Unique Query";
         
@@ -150,7 +148,7 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testListSuccess_filterOnMultiple() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         String uniqueQueryName = "Unique Query";
         
@@ -211,8 +209,8 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testListFailure_ownershipFailure() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails altAuthUser = createAltUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails altAuthUser = createAltUserDetails();
         
         String uniqueQueryName = "Unique Query";
         
@@ -269,8 +267,8 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminListSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails adminUser = createAltUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails adminUser = createAltUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
         
         String user = ProxiedEntityUtils.getShortName(authUser.getPrimaryUser().getDn().subjectDN());
         
@@ -341,8 +339,8 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminListFailure_notAdminUser() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails altAuthUser = createAltUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails altAuthUser = createAltUserDetails();
         
         String user = ProxiedEntityUtils.getShortName(authUser.getPrimaryUser().getDn().subjectDN());
         
@@ -377,7 +375,7 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testGetQuerySuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a query
         String queryId = createQuery(authUser, createParams());
@@ -400,7 +398,7 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
     
     @Test
     public void testListQueryLogicSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         Future<ResponseEntity<QueryLogicResponse>> future = listQueryLogic(authUser);
         

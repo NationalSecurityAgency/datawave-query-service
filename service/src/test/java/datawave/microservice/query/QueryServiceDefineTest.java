@@ -2,15 +2,13 @@ package datawave.microservice.query;
 
 import datawave.marking.ColumnVisibilitySecurityMarking;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.query.Query;
 import datawave.webservice.query.exception.QueryExceptionType;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.GenericResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,7 +39,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDefineSuccess() throws ParseException, IOException {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         
@@ -99,7 +97,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDefineFailure_paramValidation() {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         
@@ -138,7 +136,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDefineFailure_authValidation() {
-        ProxiedUserDetails authUser = createUserDetails(Collections.singleton("AuthorizedUser"), Collections.emptyList());
+        DatawaveUserDetails authUser = createUserDetails(Collections.singleton("AuthorizedUser"), Collections.emptyList());
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         
@@ -174,7 +172,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDefineFailure_queryLogicValidation() {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         
@@ -213,7 +211,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDefineFailure_maxPageSize() {
-        ProxiedUserDetails authUser = createUserDetails(Arrays.asList("AuthorizedUser", queryProperties.getPrivilegedRole()), null);
+        DatawaveUserDetails authUser = createUserDetails(Arrays.asList("AuthorizedUser", queryProperties.getPrivilegedRole()), null);
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         
@@ -252,7 +250,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDefineFailure_maxResultsOverride() {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         
@@ -291,7 +289,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDefineFailure_maxConcurrentTasksOverride() {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         
@@ -331,7 +329,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     @Test
     public void testDefineFailure_roleValidation() {
         // create a user without the required role
-        ProxiedUserDetails authUser = createUserDetails(Collections.emptyList(), Collections.singletonList("ALL"));
+        DatawaveUserDetails authUser = createUserDetails(Collections.emptyList(), Collections.singletonList("ALL"));
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         
@@ -367,7 +365,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDefineFailure_markingValidation() {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         UriComponents uri = createUri("EventQuery/define");
         MultiValueMap<String,String> map = createParams();
         

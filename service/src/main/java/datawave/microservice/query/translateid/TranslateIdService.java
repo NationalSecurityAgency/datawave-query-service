@@ -1,6 +1,6 @@
 package datawave.microservice.query.translateid;
 
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.authorization.util.AuthorizationsUtil;
 import datawave.microservice.query.DefaultQueryParameters;
 import datawave.microservice.query.QueryManagementService;
@@ -85,7 +85,7 @@ public class TranslateIdService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse translateId(String id, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse translateId(String id, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         String queryId = null;
         try {
             parameters.set(TRANSLATE_ID, id);
@@ -136,7 +136,7 @@ public class TranslateIdService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse translateIds(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse translateIds(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         if (!parameters.containsKey(TRANSLATE_ID)) {
             throw new BadRequestQueryException(MISSING_REQUIRED_PARAMETER, "Missing required parameter: " + TRANSLATE_ID);
         }
@@ -152,7 +152,7 @@ public class TranslateIdService {
         }
     }
     
-    protected MultiValueMap<String,String> setupQueryParameters(MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser) {
+    protected MultiValueMap<String,String> setupQueryParameters(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) {
         MultiValueMap<String,String> queryParams = new LinkedMultiValueMap<>();
         
         // copy over any query parameters which are explicitly allowed to be set, ignoring ones that aren't

@@ -2,14 +2,12 @@ package datawave.microservice.query;
 
 import com.google.common.collect.Iterables;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.result.GenericResponse;
 import datawave.webservice.result.VoidResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,7 +38,7 @@ public class QueryServiceDuplicateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDuplicateSuccess_duplicateOnDefined() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -111,7 +109,7 @@ public class QueryServiceDuplicateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDuplicateSuccess_duplicateOnCreated() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -187,7 +185,7 @@ public class QueryServiceDuplicateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDuplicateSuccess_duplicateOnCanceled() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -281,7 +279,7 @@ public class QueryServiceDuplicateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDuplicateSuccess_duplicateOnClosed() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -370,7 +368,7 @@ public class QueryServiceDuplicateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDuplicateSuccess_update() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails(null, Arrays.asList("ALL", "NONE"));
+        DatawaveUserDetails authUser = createUserDetails(null, Arrays.asList("ALL", "NONE"));
         
         // define a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -456,7 +454,7 @@ public class QueryServiceDuplicateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDuplicateFailure_invalidUpdate() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a valid query
         String queryId = defineQuery(authUser, createParams());
@@ -492,7 +490,7 @@ public class QueryServiceDuplicateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDuplicateFailure_queryNotFound() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         String queryId = UUID.randomUUID().toString();
         
@@ -532,8 +530,8 @@ public class QueryServiceDuplicateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testDuplicateFailure_ownershipFailure() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails altAuthUser = createAltUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails altAuthUser = createAltUserDetails();
         
         // define a valid query
         String queryId = defineQuery(authUser, createParams());

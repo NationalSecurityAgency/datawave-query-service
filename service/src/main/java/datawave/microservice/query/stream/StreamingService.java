@@ -1,6 +1,6 @@
 package datawave.microservice.query.stream;
 
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.QueryManagementService;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
 import datawave.microservice.query.stream.runner.StreamingCall;
@@ -67,7 +67,7 @@ public class StreamingService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public String createAndExecute(String queryLogicName, MultiValueMap<String,String> parameters, ProxiedUserDetails currentUser,
+    public String createAndExecute(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser,
                     StreamingResponseListener listener) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -95,13 +95,13 @@ public class StreamingService {
      * @param listener
      *            the listener which will handle the result pages, not null
      */
-    public void execute(String queryId, ProxiedUserDetails currentUser, StreamingResponseListener listener) {
+    public void execute(String queryId, DatawaveUserDetails currentUser, StreamingResponseListener listener) {
         log.info("Request: {}/execute from {}", queryId, ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()));
         
         submitStreamingCall(queryId, currentUser, listener);
     }
     
-    private void submitStreamingCall(String queryId, ProxiedUserDetails currentUser, StreamingResponseListener listener) {
+    private void submitStreamingCall(String queryId, DatawaveUserDetails currentUser, StreamingResponseListener listener) {
         // @formatter:off
         streamingCallExecutor.submit(
                 new StreamingCall.Builder()

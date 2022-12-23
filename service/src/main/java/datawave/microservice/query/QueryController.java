@@ -1,7 +1,7 @@
 package datawave.microservice.query;
 
 import com.codahale.metrics.annotation.Timed;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.lookup.LookupService;
 import datawave.microservice.query.stream.StreamingProperties;
 import datawave.microservice.query.stream.StreamingService;
@@ -98,7 +98,7 @@ public class QueryController {
     }
     
     /**
-     * @see QueryManagementService#define(String, MultiValueMap, ProxiedUserDetails)
+     * @see QueryManagementService#define(String, MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -221,25 +221,25 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/define", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> define(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.define(queryLogic, parameters, currentUser);
     }
     
     /**
-     * @see QueryManagementService#listQueryLogic(ProxiedUserDetails)
+     * @see QueryManagementService#listQueryLogic(DatawaveUserDetails)
      */
     @Operation(summary = "Gets a list of descriptions for the configured query logics, sorted by query logic name.",
                     description = "The descriptions include things like the audit type, optional and required parameters, required roles, and response class.")
     @Timed(name = "dw.query.listQueryLogic", absolute = true)
     @RequestMapping(path = "listQueryLogic", method = {RequestMethod.GET},
                     produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml", "application/x-yaml", "text/html"})
-    public QueryLogicResponse listQueryLogic(@AuthenticationPrincipal ProxiedUserDetails currentUser) {
+    public QueryLogicResponse listQueryLogic(@AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return queryManagementService.listQueryLogic(currentUser);
     }
     
     /**
-     * @see QueryManagementService#create(String, MultiValueMap, ProxiedUserDetails)
+     * @see QueryManagementService#create(String, MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -365,13 +365,13 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/create", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> create(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.create(queryLogic, parameters, currentUser);
     }
     
     /**
-     * @see QueryManagementService#plan(String, MultiValueMap, ProxiedUserDetails)
+     * @see QueryManagementService#plan(String, MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -511,13 +511,13 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/plan", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> plan(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.plan(queryLogic, parameters, currentUser);
     }
     
     /**
-     * @see QueryManagementService#predict(String, MultiValueMap, ProxiedUserDetails)
+     * @see QueryManagementService#predict(String, MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -638,14 +638,14 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/predict", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> predict(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.predict(queryLogic, parameters, currentUser);
     }
     
     /**
-     * @see LookupService#lookupUUID(MultiValueMap, ProxiedUserDetails)
-     * @see LookupService#lookupUUID(MultiValueMap, ProxiedUserDetails, StreamingResponseListener)
+     * @see LookupService#lookupUUID(MultiValueMap, DatawaveUserDetails)
+     * @see LookupService#lookupUUID(MultiValueMap, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -766,7 +766,7 @@ public class QueryController {
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public Object lookupUUID(@Parameter(description = "The UUID type", example = "PAGE_TITLE") @PathVariable(required = false) String uuidType,
                     @Parameter(description = "The UUID", example = "anarchism") @PathVariable(required = false) String uuid,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser,
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser,
                     @RequestHeader HttpHeaders headers) throws QueryException {
         parameters.add(LOOKUP_UUID_PAIRS, String.join(LOOKUP_KEY_VALUE_DELIMITER, uuidType, uuid));
         
@@ -781,8 +781,8 @@ public class QueryController {
     }
     
     /**
-     * @see LookupService#lookupUUID(MultiValueMap, ProxiedUserDetails)
-     * @see LookupService#lookupUUID(MultiValueMap, ProxiedUserDetails, StreamingResponseListener)
+     * @see LookupService#lookupUUID(MultiValueMap, DatawaveUserDetails)
+     * @see LookupService#lookupUUID(MultiValueMap, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -910,7 +910,7 @@ public class QueryController {
     @RequestMapping(path = "lookupUUID", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public Object lookupUUIDBatch(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser, @RequestHeader HttpHeaders headers) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser, @RequestHeader HttpHeaders headers) throws QueryException {
         if (Boolean.parseBoolean(parameters.getFirst(LOOKUP_STREAMING))) {
             MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
             CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
@@ -922,8 +922,8 @@ public class QueryController {
     }
     
     /**
-     * @see LookupService#lookupContentUUID(MultiValueMap, ProxiedUserDetails)
-     * @see LookupService#lookupContentUUID(MultiValueMap, ProxiedUserDetails, StreamingResponseListener)
+     * @see LookupService#lookupContentUUID(MultiValueMap, DatawaveUserDetails)
+     * @see LookupService#lookupContentUUID(MultiValueMap, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -1044,7 +1044,7 @@ public class QueryController {
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public Object lookupContentUUID(@Parameter(description = "The UUID type", example = "PAGE_TITLE") @PathVariable(required = false) String uuidType,
                     @Parameter(description = "The UUID", example = "anarchism") @PathVariable(required = false) String uuid,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser,
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser,
                     @RequestHeader HttpHeaders headers) throws QueryException {
         parameters.add(LOOKUP_UUID_PAIRS, String.join(LOOKUP_KEY_VALUE_DELIMITER, uuidType, uuid));
         
@@ -1059,8 +1059,8 @@ public class QueryController {
     }
     
     /**
-     * @see LookupService#lookupContentUUID(MultiValueMap, ProxiedUserDetails)
-     * @see LookupService#lookupContentUUID(MultiValueMap, ProxiedUserDetails)
+     * @see LookupService#lookupContentUUID(MultiValueMap, DatawaveUserDetails)
+     * @see LookupService#lookupContentUUID(MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1188,7 +1188,7 @@ public class QueryController {
     @RequestMapping(path = "lookupContentUUID", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public Object lookupContentUUIDBatch(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser, @RequestHeader HttpHeaders headers) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser, @RequestHeader HttpHeaders headers) throws QueryException {
         if (Boolean.parseBoolean(parameters.getFirst(LOOKUP_STREAMING))) {
             MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
             CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
@@ -1200,7 +1200,7 @@ public class QueryController {
     }
     
     /**
-     * @see TranslateIdService#translateId(String, MultiValueMap, ProxiedUserDetails)
+     * @see TranslateIdService#translateId(String, MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1311,13 +1311,13 @@ public class QueryController {
     @RequestMapping(path = "translateId/{id}", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public BaseQueryResponse translateId(@Parameter(description = "The ID to translate") @PathVariable String id,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return translateIdService.translateId(id, parameters, currentUser);
     }
     
     /**
-     * @see TranslateIdService#translateIds(MultiValueMap, ProxiedUserDetails)
+     * @see TranslateIdService#translateIds(MultiValueMap, DatawaveUserDetails)
      */
     // TODO: Shouldn't the case for this path be the same as the singular call?
     // @formatter:off
@@ -1435,12 +1435,12 @@ public class QueryController {
     @RequestMapping(path = "translateIDs", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public BaseQueryResponse translateIDs(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return translateIdService.translateIds(parameters, currentUser);
     }
     
     /**
-     * @see QueryManagementService#createAndNext(String, MultiValueMap, ProxiedUserDetails)
+     * @see QueryManagementService#createAndNext(String, MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1572,13 +1572,13 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/createAndNext", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public BaseQueryResponse createAndNext(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.createAndNext(queryLogic, parameters, currentUser);
     }
     
     /**
-     * @see QueryManagementService#next(String, ProxiedUserDetails)
+     * @see QueryManagementService#next(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1623,12 +1623,12 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/next", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public BaseQueryResponse next(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.next(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#cancel(String, ProxiedUserDetails)
+     * @see QueryManagementService#cancel(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1663,13 +1663,13 @@ public class QueryController {
     @Timed(name = "dw.query.cancel", absolute = true)
     @RequestMapping(path = "{queryId}/cancel", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public VoidResponse cancel(@Parameter(description = "The query ID") @PathVariable String queryId, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+    public VoidResponse cancel(@Parameter(description = "The query ID") @PathVariable String queryId, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.cancel(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#adminCancel(String, ProxiedUserDetails)
+     * @see QueryManagementService#adminCancel(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1706,12 +1706,12 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/adminCancel", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml",
             "application/json", "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public VoidResponse adminCancel(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.adminCancel(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#close(String, ProxiedUserDetails)
+     * @see QueryManagementService#close(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1746,13 +1746,13 @@ public class QueryController {
     @Timed(name = "dw.query.close", absolute = true)
     @RequestMapping(path = "{queryId}/close", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public VoidResponse close(@Parameter(description = "The query ID") @PathVariable String queryId, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+    public VoidResponse close(@Parameter(description = "The query ID") @PathVariable String queryId, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.close(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#adminClose(String, ProxiedUserDetails)
+     * @see QueryManagementService#adminClose(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1789,12 +1789,12 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/adminClose", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml",
             "application/json", "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public VoidResponse adminClose(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.adminClose(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#reset(String, ProxiedUserDetails)
+     * @see QueryManagementService#reset(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1837,12 +1837,12 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/reset", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> reset(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.reset(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#remove(String, ProxiedUserDetails)
+     * @see QueryManagementService#remove(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1874,13 +1874,13 @@ public class QueryController {
     @Timed(name = "dw.query.remove", absolute = true)
     @RequestMapping(path = "{queryId}/remove", method = {RequestMethod.DELETE}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public VoidResponse remove(@Parameter(description = "The query ID") @PathVariable String queryId, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+    public VoidResponse remove(@Parameter(description = "The query ID") @PathVariable String queryId, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.remove(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#adminRemove(String, ProxiedUserDetails)
+     * @see QueryManagementService#adminRemove(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1910,12 +1910,12 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/adminRemove", method = {RequestMethod.DELETE}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public VoidResponse adminRemove(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.adminRemove(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#update(String, MultiValueMap, ProxiedUserDetails)
+     * @see QueryManagementService#update(String, MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2043,13 +2043,13 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/update", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> update(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.update(queryId, parameters, currentUser);
     }
     
     /**
-     * @see QueryManagementService#duplicate(String, MultiValueMap, ProxiedUserDetails)
+     * @see QueryManagementService#duplicate(String, MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2171,13 +2171,13 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/duplicate", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> duplicate(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         return queryManagementService.duplicate(queryId, parameters, currentUser);
     }
     
     /**
-     * @see QueryManagementService#list(String, String, ProxiedUserDetails)
+     * @see QueryManagementService#list(String, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2198,12 +2198,12 @@ public class QueryController {
             "application/x-protobuf", "application/x-protostuff"})
     public QueryImplListResponse list(@Parameter(description = "The query ID") @RequestParam(required = false) String queryId,
                     @Parameter(description = "The query name") @RequestParam(required = false) String queryName,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.list(queryId, queryName, currentUser);
     }
     
     /**
-     * @see QueryManagementService#adminList(String, String, String, ProxiedUserDetails)
+     * @see QueryManagementService#adminList(String, String, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2227,12 +2227,12 @@ public class QueryController {
     public QueryImplListResponse adminList(@Parameter(description = "The query ID") @RequestParam(required = false) String queryId,
                     @Parameter(description = "The user id") @RequestParam(required = false) String user,
                     @Parameter(description = "The query name") @RequestParam(required = false) String queryName,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.adminList(queryId, queryName, user, currentUser);
     }
     
     /**
-     * @see QueryManagementService#list(String, String, ProxiedUserDetails)
+     * @see QueryManagementService#list(String, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2252,12 +2252,12 @@ public class QueryController {
     @RequestMapping(path = "{queryId}", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml",
             "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public QueryImplListResponse get(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.list(queryId, null, currentUser);
     }
     
     /**
-     * @see QueryManagementService#plan(String, ProxiedUserDetails)
+     * @see QueryManagementService#plan(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2286,12 +2286,12 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/plan", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> plan(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.plan(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#predictions(String, ProxiedUserDetails)
+     * @see QueryManagementService#predictions(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2320,12 +2320,12 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/predictions", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> predictions(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.predictions(queryId, currentUser);
     }
     
     /**
-     * @see QueryManagementService#adminCancelAll(ProxiedUserDetails)
+     * @see QueryManagementService#adminCancelAll(DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2354,12 +2354,12 @@ public class QueryController {
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "adminCancelAll", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public VoidResponse adminCancelAll(@AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminCancelAll(@AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.adminCancelAll(currentUser);
     }
     
     /**
-     * @see QueryManagementService#adminCloseAll(ProxiedUserDetails)
+     * @see QueryManagementService#adminCloseAll(DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2388,12 +2388,12 @@ public class QueryController {
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "adminCloseAll", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public VoidResponse adminCloseAll(@AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminCloseAll(@AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.adminCloseAll(currentUser);
     }
     
     /**
-     * @see QueryManagementService#adminRemoveAll(ProxiedUserDetails)
+     * @see QueryManagementService#adminRemoveAll(DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -2419,12 +2419,12 @@ public class QueryController {
     @Secured({"Administrator", "JBossAdministrator"})
     @RequestMapping(path = "adminRemoveAll", method = {RequestMethod.DELETE}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public VoidResponse adminRemoveAll(@AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+    public VoidResponse adminRemoveAll(@AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return queryManagementService.adminRemoveAll(currentUser);
     }
     
     /**
-     * @see StreamingService#createAndExecute(String, MultiValueMap, ProxiedUserDetails, StreamingResponseListener)
+     * @see StreamingService#createAndExecute(String, MultiValueMap, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -2552,7 +2552,7 @@ public class QueryController {
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public ResponseEntity<ResponseBodyEmitter> createAndExecute(
                     @Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal ProxiedUserDetails currentUser,
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser,
                     @RequestHeader HttpHeaders headers) throws QueryException {
         MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
         CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
@@ -2566,7 +2566,7 @@ public class QueryController {
     }
     
     /**
-     * @see StreamingService#execute(String, ProxiedUserDetails, StreamingResponseListener)
+     * @see StreamingService#execute(String, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -2609,7 +2609,7 @@ public class QueryController {
     @RequestMapping(path = "{queryId}/execute", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public ResponseEntity<ResponseBodyEmitter> execute(@Parameter(description = "The query ID") @PathVariable String queryId,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser, @RequestHeader HttpHeaders headers) {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser, @RequestHeader HttpHeaders headers) {
         MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
         CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
         streamingService.execute(queryId, currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));

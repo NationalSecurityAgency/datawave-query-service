@@ -2,15 +2,13 @@ package datawave.microservice.query;
 
 import com.google.common.collect.Iterables;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.GenericResponse;
 import datawave.webservice.result.VoidResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +31,7 @@ public class QueryServiceResetTest extends AbstractQueryServiceTest {
     
     @Test
     public void testResetSuccess_resetOnDefined() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -110,7 +108,7 @@ public class QueryServiceResetTest extends AbstractQueryServiceTest {
     
     @Test
     public void testResetSuccess_resetOnCreated() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -202,7 +200,7 @@ public class QueryServiceResetTest extends AbstractQueryServiceTest {
     
     @Test
     public void testResetSuccess_resetOnClosed() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -297,7 +295,7 @@ public class QueryServiceResetTest extends AbstractQueryServiceTest {
     
     @Test
     public void testResetSuccess_resetOnCanceled() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -397,7 +395,7 @@ public class QueryServiceResetTest extends AbstractQueryServiceTest {
     
     @Test
     public void testResetFailure_queryNotFound() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         String queryId = UUID.randomUUID().toString();
         
@@ -433,8 +431,8 @@ public class QueryServiceResetTest extends AbstractQueryServiceTest {
     
     @Test
     public void testResetFailure_ownershipFailure() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails altAuthUser = createAltUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails altAuthUser = createAltUserDetails();
         
         // define a valid query
         String queryId = createQuery(authUser, createParams());

@@ -1,6 +1,6 @@
 package datawave.microservice.query.stream.runner;
 
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.QueryManagementService;
 import datawave.microservice.query.stream.listener.CountingResponseBodyEmitterListener;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
@@ -25,7 +25,7 @@ public class StreamingCall implements Callable<Void> {
     final private QueryMetricClient queryMetricClient;
     final private BaseQueryMetric baseQueryMetric;
     
-    final private ProxiedUserDetails currentUser;
+    final private DatawaveUserDetails currentUser;
     final private String queryId;
     
     final private StreamingResponseListener listener;
@@ -70,7 +70,7 @@ public class StreamingCall implements Callable<Void> {
         }
     }
     
-    private BaseQueryResponse next(String queryId, ProxiedUserDetails currentUser) {
+    private BaseQueryResponse next(String queryId, DatawaveUserDetails currentUser) {
         BaseQueryResponse nextResponse = null;
         try {
             long startTimeMillis = System.currentTimeMillis();
@@ -142,7 +142,7 @@ public class StreamingCall implements Callable<Void> {
         private QueryManagementService queryManagementService;
         private QueryMetricClient queryMetricClient;
         
-        private ProxiedUserDetails currentUser;
+        private DatawaveUserDetails currentUser;
         private String queryId;
         
         private StreamingResponseListener listener;
@@ -157,7 +157,7 @@ public class StreamingCall implements Callable<Void> {
             return this;
         }
         
-        public Builder setCurrentUser(ProxiedUserDetails currentUser) {
+        public Builder setCurrentUser(DatawaveUserDetails currentUser) {
             this.currentUser = currentUser;
             return this;
         }

@@ -2,14 +2,12 @@ package datawave.microservice.query;
 
 import com.google.common.collect.Iterables;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.VoidResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +31,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testRemoveSuccess_removeOnDefined() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a valid query
         String queryId = defineQuery(authUser, createParams());
@@ -57,7 +55,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testRemoveSuccess_removeOnClosed() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -101,7 +99,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testRemoveSuccess_removeOnCanceled() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -150,7 +148,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testRemoveFailure_removeOnCreated() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -183,7 +181,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testRemoveFailure_removeOnClosedActiveNext() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -237,7 +235,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testRemoveFailure_queryNotFound() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         String queryId = UUID.randomUUID().toString();
         
@@ -268,8 +266,8 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testRemoveFailure_ownershipFailure() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails altAuthUser = createAltUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails altAuthUser = createAltUserDetails();
         
         // define a valid query
         String queryId = defineQuery(authUser, createParams());
@@ -301,8 +299,8 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminRemoveSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails adminUser = createAltUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails adminUser = createAltUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
         
         // define a valid query
         String queryId = defineQuery(authUser, createParams());
@@ -326,7 +324,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminRemoveFailure_notAdminUser() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a valid query
         String queryId = defineQuery(authUser, createParams());
@@ -354,7 +352,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminRemoveAllSuccess() throws Exception {
-        ProxiedUserDetails adminUser = createUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
+        DatawaveUserDetails adminUser = createUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
         
         // define a bunch of queries
         for (int i = 0; i < 10; i++) {
@@ -380,7 +378,7 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminRemoveAllFailure_notAdminUser() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // define a bunch of queries
         for (int i = 0; i < 10; i++) {

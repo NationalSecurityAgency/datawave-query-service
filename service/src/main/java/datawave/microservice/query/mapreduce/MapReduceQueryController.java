@@ -1,6 +1,6 @@
 package datawave.microservice.query.mapreduce;
 
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.mapreduce.config.MapReduceQueryProperties;
 import datawave.webservice.query.exception.QueryException;
 import datawave.webservice.result.GenericResponse;
@@ -62,7 +62,7 @@ public class MapReduceQueryController {
     }
     
     /**
-     * @see MapReduceQueryManagementService#listConfigurations(String, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#listConfigurations(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -82,12 +82,12 @@ public class MapReduceQueryController {
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public MapReduceJobDescriptionList listConfigurations(
                     @Parameter(description = "The type of jobs to list") @RequestParam(required = false, defaultValue = "none") String jobType,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) {
         return mapReduceQueryManagementService.listConfigurations(jobType, currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#oozieSubmit(MultiValueMap, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#oozieSubmit(MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -139,12 +139,12 @@ public class MapReduceQueryController {
     @RequestMapping(path = "oozieSubmit", method = RequestMethod.POST, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> oozieSubmit(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.oozieSubmit(parameters, currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#submit(MultiValueMap, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#submit(MultiValueMap, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -228,12 +228,12 @@ public class MapReduceQueryController {
     @RequestMapping(path = "submit", method = RequestMethod.POST, produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml",
             "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> submit(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.submit(parameters, currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#cancel(String, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#cancel(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -267,12 +267,12 @@ public class MapReduceQueryController {
     @RequestMapping(path = "{id}/cancel", method = {RequestMethod.POST, RequestMethod.PUT}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<Boolean> cancel(@Parameter(description = "The map reduce query id") @PathVariable String id,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.cancel(id, currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#adminCancel(String, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#adminCancel(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -303,12 +303,12 @@ public class MapReduceQueryController {
     @RequestMapping(path = "{id}/adminCancel", method = {RequestMethod.POST, RequestMethod.PUT}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<Boolean> adminCancel(@Parameter(description = "The map reduce query id") @PathVariable String id,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.adminCancel(id, currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#restart(String, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#restart(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -346,12 +346,12 @@ public class MapReduceQueryController {
     @RequestMapping(path = "{id}/restart", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> restart(@Parameter(description = "The map reduce query id") @PathVariable String id,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.restart(id, currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#list(String, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#list(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -370,12 +370,12 @@ public class MapReduceQueryController {
     @RequestMapping(path = "{id}/list", method = RequestMethod.GET, produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml",
             "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public MapReduceInfoResponseList list(@Parameter(description = "The map reduce query id") @PathVariable String id,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.list(id, currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#getFile(String,String,ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#getFile(String,String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -393,7 +393,7 @@ public class MapReduceQueryController {
     // @formatter:on
     @RequestMapping(path = "{id}/getFile/{fileName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<StreamingResponseBody> getFile(@Parameter(description = "The map reduce query id") @PathVariable String id,
-                    @Parameter(description = "The file name") @PathVariable String fileName, @AuthenticationPrincipal ProxiedUserDetails currentUser)
+                    @Parameter(description = "The file name") @PathVariable String fileName, @AuthenticationPrincipal DatawaveUserDetails currentUser)
                     throws QueryException {
         final Map.Entry<FileStatus,FSDataInputStream> resultFile = mapReduceQueryManagementService.getFile(id, fileName, currentUser);
         
@@ -417,7 +417,7 @@ public class MapReduceQueryController {
     // Request URI: '/query/v1/mapreduce/<mapreduce query id>/getAllFiles'
     // !!!
     /**
-     * @see MapReduceQueryManagementService#getAllFiles(String,ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#getAllFiles(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -435,7 +435,7 @@ public class MapReduceQueryController {
     // @formatter:on
     @RequestMapping(path = "{id}/getAllFiles", method = RequestMethod.GET, produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public ResponseEntity<StreamingResponseBody> getAllFiles(@Parameter(description = "The map reduce query id") @PathVariable String id,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         final Map<FileStatus,FSDataInputStream> resultFiles = mapReduceQueryManagementService.getAllFiles(id, currentUser);
         
         // @formatter:off
@@ -471,7 +471,7 @@ public class MapReduceQueryController {
     }
     
     /**
-     * @see MapReduceQueryManagementService#list(ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#list(DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -489,12 +489,12 @@ public class MapReduceQueryController {
     // @formatter:on
     @RequestMapping(path = "list", method = RequestMethod.GET, produces = {"application/xml", "text/xml", "application/json", "text/yaml", "text/x-yaml",
             "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public MapReduceInfoResponseList list(@AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+    public MapReduceInfoResponseList list(@AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.list(currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#remove(String, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#remove(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -522,12 +522,12 @@ public class MapReduceQueryController {
     @RequestMapping(path = "{id}/remove", method = RequestMethod.DELETE, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public VoidResponse remove(@Parameter(description = "The map reduce query id") @PathVariable String id,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.remove(id, currentUser);
     }
     
     /**
-     * @see MapReduceQueryManagementService#adminRemove(String, ProxiedUserDetails)
+     * @see MapReduceQueryManagementService#adminRemove(String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -556,7 +556,7 @@ public class MapReduceQueryController {
     @RequestMapping(path = "{id}/adminRemove", method = {RequestMethod.DELETE}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public VoidResponse adminRemove(@Parameter(description = "The map reduce query id") @PathVariable String id,
-                    @AuthenticationPrincipal ProxiedUserDetails currentUser) throws QueryException {
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         return mapReduceQueryManagementService.adminRemove(id, currentUser);
     }
     

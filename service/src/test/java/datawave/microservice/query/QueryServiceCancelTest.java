@@ -2,14 +2,12 @@ package datawave.microservice.query;
 
 import com.google.common.collect.Iterables;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.VoidResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,7 +34,7 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testCancelSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -90,7 +88,7 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testCancelSuccess_activeNextCall() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -171,7 +169,7 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testCancelFailure_queryNotFound() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         String queryId = UUID.randomUUID().toString();
         
@@ -195,8 +193,8 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testCancelFailure_ownershipFailure() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails altAuthUser = createAltUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails altAuthUser = createAltUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -230,7 +228,7 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testCancelFailure_queryNotRunning() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -282,8 +280,8 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminCancelSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails adminUser = createAltUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails adminUser = createAltUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
         
         // create a valid query
         long currentTimeMillis = System.currentTimeMillis();
@@ -337,7 +335,7 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminCancelFailure_notAdminUser() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -366,7 +364,7 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminCancelAllSuccess() throws Exception {
-        ProxiedUserDetails adminUser = createUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
+        DatawaveUserDetails adminUser = createUserDetails(Arrays.asList("AuthorizedUser", "Administrator"), null);
         
         // create a bunch of queries
         List<String> queryIds = new ArrayList<>();
@@ -434,7 +432,7 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
     
     @Test
     public void testAdminCancelAllFailure_notAdminUser() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a bunch of queries
         List<String> queryIds = new ArrayList<>();

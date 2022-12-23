@@ -2,14 +2,12 @@ package datawave.microservice.query;
 
 import com.google.common.collect.Iterables;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.result.GenericResponse;
 import datawave.webservice.result.VoidResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,7 +40,7 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateSuccess_updateOnDefined() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails(null, Arrays.asList("ALL", "NONE"));
+        DatawaveUserDetails authUser = createUserDetails(null, Arrays.asList("ALL", "NONE"));
         
         // define a valid query
         String queryId = defineQuery(authUser, createParams());
@@ -86,7 +84,7 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateSuccess_updateOnCreated() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -122,7 +120,7 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateFailure_unsafeParamUpdateQuery() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -172,7 +170,7 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateFailure_unsafeParamUpdateDate() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -225,7 +223,7 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateFailure_unsafeParamUpdateLogic() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -275,7 +273,7 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateFailure_unsafeParamUpdateAuths() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -325,7 +323,7 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateFailure_nullParams() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -367,7 +365,7 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateFailure_queryNotFound() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         String queryId = UUID.randomUUID().toString();
         
@@ -402,8 +400,8 @@ public class QueryServiceUpdateTest extends AbstractQueryServiceTest {
     
     @Test
     public void testUpdateFailure_ownershipFailure() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
-        ProxiedUserDetails altAuthUser = createAltUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
+        DatawaveUserDetails altAuthUser = createAltUserDetails();
         
         // define a valid query
         String queryId = defineQuery(authUser, createParams());

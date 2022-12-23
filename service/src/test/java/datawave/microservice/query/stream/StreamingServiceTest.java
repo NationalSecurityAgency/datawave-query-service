@@ -5,16 +5,14 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.AbstractQueryServiceTest;
 import datawave.microservice.query.DefaultQueryParameters;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.query.result.event.DefaultEvent;
 import datawave.webservice.result.DefaultEventQueryResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,7 +38,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -49,7 +46,7 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testExecuteSuccess() throws Throwable {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         // create a valid query
         String queryId = createQuery(authUser, createParams());
@@ -148,7 +145,7 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testCreateAndExecuteSuccess() throws Throwable {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         final String query = TEST_QUERY_STRING + " CREATE_AND_NEXT:TEST";
         
@@ -257,7 +254,7 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
         // @formatter:on
     }
     
-    protected Future<ResponseEntity<String>> createAndExecute(ProxiedUserDetails authUser, MultiValueMap<String,String> map) {
+    protected Future<ResponseEntity<String>> createAndExecute(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
         UriComponents uri = createUri("EventQuery/createAndExecute");
         
         // not testing audit with this method
@@ -270,7 +267,7 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, String.class));
     }
     
-    protected Future<ResponseEntity<String>> execute(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<String>> execute(DatawaveUserDetails authUser, String queryId) {
         UriComponents uri = createUri(queryId + "/execute");
         
         MultiValueMap<String,String> headers = new LinkedMultiValueMap<>();

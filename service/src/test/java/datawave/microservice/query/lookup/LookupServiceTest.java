@@ -4,7 +4,7 @@ import com.google.common.collect.Iterables;
 import datawave.core.query.logic.QueryKey;
 import datawave.marking.ColumnVisibilitySecurityMarking;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.AbstractQueryServiceTest;
 import datawave.microservice.query.DefaultQueryParameters;
 import datawave.microservice.query.messaging.QueryResultsPublisher;
@@ -17,9 +17,7 @@ import datawave.webservice.query.result.event.Metadata;
 import datawave.webservice.result.BaseQueryResponse;
 import datawave.webservice.result.DefaultEventQueryResponse;
 import datawave.webservice.result.VoidResponse;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +58,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testLookupUUIDSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         
         String uuidType = "PAGE_TITLE";
@@ -153,7 +151,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupUUIDSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy");
@@ -247,7 +245,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testLookupContentUUIDSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         
         String uuidType = "PAGE_TITLE";
@@ -389,7 +387,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupContentUUIDSuccess() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy");
@@ -543,7 +541,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupUUIDFailure_noLookupUUIDPairs() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         
@@ -569,7 +567,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupUUIDFailure_mixedQueryLogics() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy");
@@ -597,7 +595,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupUUIDFailure_nullUUIDType() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE:anarchy");
@@ -624,7 +622,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupUUIDFailure_emptyUUIDFieldValue() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         uuidParams.add(LOOKUP_UUID_PAIRS, ":anarchy");
@@ -651,7 +649,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupUUIDFailure_invalidUUIDPair() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         uuidParams.add(LOOKUP_UUID_PAIRS, ":");
@@ -678,7 +676,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupUUIDFailure_tooManyTerms() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         
@@ -708,7 +706,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
     
     @Test
     public void testBatchLookupUUIDFailure_nonLookupQueryLogic() throws Exception {
-        ProxiedUserDetails authUser = createUserDetails();
+        DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_NUMBER:accessiblecomputing");
@@ -742,7 +740,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         return map;
     }
     
-    protected Future<ResponseEntity<BaseQueryResponse>> batchLookupUUID(ProxiedUserDetails authUser, MultiValueMap<String,String> map) {
+    protected Future<ResponseEntity<BaseQueryResponse>> batchLookupUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
         UriComponents uri = createUri("lookupUUID");
         
         // not testing audit with this method
@@ -752,7 +750,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseQueryResponse.class));
     }
     
-    protected Future<ResponseEntity<BaseQueryResponse>> lookupUUID(ProxiedUserDetails authUser, MultiValueMap<String,String> map, String uuidType,
+    protected Future<ResponseEntity<BaseQueryResponse>> lookupUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map, String uuidType,
                     String uuid) {
         UriComponents uri = createUri("lookupUUID/" + uuidType + "/" + uuid);
         
@@ -763,7 +761,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseQueryResponse.class));
     }
     
-    protected Future<ResponseEntity<BaseQueryResponse>> batchLookupContentUUID(ProxiedUserDetails authUser, MultiValueMap<String,String> map) {
+    protected Future<ResponseEntity<BaseQueryResponse>> batchLookupContentUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
         UriComponents uri = createUri("lookupContentUUID");
         
         // not testing audit with this method
@@ -773,7 +771,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseQueryResponse.class));
     }
     
-    protected Future<ResponseEntity<BaseQueryResponse>> lookupContentUUID(ProxiedUserDetails authUser, MultiValueMap<String,String> map, String uuidType,
+    protected Future<ResponseEntity<BaseQueryResponse>> lookupContentUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map, String uuidType,
                     String uuid) {
         UriComponents uri = createUri("lookupContentUUID/" + uuidType + "/" + uuid);
         

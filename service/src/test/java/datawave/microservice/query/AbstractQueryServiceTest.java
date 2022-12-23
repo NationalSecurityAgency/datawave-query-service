@@ -6,7 +6,7 @@ import com.hazelcast.core.HazelcastInstance;
 import datawave.marking.ColumnVisibilitySecurityMarking;
 import datawave.microservice.audit.AuditClient;
 import datawave.microservice.authorization.jwt.JWTRestTemplate;
-import datawave.microservice.authorization.user.ProxiedUserDetails;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.messaging.QueryResultsManager;
 import datawave.microservice.query.messaging.QueryResultsPublisher;
@@ -169,15 +169,15 @@ public abstract class AbstractQueryServiceTest {
         }
     }
     
-    protected String createQuery(ProxiedUserDetails authUser, MultiValueMap<String,String> map) {
+    protected String createQuery(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
         return newQuery(authUser, map, "create");
     }
     
-    protected String defineQuery(ProxiedUserDetails authUser, MultiValueMap<String,String> map) {
+    protected String defineQuery(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
         return newQuery(authUser, map, "define");
     }
     
-    protected String newQuery(ProxiedUserDetails authUser, MultiValueMap<String,String> map, String createOrDefine) {
+    protected String newQuery(DatawaveUserDetails authUser, MultiValueMap<String,String> map, String createOrDefine) {
         UriComponents uri = createUri("EventQuery/" + createOrDefine);
         
         // not testing audit with this method
@@ -189,7 +189,7 @@ public abstract class AbstractQueryServiceTest {
         return (String) resp.getBody().getResult();
     }
     
-    protected Future<ResponseEntity<BaseResponse>> nextQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<BaseResponse>> nextQuery(DatawaveUserDetails authUser, String queryId) {
         UriComponents uri = createUri(queryId + "/next");
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.GET, uri);
         
@@ -197,23 +197,23 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseResponse.class));
     }
     
-    protected Future<ResponseEntity<VoidResponse>> adminCloseQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<VoidResponse>> adminCloseQuery(DatawaveUserDetails authUser, String queryId) {
         return stopQuery(authUser, queryId, "adminClose");
     }
     
-    protected Future<ResponseEntity<VoidResponse>> closeQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<VoidResponse>> closeQuery(DatawaveUserDetails authUser, String queryId) {
         return stopQuery(authUser, queryId, "close");
     }
     
-    protected Future<ResponseEntity<VoidResponse>> adminCancelQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<VoidResponse>> adminCancelQuery(DatawaveUserDetails authUser, String queryId) {
         return stopQuery(authUser, queryId, "adminCancel");
     }
     
-    protected Future<ResponseEntity<VoidResponse>> cancelQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<VoidResponse>> cancelQuery(DatawaveUserDetails authUser, String queryId) {
         return stopQuery(authUser, queryId, "cancel");
     }
     
-    protected Future<ResponseEntity<VoidResponse>> stopQuery(ProxiedUserDetails authUser, String queryId, String closeOrCancel) {
+    protected Future<ResponseEntity<VoidResponse>> stopQuery(DatawaveUserDetails authUser, String queryId, String closeOrCancel) {
         UriComponents uri = createUri(queryId + "/" + closeOrCancel);
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.PUT, uri);
         
@@ -221,7 +221,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, VoidResponse.class));
     }
     
-    protected Future<ResponseEntity<VoidResponse>> adminCloseAllQueries(ProxiedUserDetails authUser) {
+    protected Future<ResponseEntity<VoidResponse>> adminCloseAllQueries(DatawaveUserDetails authUser) {
         UriComponents uri = createUri("/adminCloseAll");
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.PUT, uri);
         
@@ -229,7 +229,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, VoidResponse.class));
     }
     
-    protected Future<ResponseEntity<VoidResponse>> adminCancelAllQueries(ProxiedUserDetails authUser) {
+    protected Future<ResponseEntity<VoidResponse>> adminCancelAllQueries(DatawaveUserDetails authUser) {
         UriComponents uri = createUri("/adminCancelAll");
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.PUT, uri);
         
@@ -237,7 +237,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, VoidResponse.class));
     }
     
-    protected Future<ResponseEntity<GenericResponse>> resetQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<GenericResponse>> resetQuery(DatawaveUserDetails authUser, String queryId) {
         UriComponents uri = createUri(queryId + "/reset");
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.PUT, uri);
         
@@ -245,7 +245,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
     }
     
-    protected Future<ResponseEntity<VoidResponse>> removeQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<VoidResponse>> removeQuery(DatawaveUserDetails authUser, String queryId) {
         UriComponents uri = createUri(queryId + "/remove");
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.DELETE, uri);
         
@@ -253,7 +253,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, VoidResponse.class));
     }
     
-    protected Future<ResponseEntity<VoidResponse>> adminRemoveQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<VoidResponse>> adminRemoveQuery(DatawaveUserDetails authUser, String queryId) {
         UriComponents uri = createUri(queryId + "/adminRemove");
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.DELETE, uri);
         
@@ -261,7 +261,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, VoidResponse.class));
     }
     
-    protected Future<ResponseEntity<VoidResponse>> adminRemoveAllQueries(ProxiedUserDetails authUser) {
+    protected Future<ResponseEntity<VoidResponse>> adminRemoveAllQueries(DatawaveUserDetails authUser) {
         UriComponents uri = createUri("/adminRemoveAll");
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.DELETE, uri);
         
@@ -269,7 +269,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, VoidResponse.class));
     }
     
-    protected Future<ResponseEntity<GenericResponse>> updateQuery(ProxiedUserDetails authUser, String queryId, MultiValueMap<String,String> map) {
+    protected Future<ResponseEntity<GenericResponse>> updateQuery(DatawaveUserDetails authUser, String queryId, MultiValueMap<String,String> map) {
         UriComponents uri = createUri(queryId + "/update");
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.PUT, uri);
@@ -278,7 +278,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
     }
     
-    protected Future<ResponseEntity<GenericResponse>> duplicateQuery(ProxiedUserDetails authUser, String queryId, MultiValueMap<String,String> map) {
+    protected Future<ResponseEntity<GenericResponse>> duplicateQuery(DatawaveUserDetails authUser, String queryId, MultiValueMap<String,String> map) {
         UriComponents uri = createUri(queryId + "/duplicate");
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
@@ -287,7 +287,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
     }
     
-    protected Future<ResponseEntity<QueryImplListResponse>> listQueries(ProxiedUserDetails authUser, String queryId, String queryName) {
+    protected Future<ResponseEntity<QueryImplListResponse>> listQueries(DatawaveUserDetails authUser, String queryId, String queryName) {
         UriComponentsBuilder uriBuilder = uriBuilder("/list");
         if (queryId != null) {
             uriBuilder.queryParam("queryId", queryId);
@@ -303,7 +303,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, QueryImplListResponse.class));
     }
     
-    protected Future<ResponseEntity<QueryImplListResponse>> getQuery(ProxiedUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<QueryImplListResponse>> getQuery(DatawaveUserDetails authUser, String queryId) {
         UriComponents uri = createUri(queryId);
         
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.GET, uri);
@@ -312,7 +312,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, QueryImplListResponse.class));
     }
     
-    protected Future<ResponseEntity<QueryLogicResponse>> listQueryLogic(ProxiedUserDetails authUser) {
+    protected Future<ResponseEntity<QueryLogicResponse>> listQueryLogic(DatawaveUserDetails authUser) {
         UriComponents uri = createUri("/listQueryLogic");
         
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.GET, uri);
@@ -321,7 +321,7 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, QueryLogicResponse.class));
     }
     
-    protected Future<ResponseEntity<QueryImplListResponse>> adminListQueries(ProxiedUserDetails authUser, String queryId, String user, String queryName) {
+    protected Future<ResponseEntity<QueryImplListResponse>> adminListQueries(DatawaveUserDetails authUser, String queryId, String user, String queryName) {
         UriComponentsBuilder uriBuilder = uriBuilder("/adminList");
         if (queryId != null) {
             uriBuilder.queryParam("queryId", queryId);
@@ -340,26 +340,26 @@ public abstract class AbstractQueryServiceTest {
         return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, QueryImplListResponse.class));
     }
     
-    protected ProxiedUserDetails createUserDetails() {
+    protected DatawaveUserDetails createUserDetails() {
         return createUserDetails(null, null);
     }
     
-    protected ProxiedUserDetails createUserDetails(Collection<String> roles, Collection<String> auths) {
+    protected DatawaveUserDetails createUserDetails(Collection<String> roles, Collection<String> auths) {
         Collection<String> userRoles = roles != null ? roles : Collections.singleton("AuthorizedUser");
         Collection<String> userAuths = auths != null ? auths : Collections.singleton("ALL");
         DatawaveUser datawaveUser = new DatawaveUser(DN, USER, userAuths, userRoles, null, System.currentTimeMillis());
-        return new ProxiedUserDetails(Collections.singleton(datawaveUser), datawaveUser.getCreationTime());
+        return new DatawaveUserDetails(Collections.singleton(datawaveUser), datawaveUser.getCreationTime());
     }
     
-    protected ProxiedUserDetails createAltUserDetails() {
+    protected DatawaveUserDetails createAltUserDetails() {
         return createAltUserDetails(null, null);
     }
     
-    protected ProxiedUserDetails createAltUserDetails(Collection<String> roles, Collection<String> auths) {
+    protected DatawaveUserDetails createAltUserDetails(Collection<String> roles, Collection<String> auths) {
         Collection<String> userRoles = roles != null ? roles : Collections.singleton("AuthorizedUser");
         Collection<String> userAuths = auths != null ? auths : Collections.singleton("ALL");
         DatawaveUser datawaveUser = new DatawaveUser(altDN, USER, userAuths, userRoles, null, System.currentTimeMillis());
-        return new ProxiedUserDetails(Collections.singleton(datawaveUser), datawaveUser.getCreationTime());
+        return new DatawaveUserDetails(Collections.singleton(datawaveUser), datawaveUser.getCreationTime());
     }
     
     protected UriComponentsBuilder uriBuilder(String path) {
