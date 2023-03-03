@@ -3,6 +3,8 @@
 
 datawave:
   query:
+    cachedResults:
+      enabled: false
     awaitExecutorCreateResponse: false
     nextCall:
       resultPollInterval: 500

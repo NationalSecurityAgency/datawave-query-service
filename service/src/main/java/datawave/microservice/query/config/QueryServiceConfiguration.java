@@ -16,7 +16,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.context.annotation.RequestScope;
 
 @Configuration
-public class QueryServiceConfig {
+public class QueryServiceConfiguration {
     
     @Bean
     @ConditionalOnMissingBean

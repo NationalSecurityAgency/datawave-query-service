@@ -20,7 +20,7 @@ import java.util.function.Function;
 
 @EnableCaching
 @EnableScheduling
-@Configuration
+@Configuration("QueryMonitorConfig")
 @ConditionalOnProperty(name = "datawave.query.monitor.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(MonitorProperties.class)
 public class MonitorConfig {
