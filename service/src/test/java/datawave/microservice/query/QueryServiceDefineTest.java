@@ -160,8 +160,8 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         QueryExceptionType queryException = baseResponse.getExceptions().get(0);
         // @formatter:off
         assertQueryException(
-                "User requested authorizations that they don't have. Missing: [ALL], Requested: [ALL], User: []",
                 "java.lang.IllegalArgumentException: User requested authorizations that they don't have. Missing: [ALL], Requested: [ALL], User: []",
+                "datawave.security.authorization.AuthorizationException: java.lang.IllegalArgumentException: User requested authorizations that they don't have. Missing: [ALL], Requested: [ALL], User: []",
                 "400-1",
                 queryException);
         // @formatter:on

@@ -220,7 +220,7 @@ public class MapReduceQueryManagementService implements MapReduceQueryRequestHan
         
         // create the audit parameters from the query definition
         MultiValueMap<String,String> auditParameters = new LinkedMultiValueMap<>(parameters);
-        auditParameters.addAll(queryStatus.getQuery().toMap());
+        auditParameters.addAll(new LinkedMultiValueMap<>(queryStatus.getQuery().toMap()));
         
         // validate the query and get the query logic
         QueryLogic<?> queryLogic = queryManagementService.validateQuery(queryStatus.getQuery().getQueryLogicName(), auditParameters, currentUser);

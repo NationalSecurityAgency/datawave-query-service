@@ -23,6 +23,8 @@ import datawave.microservice.query.util.QueryUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
+import datawave.security.authorization.DatawavePrincipal;
+import datawave.security.authorization.UserOperations;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.common.audit.AuditParameters;
 import datawave.webservice.common.audit.Auditor;
@@ -48,6 +50,7 @@ import org.apache.accumulo.core.security.Authorizations;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.bus.BusProperties;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -106,6 +109,7 @@ public class QueryManagementService implements QueryRequestHandler {
     private final BaseQueryMetric baseQueryMetric;
     
     private final QueryLogicFactory queryLogicFactory;
+    private final UserOperations userOperations;
     private final QueryMetricClient queryMetricClient;
     private final ResponseObjectFactory responseObjectFactory;
     private final QueryStorageCache queryStorageCache;
@@ -129,8 +133,9 @@ public class QueryManagementService implements QueryRequestHandler {
     
     public QueryManagementService(QueryProperties queryProperties, ApplicationEventPublisher eventPublisher, BusProperties busProperties,
                     QueryParameters queryParameters, SecurityMarking securityMarking, BaseQueryMetric baseQueryMetric, QueryLogicFactory queryLogicFactory,
-                    QueryMetricClient queryMetricClient, ResponseObjectFactory responseObjectFactory, QueryStorageCache queryStorageCache,
-                    QueryResultsManager queryResultsManager, AuditClient auditClient, ThreadPoolTaskExecutor nextCallExecutor) {
+                    @Autowired(required = false) UserOperations userOperations, QueryMetricClient queryMetricClient,
+                    ResponseObjectFactory responseObjectFactory, QueryStorageCache queryStorageCache, QueryResultsManager queryResultsManager,
+                    AuditClient auditClient, ThreadPoolTaskExecutor nextCallExecutor) {
         this.queryProperties = queryProperties;
         this.eventPublisher = eventPublisher;
         this.busProperties = busProperties;
@@ -138,6 +143,7 @@ public class QueryManagementService implements QueryRequestHandler {
         this.securityMarking = securityMarking;
         this.baseQueryMetric = baseQueryMetric;
         this.queryLogicFactory = queryLogicFactory;
+        this.userOperations = userOperations;
         this.queryMetricClient = queryMetricClient;
         this.responseObjectFactory = responseObjectFactory;
         this.queryStorageCache = queryStorageCache;
@@ -512,7 +518,12 @@ public class QueryManagementService implements QueryRequestHandler {
         QueryParameters queryParameters = getQueryParameters();
         Set<Authorizations> downgradedAuthorizations;
         try {
-            downgradedAuthorizations = AuthorizationsUtil.getDowngradedAuthorizations(queryParameters.getAuths(), currentUser);
+            // the query principal is our local principal unless the query logic has a different user operations
+            DatawaveUserDetails queryUserDetails = (DatawaveUserDetails) ((queryLogic.getUserOperations() == null) ? currentUser
+                            : queryLogic.getUserOperations().getRemoteUser(currentUser));
+            // the overall principal (the one with combined auths across remote user operations) is our own user operations (probably the UserOperationsBean)
+            DatawaveUserDetails overallUserDetails = (DatawaveUserDetails) ((userOperations == null) ? currentUser : userOperations.getRemoteUser(currentUser));
+            downgradedAuthorizations = AuthorizationsUtil.getDowngradedAuthorizations(queryParameters.getAuths(), overallUserDetails, queryUserDetails);
         } catch (Exception e) {
             throw new BadRequestQueryException("Unable to downgrade authorizations", e, HttpStatus.SC_BAD_REQUEST + "-1");
         }
@@ -1578,8 +1589,7 @@ public class QueryManagementService implements QueryRequestHandler {
             GenericResponse<String> response = new GenericResponse<>();
             if (!parameters.isEmpty()) {
                 // recreate the query parameters
-                MultiValueMap<String,String> currentParams = new LinkedMultiValueMap<>();
-                currentParams.addAll(queryStatus.getQuery().toMap());
+                MultiValueMap<String,String> currentParams = new LinkedMultiValueMap<>(queryStatus.getQuery().toMap());
                 
                 // remove some of the copied params
                 currentParams.remove(QUERY_ID);
@@ -1746,8 +1756,7 @@ public class QueryManagementService implements QueryRequestHandler {
      */
     private TaskKey duplicate(QueryStatus queryStatus, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
         // recreate the query parameters
-        MultiValueMap<String,String> currentParams = new LinkedMultiValueMap<>();
-        currentParams.addAll(queryStatus.getQuery().toMap());
+        MultiValueMap<String,String> currentParams = new LinkedMultiValueMap<>(queryStatus.getQuery().toMap());
         
         // remove some of the copied params
         currentParams.remove(QUERY_ID);

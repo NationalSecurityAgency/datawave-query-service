@@ -12,6 +12,7 @@ import datawave.microservice.query.QueryParameters;
 import datawave.microservice.query.stream.StreamingService;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
 import datawave.query.data.UUIDType;
+import datawave.security.authorization.AuthorizationException;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.query.exception.BadRequestQueryException;
 import datawave.webservice.query.exception.DatawaveErrorCode;
@@ -289,7 +290,8 @@ public class LookupService {
         }
     }
     
-    private <T> T lookup(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
+    private <T> T lookup(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener)
+                    throws QueryException, AuthorizationException {
         List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
         if (lookupTerms == null || lookupTerms.isEmpty()) {
             log.error("Unable to validate lookupUUID parameters: No UUID Pairs");
@@ -306,12 +308,12 @@ public class LookupService {
     }
     
     private BaseQueryResponse lookupEvents(MultiValueMap<String,String> lookupTermMap, LookupQueryLogic<?> lookupQueryLogic,
-                    MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
+                    MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException, AuthorizationException {
         return lookupEvents(lookupTermMap, lookupQueryLogic, parameters, currentUser, null);
     }
     
     private <T> T lookupEvents(MultiValueMap<String,String> lookupTermMap, LookupQueryLogic<?> lookupQueryLogic, MultiValueMap<String,String> parameters,
-                    DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
+                    DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException, AuthorizationException {
         String queryId = null;
         try {
             // add the query logic name and query string to our parameters
@@ -421,14 +423,15 @@ public class LookupService {
     }
     
     @SuppressWarnings("ConstantConditions")
-    protected void setupEventQueryParameters(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) {
+    protected void setupEventQueryParameters(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws AuthorizationException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         final String queryName = user + "-" + UUID.randomUUID().toString();
         
         // Override the extraneous query details
         String userAuths;
         if (parameters.containsKey(QUERY_AUTHORIZATIONS)) {
-            userAuths = AuthorizationsUtil.downgradeUserAuths(currentUser, parameters.getFirst(QUERY_AUTHORIZATIONS));
+            // TODO: JWO: We will probably need to update this to take the query logic's remote user operations into consideration...
+            userAuths = AuthorizationsUtil.downgradeUserAuths(parameters.getFirst(QUERY_AUTHORIZATIONS), currentUser, currentUser);
         } else {
             userAuths = AuthorizationsUtil.buildUserAuthorizationString(currentUser);
         }
@@ -456,7 +459,7 @@ public class LookupService {
     }
     
     private <T> T lookupContent(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener)
-                    throws QueryException {
+                    throws QueryException, AuthorizationException {
         List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
         if (lookupTerms == null || lookupTerms.isEmpty()) {
             log.error("Unable to validate lookupContentUUID parameters: No UUID Pairs");

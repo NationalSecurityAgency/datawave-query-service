@@ -19,9 +19,9 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.query.QueryService</start-class>
-        <version.hadoop>3.3.3</version.hadoop>
+        <version.hadoop>3.3.4</version.hadoop>
         <version.microservice.query-api>1.0-SNAPSHOT</version.microservice.query-api>
-        <version.microservice.starter-audit>1.4-SNAPSHOT</version.microservice.starter-audit>
+        <version.microservice.starter-audit>3.0-SNAPSHOT</version.microservice.starter-audit>
         <version.microservice.starter-cached-results>1.0-SNAPSHOT</version.microservice.starter-cached-results>
         <version.microservice.starter-query>1.0-SNAPSHOT</version.microservice.starter-query>
     </properties>
