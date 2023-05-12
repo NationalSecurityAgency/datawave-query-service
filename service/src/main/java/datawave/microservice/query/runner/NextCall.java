@@ -99,7 +99,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         
         this.maxResultsPerPage = Math.min(userResultsPerPage, logicResultsPerPage);
         
-        this.maxResults = builder.queryLogic.getResultLimit(status.getQuery().getDnList());
+        this.maxResults = builder.queryLogic.getResultLimit(status.getQuery());
         if (this.maxResults != builder.queryLogic.getMaxResults()) {
             log.info("Maximum results set to " + this.maxResults + " instead of default " + builder.queryLogic.getMaxResults() + ", user "
                             + status.getQuery().getUserDN() + " has a DN configured with a different limit");
