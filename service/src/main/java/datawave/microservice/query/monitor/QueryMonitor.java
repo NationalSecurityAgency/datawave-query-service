@@ -65,7 +65,7 @@ public class QueryMonitor {
         }
         
         // schedule a new monitor task if the previous one has finished/expired
-        if (taskFuture != null && isMonitorIntervalExpired()) {
+        if (taskFuture == null && isMonitorIntervalExpired()) {
             taskStartTime = System.currentTimeMillis();
             // @formatter:off
             taskFuture = executor.submit(

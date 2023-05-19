@@ -75,7 +75,6 @@ public class MonitorTask implements Callable<Void> {
                 }
                 // delete the results queue if it exists
                 else {
-                    // TODO: add in a check to see if the queue exists first
                     queryQueueManager.deleteQuery(queryId);
                 }
             }

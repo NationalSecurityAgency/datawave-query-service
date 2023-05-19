@@ -1,6 +1,8 @@
 package datawave.microservice.query.monitor.cache;
 
-public class MonitorStatus {
+import java.io.Serializable;
+
+public class MonitorStatus implements Serializable {
     private long lastCheckedMillis;
     
     public long getLastCheckedMillis() {

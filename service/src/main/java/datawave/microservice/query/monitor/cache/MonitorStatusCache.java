@@ -24,7 +24,19 @@ public class MonitorStatusCache {
      * @return the stored monitor status
      */
     public MonitorStatus getStatus() {
-        return cacheInspector.list(CACHE_NAME, MonitorStatus.class, CACHE_KEY);
+        MonitorStatus status = cacheInspector.list(CACHE_NAME, MonitorStatus.class, CACHE_KEY);
+        if (status == null) {
+            lock();
+            try {
+                status = cacheInspector.list(CACHE_NAME, MonitorStatus.class, CACHE_KEY);
+                if (status == null) {
+                    status = setStatus(new MonitorStatus());
+                }
+            } finally {
+                unlock();
+            }
+        }
+        return status;
     }
     
     /**
@@ -34,7 +46,7 @@ public class MonitorStatusCache {
      *            The monitor status to store
      * @return the stored monitor status
      */
-    @CachePut(key = CACHE_KEY)
+    @CachePut(key = "'" + CACHE_KEY + "'")
     public MonitorStatus setStatus(MonitorStatus monitorStatus) {
         return monitorStatus;
     }
@@ -42,7 +54,7 @@ public class MonitorStatusCache {
     /**
      * Deletes the query monitor status
      */
-    @CacheEvict(key = CACHE_KEY)
+    @CacheEvict(key = "'" + CACHE_KEY + "'")
     public void deleteStatus() {
         
     }
