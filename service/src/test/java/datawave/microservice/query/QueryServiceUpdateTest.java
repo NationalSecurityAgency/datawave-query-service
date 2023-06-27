@@ -1,12 +1,18 @@
 package datawave.microservice.query;
 
-import com.google.common.collect.Iterables;
-import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.query.remote.QueryRequest;
-import datawave.microservice.query.storage.QueryStatus;
-import datawave.webservice.result.GenericResponse;
-import datawave.webservice.result.VoidResponse;
+import static datawave.microservice.query.QueryParameters.QUERY_LOGIC_NAME;
+import static datawave.webservice.common.audit.AuditParameters.QUERY_AUTHORIZATIONS;
+import static datawave.webservice.common.audit.AuditParameters.QUERY_STRING;
+import static datawave.webservice.query.QueryImpl.BEGIN_DATE;
+import static datawave.webservice.query.QueryImpl.END_DATE;
+import static datawave.webservice.query.QueryImpl.PAGESIZE;
+import static datawave.webservice.query.QueryImpl.QUERY;
+
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,18 +26,14 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import com.google.common.collect.Iterables;
 
-import static datawave.microservice.query.QueryParameters.QUERY_LOGIC_NAME;
-import static datawave.webservice.common.audit.AuditParameters.QUERY_AUTHORIZATIONS;
-import static datawave.webservice.common.audit.AuditParameters.QUERY_STRING;
-import static datawave.webservice.query.QueryImpl.BEGIN_DATE;
-import static datawave.webservice.query.QueryImpl.END_DATE;
-import static datawave.webservice.query.QueryImpl.PAGESIZE;
-import static datawave.webservice.query.QueryImpl.QUERY;
+import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.query.remote.QueryRequest;
+import datawave.microservice.query.storage.QueryStatus;
+import datawave.webservice.result.GenericResponse;
+import datawave.webservice.result.VoidResponse;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

@@ -1,5 +1,17 @@
 package datawave.microservice.query.runner;
 
+import static datawave.microservice.query.messaging.AcknowledgementCallback.Status.ACK;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import datawave.core.query.cache.ResultsPage;
 import datawave.core.query.logic.QueryLogic;
 import datawave.microservice.query.config.NextCallProperties;
@@ -16,17 +28,6 @@ import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetric;
 import datawave.webservice.query.data.ObjectSizeOf;
 import datawave.webservice.query.exception.QueryException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import static datawave.microservice.query.messaging.AcknowledgementCallback.Status.ACK;
 
 public class NextCall implements Callable<ResultsPage<Object>> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());

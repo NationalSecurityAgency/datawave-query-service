@@ -1,11 +1,12 @@
 package datawave.microservice.query;
 
-import datawave.validation.ParameterValidator;
-import org.springframework.util.MultiValueMap;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.util.MultiValueMap;
+
+import datawave.validation.ParameterValidator;
 
 /**
  * QueryParameters passed in from a client, they are validated and passed through to the iterator stack as QueryOptions.

@@ -1,7 +1,52 @@
 package datawave.microservice.query;
 
+import static datawave.microservice.query.QueryParameters.QUERY_LOGIC_NAME;
+import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.CANCEL;
+import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.CLOSE;
+import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.CREATE;
+import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.DEFINE;
+import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.FAIL;
+import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.PLAN;
+import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.PREDICT;
+import static datawave.webservice.query.QueryImpl.DN_LIST;
+import static datawave.webservice.query.QueryImpl.QUERY_ID;
+import static datawave.webservice.query.QueryImpl.USER_DN;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import org.apache.accumulo.core.security.Authorizations;
+import org.apache.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.bus.BusProperties;
+import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.task.TaskRejectedException;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import datawave.core.common.audit.PrivateAuditConstants;
 import datawave.core.query.cache.ResultsPage;
 import datawave.core.query.logic.QueryLogic;
@@ -46,49 +91,6 @@ import datawave.webservice.result.GenericResponse;
 import datawave.webservice.result.QueryImplListResponse;
 import datawave.webservice.result.QueryLogicResponse;
 import datawave.webservice.result.VoidResponse;
-import org.apache.accumulo.core.security.Authorizations;
-import org.apache.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.bus.BusProperties;
-import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.core.task.TaskRejectedException;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static datawave.microservice.query.QueryParameters.QUERY_LOGIC_NAME;
-import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.CANCEL;
-import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.CLOSE;
-import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.CREATE;
-import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.DEFINE;
-import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.FAIL;
-import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.PLAN;
-import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.PREDICT;
-import static datawave.webservice.query.QueryImpl.DN_LIST;
-import static datawave.webservice.query.QueryImpl.QUERY_ID;
-import static datawave.webservice.query.QueryImpl.USER_DN;
 
 @Service
 public class QueryManagementService implements QueryRequestHandler {

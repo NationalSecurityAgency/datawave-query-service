@@ -1,5 +1,11 @@
 package datawave.microservice.query.monitor;
 
+import java.io.IOException;
+import java.util.concurrent.Callable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import datawave.microservice.query.QueryManagementService;
 import datawave.microservice.query.config.QueryExpirationProperties;
 import datawave.microservice.query.messaging.QueryResultsManager;
@@ -9,11 +15,6 @@ import datawave.microservice.query.monitor.config.MonitorProperties;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.webservice.query.exception.QueryException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.concurrent.Callable;
 
 public class MonitorTask implements Callable<Void> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());

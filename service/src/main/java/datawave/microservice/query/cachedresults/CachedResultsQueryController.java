@@ -1,6 +1,23 @@
 package datawave.microservice.query.cachedresults;
 
+import static datawave.core.query.cachedresults.CachedResultsQueryParameters.CONDITIONS;
+import static datawave.core.query.cachedresults.CachedResultsQueryParameters.FIELDS;
+import static datawave.core.query.cachedresults.CachedResultsQueryParameters.GROUPING;
+import static datawave.core.query.cachedresults.CachedResultsQueryParameters.ORDER;
+
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.codahale.metrics.annotation.Timed;
+
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.webservice.query.exception.QueryException;
 import datawave.webservice.result.BaseQueryResponse;
@@ -17,21 +34,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.MediaType;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import static datawave.core.query.cachedresults.CachedResultsQueryParameters.CONDITIONS;
-import static datawave.core.query.cachedresults.CachedResultsQueryParameters.FIELDS;
-import static datawave.core.query.cachedresults.CachedResultsQueryParameters.GROUPING;
-import static datawave.core.query.cachedresults.CachedResultsQueryParameters.ORDER;
 
 @Tag(name = "Cached Results Query Controller /v1", description = "DataWave Cached Results Query Management",
                 externalDocs = @ExternalDocumentation(description = "Cached Results Query Documentation",

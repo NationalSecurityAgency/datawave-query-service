@@ -1,5 +1,12 @@
 package datawave.microservice.query.stream.runner;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Callable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.QueryManagementService;
 import datawave.microservice.query.stream.listener.CountingResponseBodyEmitterListener;
@@ -11,12 +18,6 @@ import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.NoResultsQueryException;
 import datawave.webservice.query.exception.QueryException;
 import datawave.webservice.result.BaseQueryResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.Callable;
 
 public class StreamingCall implements Callable<Void> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());

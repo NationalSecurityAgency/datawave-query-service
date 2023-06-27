@@ -1,8 +1,8 @@
 package datawave.microservice.query.stream.listener;
 
-import datawave.webservice.result.BaseQueryResponse;
-
 import java.io.IOException;
+
+import datawave.webservice.result.BaseQueryResponse;
 
 public interface StreamingResponseListener {
     

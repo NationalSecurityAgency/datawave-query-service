@@ -1,5 +1,11 @@
 package datawave.microservice.query.stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
+
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.QueryManagementService;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
@@ -10,11 +16,6 @@ import datawave.webservice.query.exception.BadRequestQueryException;
 import datawave.webservice.query.exception.NoResultsQueryException;
 import datawave.webservice.query.exception.QueryException;
 import datawave.webservice.query.exception.UnauthorizedQueryException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 
 @Service
 public class StreamingService {

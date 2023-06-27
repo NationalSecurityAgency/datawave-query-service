@@ -1,17 +1,18 @@
 package datawave.microservice.query.stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
-import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.query.AbstractQueryServiceTest;
-import datawave.microservice.query.DefaultQueryParameters;
-import datawave.microservice.query.remote.QueryRequest;
-import datawave.microservice.query.storage.QueryStatus;
-import datawave.webservice.query.result.event.DefaultEvent;
-import datawave.webservice.result.DefaultEventQueryResponse;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,17 +28,19 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
+
+import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.query.AbstractQueryServiceTest;
+import datawave.microservice.query.DefaultQueryParameters;
+import datawave.microservice.query.remote.QueryRequest;
+import datawave.microservice.query.storage.QueryStatus;
+import datawave.webservice.query.result.event.DefaultEvent;
+import datawave.webservice.result.DefaultEventQueryResponse;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

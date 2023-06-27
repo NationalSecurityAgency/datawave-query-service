@@ -1,6 +1,44 @@
 package datawave.microservice.query;
 
+import static datawave.core.query.logic.lookup.LookupQueryLogic.LOOKUP_KEY_VALUE_DELIMITER;
+import static datawave.microservice.query.QueryParameters.QUERY_AUTHORIZATIONS;
+import static datawave.microservice.query.QueryParameters.QUERY_BEGIN;
+import static datawave.microservice.query.QueryParameters.QUERY_END;
+import static datawave.microservice.query.QueryParameters.QUERY_MAX_CONCURRENT_TASKS;
+import static datawave.microservice.query.QueryParameters.QUERY_MAX_RESULTS_OVERRIDE;
+import static datawave.microservice.query.QueryParameters.QUERY_NAME;
+import static datawave.microservice.query.QueryParameters.QUERY_PAGESIZE;
+import static datawave.microservice.query.QueryParameters.QUERY_PAGETIMEOUT;
+import static datawave.microservice.query.QueryParameters.QUERY_PARAMS;
+import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_FIELDS;
+import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_VALUES;
+import static datawave.microservice.query.QueryParameters.QUERY_POOL;
+import static datawave.microservice.query.QueryParameters.QUERY_STRING;
+import static datawave.microservice.query.QueryParameters.QUERY_VISIBILITY;
+import static datawave.microservice.query.lookup.LookupService.LOOKUP_STREAMING;
+import static datawave.microservice.query.lookup.LookupService.LOOKUP_UUID_PAIRS;
+import static datawave.microservice.query.translateid.TranslateIdService.TRANSLATE_ID;
+import static datawave.query.QueryParameters.QUERY_SYNTAX;
+
+import java.util.List;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
+
 import com.codahale.metrics.annotation.Timed;
+
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.lookup.LookupService;
 import datawave.microservice.query.stream.StreamingProperties;
@@ -29,42 +67,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
-
-import java.util.List;
-
-import static datawave.core.query.logic.lookup.LookupQueryLogic.LOOKUP_KEY_VALUE_DELIMITER;
-import static datawave.microservice.query.QueryParameters.QUERY_AUTHORIZATIONS;
-import static datawave.microservice.query.QueryParameters.QUERY_BEGIN;
-import static datawave.microservice.query.QueryParameters.QUERY_END;
-import static datawave.microservice.query.QueryParameters.QUERY_MAX_CONCURRENT_TASKS;
-import static datawave.microservice.query.QueryParameters.QUERY_MAX_RESULTS_OVERRIDE;
-import static datawave.microservice.query.QueryParameters.QUERY_NAME;
-import static datawave.microservice.query.QueryParameters.QUERY_PAGESIZE;
-import static datawave.microservice.query.QueryParameters.QUERY_PAGETIMEOUT;
-import static datawave.microservice.query.QueryParameters.QUERY_PARAMS;
-import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_FIELDS;
-import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_VALUES;
-import static datawave.microservice.query.QueryParameters.QUERY_POOL;
-import static datawave.microservice.query.QueryParameters.QUERY_STRING;
-import static datawave.microservice.query.QueryParameters.QUERY_VISIBILITY;
-import static datawave.microservice.query.lookup.LookupService.LOOKUP_STREAMING;
-import static datawave.microservice.query.lookup.LookupService.LOOKUP_UUID_PAIRS;
-import static datawave.microservice.query.translateid.TranslateIdService.TRANSLATE_ID;
-import static datawave.query.QueryParameters.QUERY_SYNTAX;
 
 @Tag(name = "Query Controller /v1", description = "DataWave Query Management",
                 externalDocs = @ExternalDocumentation(description = "Query Service Documentation",

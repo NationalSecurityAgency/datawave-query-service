@@ -1,10 +1,11 @@
 package datawave.microservice.query.stream.listener;
 
-import datawave.microservice.query.web.filter.CountingResponseBodyEmitter;
-import datawave.webservice.result.BaseQueryResponse;
+import java.io.IOException;
+
 import org.springframework.http.MediaType;
 
-import java.io.IOException;
+import datawave.microservice.query.web.filter.CountingResponseBodyEmitter;
+import datawave.webservice.result.BaseQueryResponse;
 
 public class CountingResponseBodyEmitterListener implements StreamingResponseListener {
     private final CountingResponseBodyEmitter countingEmitter;

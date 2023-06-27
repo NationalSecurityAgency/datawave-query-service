@@ -1,10 +1,11 @@
 package datawave.microservice.query.config;
 
-import org.springframework.validation.annotation.Validated;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
-import java.util.concurrent.TimeUnit;
+
+import org.springframework.validation.annotation.Validated;
 
 @Validated
 public class QueryExpirationProperties {

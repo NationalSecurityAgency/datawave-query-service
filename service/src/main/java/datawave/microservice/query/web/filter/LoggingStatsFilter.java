@@ -1,11 +1,11 @@
 package datawave.microservice.query.web.filter;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
-
-import java.util.List;
-import java.util.Map;
 
 @Component
 public class LoggingStatsFilter extends BaseMethodStatsFilter {

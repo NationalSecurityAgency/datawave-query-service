@@ -1,17 +1,18 @@
 package datawave.microservice.query.cachedresults;
 
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.query.QueryManagementService;
-import datawave.webservice.query.exception.QueryException;
-import datawave.webservice.result.BaseQueryResponse;
-import datawave.webservice.result.GenericResponse;
-import datawave.webservice.result.VoidResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
+
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.query.QueryManagementService;
+import datawave.webservice.query.exception.QueryException;
+import datawave.webservice.result.BaseQueryResponse;
+import datawave.webservice.result.GenericResponse;
+import datawave.webservice.result.VoidResponse;
 
 @Primary
 @Service

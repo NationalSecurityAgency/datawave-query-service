@@ -1,12 +1,16 @@
 package datawave.microservice.query;
 
-import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.security.util.ProxiedEntityUtils;
-import datawave.webservice.query.Query;
-import datawave.webservice.query.result.logic.QueryLogicDescription;
-import datawave.webservice.result.QueryImplListResponse;
-import datawave.webservice.result.QueryLogicResponse;
+import static datawave.microservice.query.QueryParameters.QUERY_NAME;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,16 +24,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-
-import static datawave.microservice.query.QueryParameters.QUERY_NAME;
+import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.security.util.ProxiedEntityUtils;
+import datawave.webservice.query.Query;
+import datawave.webservice.query.result.logic.QueryLogicDescription;
+import datawave.webservice.result.QueryImplListResponse;
+import datawave.webservice.result.QueryLogicResponse;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

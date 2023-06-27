@@ -1,11 +1,12 @@
 package datawave.microservice.query.monitor.cache;
 
-import datawave.microservice.cached.LockableCacheInspector;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 
-import java.util.concurrent.TimeUnit;
+import datawave.microservice.cached.LockableCacheInspector;
 
 @CacheConfig(cacheNames = MonitorStatusCache.CACHE_NAME)
 public class MonitorStatusCache {

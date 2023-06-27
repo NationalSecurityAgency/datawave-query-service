@@ -1,7 +1,10 @@
 package datawave.microservice.query.web;
 
-import datawave.Constants;
-import datawave.microservice.query.web.annotation.GenerateQuerySessionId;
+import java.util.Arrays;
+import java.util.UUID;
+
+import javax.servlet.http.Cookie;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.core.MethodParameter;
@@ -15,9 +18,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import javax.servlet.http.Cookie;
-import java.util.Arrays;
-import java.util.UUID;
+import datawave.Constants;
+import datawave.microservice.query.web.annotation.GenerateQuerySessionId;
 
 @ControllerAdvice
 public class QuerySessionIdAdvice implements ResponseBodyAdvice<Object> {

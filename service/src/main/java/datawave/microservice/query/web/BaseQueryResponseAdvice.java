@@ -1,7 +1,5 @@
 package datawave.microservice.query.web;
 
-import datawave.Constants;
-import datawave.webservice.result.BaseQueryResponse;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
@@ -10,6 +8,9 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+
+import datawave.Constants;
+import datawave.webservice.result.BaseQueryResponse;
 
 /**
  * A {@link ControllerAdvice} that implements {@link ResponseBodyAdvice} in order to allow access to {@link BaseQueryResponse} objects before they are written

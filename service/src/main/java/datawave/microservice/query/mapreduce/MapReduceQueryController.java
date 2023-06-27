@@ -1,22 +1,17 @@
 package datawave.microservice.query.mapreduce;
 
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.query.mapreduce.config.MapReduceQueryProperties;
-import datawave.webservice.query.exception.QueryException;
-import datawave.webservice.result.GenericResponse;
-import datawave.webservice.result.VoidResponse;
-import datawave.webservice.results.mr.MapReduceInfoResponseList;
-import datawave.webservice.results.mr.MapReduceJobDescriptionList;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import static datawave.microservice.query.QueryParameters.QUERY_AUTHORIZATIONS;
+import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.FORMAT;
+import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.JOB_NAME;
+import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.OUTPUT_FORMAT;
+import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.OUTPUT_TABLE_NAME;
+import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.PARAMETERS;
+import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.QUERY_ID;
+import static datawave.microservice.query.mapreduce.jobs.OozieJob.WORKFLOW;
+
+import java.io.IOException;
+import java.util.Map;
+
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.io.IOUtils;
@@ -36,17 +31,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.IOException;
-import java.util.Map;
-
-import static datawave.microservice.query.QueryParameters.QUERY_AUTHORIZATIONS;
-import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.FORMAT;
-import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.JOB_NAME;
-import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.OUTPUT_FORMAT;
-import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.OUTPUT_TABLE_NAME;
-import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.PARAMETERS;
-import static datawave.microservice.query.mapreduce.config.MapReduceQueryProperties.QUERY_ID;
-import static datawave.microservice.query.mapreduce.jobs.OozieJob.WORKFLOW;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.query.mapreduce.config.MapReduceQueryProperties;
+import datawave.webservice.query.exception.QueryException;
+import datawave.webservice.result.GenericResponse;
+import datawave.webservice.result.VoidResponse;
+import datawave.webservice.results.mr.MapReduceInfoResponseList;
+import datawave.webservice.results.mr.MapReduceJobDescriptionList;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "MapReduce Query Controller /v1", description = "DataWave MapReduce Query Management",
                 externalDocs = @ExternalDocumentation(description = "MapReduce Query Service Documentation",

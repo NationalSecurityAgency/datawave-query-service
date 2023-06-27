@@ -1,14 +1,10 @@
 package datawave.microservice.query.web.filter;
 
-import datawave.core.query.logic.QueryLogicFactory;
-import datawave.microservice.query.storage.QueryStatus;
-import datawave.microservice.query.storage.QueryStorageCache;
-import datawave.microservice.query.web.annotation.EnrichQueryMetrics;
-import datawave.microservice.querymetric.BaseQueryMetric;
-import datawave.microservice.querymetric.QueryMetricClient;
-import datawave.microservice.querymetric.QueryMetricType;
-import datawave.webservice.result.BaseQueryResponse;
-import datawave.webservice.result.GenericResponse;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+
 import org.apache.log4j.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -23,10 +19,15 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import datawave.core.query.logic.QueryLogicFactory;
+import datawave.microservice.query.storage.QueryStatus;
+import datawave.microservice.query.storage.QueryStorageCache;
+import datawave.microservice.query.web.annotation.EnrichQueryMetrics;
+import datawave.microservice.querymetric.BaseQueryMetric;
+import datawave.microservice.querymetric.QueryMetricClient;
+import datawave.microservice.querymetric.QueryMetricType;
+import datawave.webservice.result.BaseQueryResponse;
+import datawave.webservice.result.GenericResponse;
 
 @ControllerAdvice
 public class QueryMetricsEnrichmentFilterAdvice extends BaseMethodStatsFilter implements ResponseBodyAdvice<Object> {

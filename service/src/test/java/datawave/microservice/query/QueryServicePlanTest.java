@@ -1,10 +1,11 @@
 package datawave.microservice.query;
 
-import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
-import datawave.microservice.authorization.user.DatawaveUserDetails;
-import datawave.microservice.query.remote.QueryRequest;
-import datawave.microservice.query.storage.QueryStatus;
-import datawave.webservice.result.GenericResponse;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,11 +22,11 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.query.remote.QueryRequest;
+import datawave.microservice.query.storage.QueryStatus;
+import datawave.webservice.result.GenericResponse;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
