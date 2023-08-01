@@ -32,6 +32,7 @@ public interface QueryParameters extends ParameterValidator {
     String QUERY_MAX_CONCURRENT_TASKS = "maxConcurrentTasks";
     String QUERY_PLAN_EXPAND_FIELDS = "expand.fields";
     String QUERY_PLAN_EXPAND_VALUES = "expand.values";
+    String QUERY_SYSTEM_FROM = "systemFrom";
     
     String getQuery();
     
@@ -86,6 +87,10 @@ public interface QueryParameters extends ParameterValidator {
     String getLogicName();
     
     void setLogicName(String logicName);
+    
+    String getSystemFrom();
+    
+    void setSystemFrom(String systemFrom);
     
     String getPool();
     

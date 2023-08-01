@@ -20,7 +20,7 @@ public class DefaultQueryParameters implements QueryParameters {
     
     private static final List<String> KNOWN_PARAMS = Arrays.asList(QUERY_STRING, QUERY_NAME, QUERY_PERSISTENCE, QUERY_PAGESIZE, QUERY_PAGETIMEOUT,
                     QUERY_AUTHORIZATIONS, QUERY_EXPIRATION, QUERY_TRACE, QUERY_BEGIN, QUERY_END, QUERY_VISIBILITY, QUERY_LOGIC_NAME, QUERY_POOL,
-                    QUERY_MAX_RESULTS_OVERRIDE, QUERY_MAX_CONCURRENT_TASKS);
+                    QUERY_MAX_RESULTS_OVERRIDE, QUERY_MAX_CONCURRENT_TASKS, QUERY_SYSTEM_FROM);
     
     protected String query;
     protected String queryName;
@@ -36,6 +36,7 @@ public class DefaultQueryParameters implements QueryParameters {
     protected Date endDate;
     protected String visibility;
     protected String logicName;
+    protected String systemFrom;
     protected String pool;
     protected boolean isMaxConcurrentTasksOverridden;
     protected int maxConcurrentTasks;
@@ -132,6 +133,8 @@ public class DefaultQueryParameters implements QueryParameters {
                 this.expandFields = Boolean.parseBoolean(values.get(0));
             } else if (QUERY_PLAN_EXPAND_VALUES.equals(param)) {
                 this.expandValues = Boolean.parseBoolean(values.get(0));
+            } else if (QUERY_SYSTEM_FROM.equals(param)) {
+                this.systemFrom = values.get(0);
             } else {
                 throw new IllegalArgumentException("Unknown condition.");
             }
@@ -200,6 +203,8 @@ public class DefaultQueryParameters implements QueryParameters {
             return false;
         if (requestHeaders != null ? !requestHeaders.equals(that.requestHeaders) : that.requestHeaders != null)
             return false;
+        if (systemFrom != null ? !systemFrom.equals(that.systemFrom) : that.systemFrom != null)
+            return false;
         return true;
     }
     
@@ -227,6 +232,7 @@ public class DefaultQueryParameters implements QueryParameters {
         result = 31 * result + (logicName != null ? logicName.hashCode() : 0);
         result = 31 * result + (pool != null ? pool.hashCode() : 0);
         result = 31 * result + (requestHeaders != null ? requestHeaders.hashCode() : 0);
+        result = 31 * result + (systemFrom != null ? systemFrom.hashCode() : 0);
         return result;
     }
     
@@ -295,7 +301,8 @@ public class DefaultQueryParameters implements QueryParameters {
      * The 'parameters' argument will not be parsed, so its internal elements will not be placed into the map. If non-null, the 'parameters' value will be
      * mapped directly to the QUERY_PARAMS key.
      *
-     * No attempt is made to determine whether or not the given arguments constitute a valid query. If validation is desired, see the {@link validate} method
+     * No attempt is made to determine whether or not the given arguments constitute a valid query. If validation is desired, see the {@link #validate(Map)}
+     * method
      *
      * @param queryLogicName
      *            - name of QueryLogic to use
@@ -321,6 +328,8 @@ public class DefaultQueryParameters implements QueryParameters {
      *            -
      * @param persistenceMode
      *            -
+     * @param systemFrom
+     *            -
      * @param parameters
      *            - additional parameters passed in as map
      * @param trace
@@ -331,7 +340,7 @@ public class DefaultQueryParameters implements QueryParameters {
      */
     public static Map<String,List<String>> paramsToMap(String queryLogicName, String query, String queryName, String queryVisibility, Date beginDate,
                     Date endDate, String queryAuthorizations, Date expirationDate, Integer pagesize, Integer pageTimeout, Long maxResultsOverride,
-                    QueryPersistence persistenceMode, String parameters, Boolean trace) throws ParseException {
+                    QueryPersistence persistenceMode, String systemFrom, String parameters, Boolean trace) throws ParseException {
         
         MultiValueMap<String,String> p = new LinkedMultiValueMap<>();
         if (queryLogicName != null) {
@@ -374,6 +383,9 @@ public class DefaultQueryParameters implements QueryParameters {
         }
         if (trace != null) {
             p.set(QueryParameters.QUERY_TRACE, trace.toString());
+        }
+        if (systemFrom != null) {
+            p.set(QueryParameters.QUERY_SYSTEM_FROM, systemFrom);
         }
         if (parameters != null) {
             p.set(QueryParameters.QUERY_PARAMS, parameters);
@@ -518,6 +530,16 @@ public class DefaultQueryParameters implements QueryParameters {
     }
     
     @Override
+    public String getSystemFrom() {
+        return systemFrom;
+    }
+    
+    @Override
+    public void setSystemFrom(String systemFrom) {
+        this.systemFrom = systemFrom;
+    }
+    
+    @Override
     public String getPool() {
         return pool;
     }
@@ -604,5 +626,6 @@ public class DefaultQueryParameters implements QueryParameters {
         this.expandFields = true;
         this.expandValues = false;
         this.requestHeaders = null;
+        this.systemFrom = null;
     }
 }
