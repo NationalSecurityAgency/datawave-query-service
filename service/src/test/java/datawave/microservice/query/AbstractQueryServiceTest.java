@@ -79,7 +79,6 @@ import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.query.storage.TaskStates;
 import datawave.security.authorization.DatawaveUser;
 import datawave.security.authorization.SubjectIssuerDNPair;
-import datawave.webservice.query.Query;
 import datawave.webservice.query.exception.QueryExceptionType;
 import datawave.webservice.query.result.event.DefaultEvent;
 import datawave.webservice.query.result.event.DefaultField;

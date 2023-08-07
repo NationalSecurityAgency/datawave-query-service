@@ -1,12 +1,12 @@
 package datawave.microservice.query;
 
+import static datawave.microservice.query.QueryImpl.BEGIN_DATE;
+import static datawave.microservice.query.QueryImpl.END_DATE;
+import static datawave.microservice.query.QueryImpl.PAGESIZE;
+import static datawave.microservice.query.QueryImpl.QUERY;
 import static datawave.microservice.query.QueryParameters.QUERY_LOGIC_NAME;
 import static datawave.webservice.common.audit.AuditParameters.QUERY_AUTHORIZATIONS;
 import static datawave.webservice.common.audit.AuditParameters.QUERY_STRING;
-import static datawave.webservice.query.QueryImpl.BEGIN_DATE;
-import static datawave.webservice.query.QueryImpl.END_DATE;
-import static datawave.webservice.query.QueryImpl.PAGESIZE;
-import static datawave.webservice.query.QueryImpl.QUERY;
 
 import java.util.Arrays;
 import java.util.UUID;

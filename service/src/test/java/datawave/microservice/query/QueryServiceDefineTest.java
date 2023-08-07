@@ -1,10 +1,10 @@
 package datawave.microservice.query;
 
+import static datawave.microservice.query.QueryImpl.BEGIN_DATE;
 import static datawave.microservice.query.QueryParameters.QUERY_MAX_CONCURRENT_TASKS;
 import static datawave.microservice.query.QueryParameters.QUERY_MAX_RESULTS_OVERRIDE;
 import static datawave.microservice.query.QueryParameters.QUERY_PAGESIZE;
 import static datawave.webservice.common.audit.AuditParameters.QUERY_STRING;
-import static datawave.webservice.query.QueryImpl.BEGIN_DATE;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -28,7 +28,6 @@ import datawave.marking.ColumnVisibilitySecurityMarking;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.storage.QueryStatus;
-import datawave.webservice.query.Query;
 import datawave.webservice.query.exception.QueryExceptionType;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.GenericResponse;

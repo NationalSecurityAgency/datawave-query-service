@@ -13,8 +13,8 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import datawave.webservice.query.Query;
-import datawave.webservice.query.QueryImpl;
+import datawave.microservice.query.Query;
+import datawave.microservice.query.QueryImpl;
 import io.protostuff.LinkedBuffer;
 import io.protostuff.ProtobufIOUtil;
 import io.protostuff.Schema;

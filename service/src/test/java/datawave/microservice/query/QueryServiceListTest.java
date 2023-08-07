@@ -27,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.security.util.ProxiedEntityUtils;
-import datawave.webservice.query.Query;
 import datawave.webservice.query.result.logic.QueryLogicDescription;
 import datawave.webservice.result.QueryImplListResponse;
 import datawave.webservice.result.QueryLogicResponse;

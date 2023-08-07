@@ -1,5 +1,8 @@
 package datawave.microservice.query;
 
+import static datawave.microservice.query.QueryImpl.DN_LIST;
+import static datawave.microservice.query.QueryImpl.QUERY_ID;
+import static datawave.microservice.query.QueryImpl.USER_DN;
 import static datawave.microservice.query.QueryParameters.QUERY_LOGIC_NAME;
 import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.CANCEL;
 import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.CLOSE;
@@ -8,9 +11,6 @@ import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.DEFINE
 import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.FAIL;
 import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.PLAN;
 import static datawave.microservice.query.storage.QueryStatus.QUERY_STATE.PREDICT;
-import static datawave.webservice.query.QueryImpl.DN_LIST;
-import static datawave.webservice.query.QueryImpl.QUERY_ID;
-import static datawave.webservice.query.QueryImpl.USER_DN;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -68,13 +68,10 @@ import datawave.microservice.query.util.QueryUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
-import datawave.security.authorization.DatawavePrincipal;
 import datawave.security.authorization.UserOperations;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.common.audit.AuditParameters;
 import datawave.webservice.common.audit.Auditor;
-import datawave.webservice.query.Query;
-import datawave.webservice.query.QueryImpl;
 import datawave.webservice.query.exception.BadRequestQueryException;
 import datawave.webservice.query.exception.DatawaveErrorCode;
 import datawave.webservice.query.exception.NoResultsQueryException;
