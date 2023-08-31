@@ -106,7 +106,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -142,7 +142,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -181,7 +181,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -220,7 +220,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -259,7 +259,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -298,7 +298,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -335,7 +335,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -374,7 +374,7 @@ public class QueryServiceDefineTest extends AbstractQueryServiceTest {
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(

@@ -408,11 +408,11 @@ public class QueryServiceResetTest extends AbstractQueryServiceTest {
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.PUT, uri);
         
         // close the query
-        Future<ResponseEntity<BaseResponse>> resetFuture = Executors.newSingleThreadExecutor()
-                        .submit(() -> jwtRestTemplate.exchange(requestEntity, BaseResponse.class));
+        Future<ResponseEntity<GenericResponse>> resetFuture = Executors.newSingleThreadExecutor()
+                        .submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = resetFuture.get();
+        ResponseEntity<GenericResponse> response = resetFuture.get();
         
         Assertions.assertEquals(404, response.getStatusCodeValue());
         
@@ -447,11 +447,11 @@ public class QueryServiceResetTest extends AbstractQueryServiceTest {
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(altAuthUser, null, null, HttpMethod.PUT, uri);
         
         // close the query
-        Future<ResponseEntity<BaseResponse>> resetFuture = Executors.newSingleThreadExecutor()
-                        .submit(() -> jwtRestTemplate.exchange(requestEntity, BaseResponse.class));
+        Future<ResponseEntity<GenericResponse>> resetFuture = Executors.newSingleThreadExecutor()
+                        .submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = resetFuture.get();
+        ResponseEntity<GenericResponse> response = resetFuture.get();
         
         Assertions.assertEquals(401, response.getStatusCodeValue());
         

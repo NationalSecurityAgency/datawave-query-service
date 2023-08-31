@@ -17,15 +17,11 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import datawave.microservice.query.QueryImpl.Parameter;
 import datawave.webservice.query.util.QueryUncaughtExceptionHandler;
 
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlSeeAlso(QueryImpl.class)
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public abstract class Query implements Externalizable {
     
     private static final long serialVersionUID = -5980134700364340930L;
@@ -97,7 +93,6 @@ public abstract class Query implements Externalizable {
     
     public abstract Parameter findParameter(String parameter);
     
-    @JsonIgnore
     public abstract void setParameters(Map<String,String> parameters);
     
     public abstract void addParameter(String key, String val);

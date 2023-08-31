@@ -58,10 +58,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         // @formatter:on
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(200, response.getStatusCodeValue());
         
@@ -147,10 +147,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
             // @formatter:on
             
             // make the next call asynchronously
-            Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+            Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
             
             // the response should come back right away
-            ResponseEntity<BaseResponse> response = future.get();
+            ResponseEntity<DefaultEventQueryResponse> response = future.get();
             
             Assertions.assertEquals(200, response.getStatusCodeValue());
             
@@ -222,7 +222,7 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         // @formatter:on
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> nextFuture = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> nextFuture = nextQuery(authUser, queryId);
         
         // make sure all events were consumed before canceling
         while (queryQueueManager.getNumResultsRemaining(queryId) != 0) {
@@ -238,7 +238,7 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         Assertions.assertEquals(200, cancelResponse.getStatusCodeValue());
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> nextResponse = nextFuture.get();
+        ResponseEntity<DefaultEventQueryResponse> nextResponse = nextFuture.get();
         
         Assertions.assertEquals(200, nextResponse.getStatusCodeValue());
         
@@ -334,10 +334,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
             // @formatter:on
             
             // make the next call asynchronously
-            Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+            Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
             
             // the response should come back right away
-            ResponseEntity<BaseResponse> response = future.get();
+            ResponseEntity<DefaultEventQueryResponse> response = future.get();
             
             if (page != 4) {
                 Assertions.assertEquals(200, response.getStatusCodeValue());
@@ -409,10 +409,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         }
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(400, response.getStatusCodeValue());
         
@@ -441,10 +441,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         queryStorageCache.updateCreateStage(queryId, QueryStatus.CREATE_STAGE.RESULTS);
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(204, response.getStatusCodeValue());
         Assertions.assertNull(response.getBody());
@@ -477,10 +477,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         String queryId = UUID.randomUUID().toString();
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(404, response.getStatusCodeValue());
         
@@ -512,10 +512,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         Assertions.assertEquals(200, cancelResponse.getStatusCodeValue());
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(400, response.getStatusCodeValue());
         
@@ -557,10 +557,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         String queryId = createQuery(authUser, createParams());
         
         // make the next call as an alternate user asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(altAuthUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(altAuthUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(401, response.getStatusCodeValue());
         
@@ -595,10 +595,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         String queryId = createQuery(authUser, createParams());
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back after the configured timeout (5 seconds)
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(500, response.getStatusCodeValue());
         
@@ -634,10 +634,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         String queryId = defineQuery(authUser, createParams());
         
         // make the next call
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(400, response.getStatusCodeValue());
         
@@ -669,10 +669,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         Assertions.assertEquals(200, closeResponse.getStatusCodeValue());
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(400, response.getStatusCodeValue());
         
@@ -716,10 +716,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         Assertions.assertEquals(200, cancelResponse.getStatusCodeValue());
         
         // make the next call asynchronously
-        Future<ResponseEntity<BaseResponse>> future = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = nextQuery(authUser, queryId);
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(400, response.getStatusCodeValue());
         

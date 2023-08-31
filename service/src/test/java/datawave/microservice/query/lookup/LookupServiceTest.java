@@ -66,7 +66,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         String uuidType = "PAGE_TITLE";
         String uuid = "anarchy";
         
-        Future<ResponseEntity<BaseQueryResponse>> future = lookupUUID(authUser, uuidParams, uuidType, uuid);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = lookupUUID(authUser, uuidParams, uuidType, uuid);
         
         String queryId = null;
         
@@ -96,7 +96,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
                 "ALL");
         // @formatter:on
         
-        ResponseEntity<BaseQueryResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(200, response.getStatusCodeValue());
         
@@ -159,7 +159,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy");
         uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:accessiblecomputing");
         
-        Future<ResponseEntity<BaseQueryResponse>> future = batchLookupUUID(authUser, uuidParams);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = batchLookupUUID(authUser, uuidParams);
         
         String queryId = null;
         
@@ -190,7 +190,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
                 "ALL");
         // @formatter:on
         
-        ResponseEntity<BaseQueryResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(200, response.getStatusCodeValue());
         
@@ -253,7 +253,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         String uuidType = "PAGE_TITLE";
         String uuid = "anarchy";
         
-        Future<ResponseEntity<BaseQueryResponse>> future = lookupContentUUID(authUser, uuidParams, uuidType, uuid);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = lookupContentUUID(authUser, uuidParams, uuidType, uuid);
         
         String queryId = null;
         
@@ -310,7 +310,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
             // @formatter:on
         }
         
-        ResponseEntity<BaseQueryResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(200, response.getStatusCodeValue());
         
@@ -396,7 +396,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:accessiblecomputing");
         uuidParams.add(QUERY_MAX_RESULTS_OVERRIDE, "10");
         
-        Future<ResponseEntity<BaseQueryResponse>> future = batchLookupContentUUID(authUser, uuidParams);
+        Future<ResponseEntity<DefaultEventQueryResponse>> future = batchLookupContentUUID(authUser, uuidParams);
         
         String queryId = null;
         
@@ -464,7 +464,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
             }
         }
         
-        ResponseEntity<BaseQueryResponse> response = future.get();
+        ResponseEntity<DefaultEventQueryResponse> response = future.get();
         
         Assertions.assertEquals(200, response.getStatusCodeValue());
         
@@ -742,17 +742,17 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         return map;
     }
     
-    protected Future<ResponseEntity<BaseQueryResponse>> batchLookupUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
+    protected Future<ResponseEntity<DefaultEventQueryResponse>> batchLookupUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
         UriComponents uri = createUri("lookupUUID");
         
         // not testing audit with this method
         auditIgnoreSetup();
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
-        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseQueryResponse.class));
+        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, DefaultEventQueryResponse.class));
     }
     
-    protected Future<ResponseEntity<BaseQueryResponse>> lookupUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map, String uuidType,
+    protected Future<ResponseEntity<DefaultEventQueryResponse>> lookupUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map, String uuidType,
                     String uuid) {
         UriComponents uri = createUri("lookupUUID/" + uuidType + "/" + uuid);
         
@@ -760,28 +760,28 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         auditIgnoreSetup();
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.GET, uri);
-        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseQueryResponse.class));
+        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, DefaultEventQueryResponse.class));
     }
     
-    protected Future<ResponseEntity<BaseQueryResponse>> batchLookupContentUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
+    protected Future<ResponseEntity<DefaultEventQueryResponse>> batchLookupContentUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map) {
         UriComponents uri = createUri("lookupContentUUID");
         
         // not testing audit with this method
         auditIgnoreSetup();
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
-        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseQueryResponse.class));
+        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, DefaultEventQueryResponse.class));
     }
     
-    protected Future<ResponseEntity<BaseQueryResponse>> lookupContentUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map, String uuidType,
-                    String uuid) {
+    protected Future<ResponseEntity<DefaultEventQueryResponse>> lookupContentUUID(DatawaveUserDetails authUser, MultiValueMap<String,String> map,
+                    String uuidType, String uuid) {
         UriComponents uri = createUri("lookupContentUUID/" + uuidType + "/" + uuid);
         
         // not testing audit with this method
         auditIgnoreSetup();
         
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.GET, uri);
-        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseQueryResponse.class));
+        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, DefaultEventQueryResponse.class));
     }
     
     protected void publishEventsToQueue(String queryId, int numEvents, MultiValueMap<String,String> fieldValues, String visibility) throws Exception {

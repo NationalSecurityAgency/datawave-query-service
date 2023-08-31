@@ -121,7 +121,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         // setup a mock audit service
         auditNotSentSetup();
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -163,7 +163,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         // setup a mock audit service
         auditNotSentSetup();
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -208,7 +208,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         // setup a mock audit service
         auditNotSentSetup();
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -253,7 +253,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         // setup a mock audit service
         auditNotSentSetup();
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -298,7 +298,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         // setup a mock audit service
         auditNotSentSetup();
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -343,7 +343,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         // setup a mock audit service
         auditNotSentSetup();
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -386,7 +386,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         // setup a mock audit service
         auditNotSentSetup();
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(
@@ -431,7 +431,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         // setup a mock audit service
         auditNotSentSetup();
         
-        ResponseEntity<BaseResponse> resp = jwtRestTemplate.exchange(requestEntity, BaseResponse.class);
+        ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
         // @formatter:off
         BaseResponse baseResponse = assertBaseResponse(

@@ -27,6 +27,7 @@ import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.result.BaseResponse;
+import datawave.webservice.result.DefaultEventQueryResponse;
 import datawave.webservice.result.VoidResponse;
 
 @ExtendWith(SpringExtension.class)
@@ -97,7 +98,7 @@ public class QueryServiceCancelTest extends AbstractQueryServiceTest {
         String queryId = createQuery(authUser, createParams());
         
         // call next on the query
-        Future<ResponseEntity<BaseResponse>> nextFuture = nextQuery(authUser, queryId);
+        Future<ResponseEntity<DefaultEventQueryResponse>> nextFuture = nextQuery(authUser, queryId);
         
         boolean nextCallActive = queryStorageCache.getQueryStatus(queryId).getActiveNextCalls() > 0;
         while (!nextCallActive) {

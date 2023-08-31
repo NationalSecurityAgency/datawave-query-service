@@ -24,6 +24,7 @@ import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.result.BaseResponse;
+import datawave.webservice.result.GenericResponse;
 import datawave.webservice.result.VoidResponse;
 
 @ExtendWith(SpringExtension.class)
@@ -246,11 +247,11 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.DELETE, uri);
         
         // close the query
-        Future<ResponseEntity<BaseResponse>> resetFuture = Executors.newSingleThreadExecutor()
-                        .submit(() -> jwtRestTemplate.exchange(requestEntity, BaseResponse.class));
+        Future<ResponseEntity<GenericResponse>> resetFuture = Executors.newSingleThreadExecutor()
+                        .submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = resetFuture.get();
+        ResponseEntity<GenericResponse> response = resetFuture.get();
         
         Assertions.assertEquals(404, response.getStatusCodeValue());
         
@@ -279,11 +280,11 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(altAuthUser, null, null, HttpMethod.DELETE, uri);
         
         // close the query
-        Future<ResponseEntity<BaseResponse>> resetFuture = Executors.newSingleThreadExecutor()
-                        .submit(() -> jwtRestTemplate.exchange(requestEntity, BaseResponse.class));
+        Future<ResponseEntity<GenericResponse>> resetFuture = Executors.newSingleThreadExecutor()
+                        .submit(() -> jwtRestTemplate.exchange(requestEntity, GenericResponse.class));
         
         // the response should come back right away
-        ResponseEntity<BaseResponse> response = resetFuture.get();
+        ResponseEntity<GenericResponse> response = resetFuture.get();
         
         Assertions.assertEquals(401, response.getStatusCodeValue());
         

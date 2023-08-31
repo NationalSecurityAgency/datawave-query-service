@@ -60,6 +60,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
@@ -82,6 +89,7 @@ import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.webservice.query.exception.QueryExceptionType;
 import datawave.webservice.query.result.event.DefaultEvent;
 import datawave.webservice.query.result.event.DefaultField;
+import datawave.webservice.result.BaseQueryResponse;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.DefaultEventQueryResponse;
 import datawave.webservice.result.GenericResponse;
@@ -190,12 +198,12 @@ public abstract class AbstractQueryServiceTest {
         return (String) resp.getBody().getResult();
     }
     
-    protected Future<ResponseEntity<BaseResponse>> nextQuery(DatawaveUserDetails authUser, String queryId) {
+    protected Future<ResponseEntity<DefaultEventQueryResponse>> nextQuery(DatawaveUserDetails authUser, String queryId) {
         UriComponents uri = createUri(queryId + "/next");
         RequestEntity requestEntity = jwtRestTemplate.createRequestEntity(authUser, null, null, HttpMethod.GET, uri);
         
         // make the next call asynchronously
-        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, BaseResponse.class));
+        return Executors.newSingleThreadExecutor().submit(() -> jwtRestTemplate.exchange(requestEntity, DefaultEventQueryResponse.class));
     }
     
     protected Future<ResponseEntity<VoidResponse>> adminCloseQuery(DatawaveUserDetails authUser, String queryId) {
@@ -486,10 +494,10 @@ public abstract class AbstractQueryServiceTest {
         Assertions.assertEquals(code, queryException.getCode());
     }
     
-    protected BaseResponse assertBaseResponse(boolean hasResults, HttpStatus.Series series, ResponseEntity<BaseResponse> response) {
+    protected BaseResponse assertBaseResponse(boolean hasResults, HttpStatus.Series series, ResponseEntity response) {
         Assertions.assertEquals(series, response.getStatusCode().series());
         Assertions.assertNotNull(response);
-        BaseResponse baseResponse = response.getBody();
+        BaseResponse baseResponse = (BaseResponse) response.getBody();
         Assertions.assertNotNull(baseResponse);
         Assertions.assertEquals(hasResults, baseResponse.getHasResults());
         return baseResponse;
@@ -516,6 +524,18 @@ public abstract class AbstractQueryServiceTest {
     @Profile("QueryServiceTest")
     @ComponentScan(basePackages = "datawave.microservice")
     public static class QueryServiceTestConfiguration {
+        @Bean
+        public Module queryImplDeserializer(@Lazy ObjectMapper objectMapper) {
+            SimpleModule module = new SimpleModule();
+            module.addDeserializer(Query.class, new JsonDeserializer<>() {
+                @Override
+                public Query deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
+                    return objectMapper.readValue(jsonParser, QueryImpl.class);
+                }
+            });
+            return module;
+        }
+        
         @Bean
         public HazelcastInstance hazelcastInstance() {
             Config config = new Config();
