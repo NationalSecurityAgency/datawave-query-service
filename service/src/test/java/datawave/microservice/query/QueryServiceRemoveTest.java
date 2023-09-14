@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,8 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 
 import com.google.common.collect.Iterables;
@@ -191,6 +195,14 @@ public class QueryServiceRemoveTest extends AbstractQueryServiceTest {
         
         // call next on the query
         nextQuery(authUser, queryId);
+        
+        // sleep until the next call registers
+        long currentTimeMillis = System.currentTimeMillis();
+        boolean nextCallActive = queryStorageCache.getQueryStatus(queryId).getActiveNextCalls() > 0;
+        while (!nextCallActive && (System.currentTimeMillis() - currentTimeMillis) < TEST_WAIT_TIME_MILLIS) {
+            Thread.sleep(500);
+            nextCallActive = queryStorageCache.getQueryStatus(queryId).getActiveNextCalls() > 0;
+        }
         
         // close the query
         Future<ResponseEntity<VoidResponse>> closeFuture = closeQuery(authUser, queryId);
