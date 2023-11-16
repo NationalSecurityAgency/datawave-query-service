@@ -46,6 +46,8 @@ public class StreamingService {
      *            the requested query logic, not null
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @param listener
@@ -68,7 +70,7 @@ public class StreamingService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public String createAndExecute(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser,
+    public String createAndExecute(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser,
                     StreamingResponseListener listener) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -77,7 +79,7 @@ public class StreamingService {
             log.info("Request: {}/createAndExecute from {}", queryLogicName, user);
         }
         
-        String queryId = queryManagementService.create(queryLogicName, parameters, currentUser).getResult();
+        String queryId = queryManagementService.create(queryLogicName, parameters, pool, currentUser).getResult();
         submitStreamingCall(queryId, currentUser, listener);
         return queryId;
     }

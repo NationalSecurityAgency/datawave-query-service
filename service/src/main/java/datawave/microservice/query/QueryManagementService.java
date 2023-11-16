@@ -255,6 +255,8 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the query parameters, not null
      * @param currentUser
      *            the user who called this method, not null
+     * @param pool
+     *            the pool to target, may be null
      * @return a generic response containing the query id
      * @throws BadRequestQueryException
      *             if parameter validation fails
@@ -269,7 +271,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> define(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
+    public GenericResponse<String> define(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -279,7 +281,7 @@ public class QueryManagementService implements QueryRequestHandler {
         }
         
         try {
-            TaskKey taskKey = storeQuery(queryLogicName, parameters, currentUser, DEFINE);
+            TaskKey taskKey = storeQuery(queryLogicName, parameters, pool, currentUser, DEFINE);
             GenericResponse<String> response = new GenericResponse<>();
             response.setResult(taskKey.getQueryId());
             return response;
@@ -307,6 +309,8 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the requested query logic, not null
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @return a generic response containing the query id
@@ -325,7 +329,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> create(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
+    public GenericResponse<String> create(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -335,7 +339,7 @@ public class QueryManagementService implements QueryRequestHandler {
         }
         
         try {
-            TaskKey taskKey = storeQuery(queryLogicName, parameters, currentUser, CREATE);
+            TaskKey taskKey = storeQuery(queryLogicName, parameters, pool, currentUser, CREATE);
             GenericResponse<String> response = new GenericResponse<>();
             response.setResult(taskKey.getQueryId());
             response.setHasResults(true);
@@ -360,6 +364,8 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the requested query logic, not null
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @return a generic response containing the query plan
@@ -378,7 +384,8 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> plan(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
+    public GenericResponse<String> plan(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser)
+                    throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: {}/plan from {} with params: {}", queryLogicName, user, parameters);
@@ -387,7 +394,7 @@ public class QueryManagementService implements QueryRequestHandler {
         }
         
         try {
-            TaskKey taskKey = storeQuery(queryLogicName, parameters, currentUser, PLAN);
+            TaskKey taskKey = storeQuery(queryLogicName, parameters, pool, currentUser, PLAN);
             String queryPlan = queryStorageCache.getQueryStatus(taskKey.getQueryId()).getPlan();
             queryStorageCache.deleteQuery(taskKey.getQueryId());
             GenericResponse<String> response = new GenericResponse<>();
@@ -414,6 +421,8 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the requested query logic, not null
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @return a generic response containing the query prediction
@@ -432,7 +441,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public GenericResponse<String> predict(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
+    public GenericResponse<String> predict(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -442,7 +451,7 @@ public class QueryManagementService implements QueryRequestHandler {
         }
         
         try {
-            TaskKey taskKey = storeQuery(queryLogicName, parameters, currentUser, PREDICT);
+            TaskKey taskKey = storeQuery(queryLogicName, parameters, pool, currentUser, PREDICT);
             String queryPrediction = "no predictions";
             QueryStatus status = queryStorageCache.getQueryStatus(taskKey.getQueryId());
             if (status != null) {
@@ -464,9 +473,9 @@ public class QueryManagementService implements QueryRequestHandler {
         }
     }
     
-    private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser,
+    private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser,
                     QueryStatus.QUERY_STATE queryType) throws QueryException {
-        return storeQuery(queryLogicName, parameters, currentUser, queryType, null);
+        return storeQuery(queryLogicName, parameters, pool, currentUser, queryType, null);
     }
     
     /**
@@ -480,6 +489,8 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the requested query logic, not null
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @param queryType
@@ -502,7 +513,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser,
+    private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser,
                     QueryStatus.QUERY_STATE queryType, String queryId) throws BadRequestQueryException, QueryException {
         // validate query and get a query logic
         QueryLogic<?> queryLogic = validateQuery(queryLogicName, parameters, currentUser);
@@ -533,12 +544,14 @@ public class QueryManagementService implements QueryRequestHandler {
         }
         
         try {
+            String computedPool = getPoolName(pool, isAdminUser(currentUser));
+            
             // persist the query w/ query id in the query storage cache
             TaskKey taskKey = null;
             if (queryType == DEFINE) {
                 // @formatter:off
                 taskKey = queryStorageCache.defineQuery(
-                        getPoolName(),
+                        computedPool,
                         query,
                         currentUser,
                         downgradedAuthorizations,
@@ -547,34 +560,34 @@ public class QueryManagementService implements QueryRequestHandler {
             } else if (queryType == CREATE) {
                 // @formatter:off
                 taskKey = queryStorageCache.createQuery(
-                        getPoolName(),
+                        computedPool,
                         query,
                         currentUser,
                         downgradedAuthorizations,
                         getMaxConcurrentTasks(queryLogic));
                 // @formatter:on
                 
-                sendRequestAwaitResponse(QueryRequest.create(taskKey.getQueryId()), queryProperties.isAwaitExecutorCreateResponse());
+                sendRequestAwaitResponse(QueryRequest.create(taskKey.getQueryId()), computedPool, queryProperties.isAwaitExecutorCreateResponse());
             } else if (queryType == PLAN) {
                 // @formatter:off
                 taskKey = queryStorageCache.planQuery(
-                        getPoolName(),
+                        computedPool,
                         query,
                         currentUser,
                         downgradedAuthorizations);
                 // @formatter:on
                 
-                sendRequestAwaitResponse(QueryRequest.plan(taskKey.getQueryId()), true);
+                sendRequestAwaitResponse(QueryRequest.plan(taskKey.getQueryId()), computedPool, true);
             } else if (queryType == PREDICT) {
                 // @formatter:off
                 taskKey = queryStorageCache.predictQuery(
-                        getPoolName(),
+                        computedPool,
                         query,
                         currentUser,
                         downgradedAuthorizations);
                 // @formatter:on
                 
-                sendRequestAwaitResponse(QueryRequest.predict(taskKey.getQueryId()), true);
+                sendRequestAwaitResponse(QueryRequest.predict(taskKey.getQueryId()), computedPool, true);
             }
             
             if (taskKey == null) {
@@ -598,14 +611,14 @@ public class QueryManagementService implements QueryRequestHandler {
         }
     }
     
-    private void sendRequestAwaitResponse(QueryRequest request, boolean isAwaitResponse) throws QueryException {
+    private void sendRequestAwaitResponse(QueryRequest request, String computedPool, boolean isAwaitResponse) throws QueryException {
         if (isAwaitResponse) {
             // before publishing the message, create a latch based on the query ID
             queryLatchMap.put(request.getQueryId(), new CountDownLatch(1));
         }
         
         // publish an event to the executor pool
-        publishExecutorEvent(request, getPoolName());
+        publishExecutorEvent(request, computedPool);
         
         if (isAwaitResponse) {
             // TODO: Should we incorporate the call start time into this check?
@@ -657,6 +670,8 @@ public class QueryManagementService implements QueryRequestHandler {
      *            the requested query logic, not null
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @return a base query response containing the first page of results
@@ -681,7 +696,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse createAndNext(String queryLogicName, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser)
+    public BaseQueryResponse createAndNext(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -692,7 +707,7 @@ public class QueryManagementService implements QueryRequestHandler {
         
         String queryId = null;
         try {
-            queryId = create(queryLogicName, parameters, currentUser).getResult();
+            queryId = create(queryLogicName, parameters, pool, currentUser).getResult();
             return executeNext(queryId, currentUser);
         } catch (Exception e) {
             // TODO: QueryException results in VoidResponse. This differs from the original RestAPI where an exception was returned in a
@@ -1602,7 +1617,8 @@ public class QueryManagementService implements QueryRequestHandler {
                     
                     // redefine the query
                     if (updated) {
-                        storeQuery(currentParams.getFirst(QUERY_LOGIC_NAME), currentParams, currentUser, DEFINE, queryId);
+                        storeQuery(currentParams.getFirst(QUERY_LOGIC_NAME), currentParams, queryStatus.getQueryKey().getQueryPool(), currentUser, DEFINE,
+                                        queryId);
                     }
                 } else if (queryStatus.isRunning()) {
                     // if the query is created/running, update safe parameters only
@@ -1766,7 +1782,7 @@ public class QueryManagementService implements QueryRequestHandler {
         updateParameters(parameters, currentParams);
         
         // define a duplicate query
-        return storeQuery(currentParams.getFirst(QUERY_LOGIC_NAME), currentParams, currentUser, CREATE);
+        return storeQuery(currentParams.getFirst(QUERY_LOGIC_NAME), currentParams, queryStatus.getQueryKey().getQueryPool(), currentUser, CREATE);
     }
     
     private boolean updateParameters(MultiValueMap<String,String> newParameters, MultiValueMap<String,String> currentParams) throws BadRequestQueryException {
@@ -2158,6 +2174,17 @@ public class QueryManagementService implements QueryRequestHandler {
         }
     }
     
+    protected boolean isAdminUser(DatawaveUserDetails currentUser) {
+        boolean isAdminUser = false;
+        for (String role : currentUser.getPrimaryUser().getRoles()) {
+            if (queryProperties.getAdminRoles().contains(role)) {
+                isAdminUser = true;
+                break;
+            }
+        }
+        return isAdminUser;
+    }
+    
     /**
      * Gets the pool name for this request.
      * <p>
@@ -2165,9 +2192,10 @@ public class QueryManagementService implements QueryRequestHandler {
      *
      * @return the pool name for this query
      */
-    protected String getPoolName() {
+    protected String getPoolName(String pool, boolean isAdminUser) {
         QueryParameters queryParameters = getQueryParameters();
-        return (queryParameters.getPool() != null) ? queryParameters.getPool() : queryProperties.getDefaultParams().getPool();
+        return (isAdminUser && (queryParameters.getPool() != null)) ? queryParameters.getPool()
+                        : ((pool != null) ? pool : queryProperties.getDefaultParams().getPool());
     }
     
     /**

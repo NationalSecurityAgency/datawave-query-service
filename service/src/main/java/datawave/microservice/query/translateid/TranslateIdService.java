@@ -62,6 +62,8 @@ public class TranslateIdService {
      *            the id to translate
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @return a base query response containing the first page of results
@@ -86,12 +88,13 @@ public class TranslateIdService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse translateId(String id, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse translateId(String id, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser)
+                    throws QueryException {
         String queryId = null;
         try {
             parameters.set(TRANSLATE_ID, id);
             
-            BaseQueryResponse response = translateIds(parameters, currentUser);
+            BaseQueryResponse response = translateIds(parameters, pool, currentUser);
             queryId = response.getQueryId();
             return response;
         } catch (QueryException e) {
@@ -113,6 +116,8 @@ public class TranslateIdService {
      *
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @return a base query response containing the first page of results
@@ -137,14 +142,14 @@ public class TranslateIdService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse translateIds(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse translateIds(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser) throws QueryException {
         if (!parameters.containsKey(TRANSLATE_ID)) {
             throw new BadRequestQueryException(MISSING_REQUIRED_PARAMETER, "Missing required parameter: " + TRANSLATE_ID);
         }
         
         try {
             MultiValueMap<String,String> queryParams = setupQueryParameters(parameters, currentUser);
-            return queryManagementService.createAndNext(parameters.getFirst(QUERY_LOGIC_NAME), queryParams, currentUser);
+            return queryManagementService.createAndNext(parameters.getFirst(QUERY_LOGIC_NAME), queryParams, pool, currentUser);
         } catch (QueryException e) {
             throw e;
         } catch (Exception e) {

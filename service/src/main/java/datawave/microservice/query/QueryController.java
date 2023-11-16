@@ -61,6 +61,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -100,7 +101,7 @@ public class QueryController {
     }
     
     /**
-     * @see QueryManagementService#define(String, MultiValueMap, DatawaveUserDetails)
+     * @see QueryManagementService#define(String, MultiValueMap, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -115,7 +116,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a generic response containing the query id",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = GenericResponse.class))),
+                    content = @Content(schema = @Schema(implementation = GenericResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if parameter validation fails<br>" +
                             "if query logic parameter validation fails<br>" +
@@ -223,9 +229,9 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/define", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> define(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
-                    throws QueryException {
-        return queryManagementService.define(queryLogic, parameters, currentUser);
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
+        return queryManagementService.define(queryLogic, parameters, getPool(headers), currentUser);
     }
     
     /**
@@ -241,7 +247,7 @@ public class QueryController {
     }
     
     /**
-     * @see QueryManagementService#create(String, MultiValueMap, DatawaveUserDetails)
+     * @see QueryManagementService#create(String, MultiValueMap, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -258,7 +264,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a generic response containing the query id",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = GenericResponse.class))),
+                    content = @Content(schema = @Schema(implementation = GenericResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if parameter validation fails<br>" +
                             "if query logic parameter validation fails<br>" +
@@ -367,13 +378,13 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/create", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> create(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
-                    throws QueryException {
-        return queryManagementService.create(queryLogic, parameters, currentUser);
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
+        return queryManagementService.create(queryLogic, parameters, getPool(headers), currentUser);
     }
     
     /**
-     * @see QueryManagementService#plan(String, MultiValueMap, DatawaveUserDetails)
+     * @see QueryManagementService#plan(String, MultiValueMap, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -390,7 +401,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a generic response containing the query plan",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = GenericResponse.class))),
+                    content = @Content(schema = @Schema(implementation = GenericResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if parameter validation fails<br>" +
                             "if query logic parameter validation fails<br>" +
@@ -513,13 +529,13 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/plan", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> plan(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
-                    throws QueryException {
-        return queryManagementService.plan(queryLogic, parameters, currentUser);
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
+        return queryManagementService.plan(queryLogic, parameters, getPool(headers), currentUser);
     }
     
     /**
-     * @see QueryManagementService#predict(String, MultiValueMap, DatawaveUserDetails)
+     * @see QueryManagementService#predict(String, MultiValueMap, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -532,7 +548,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a generic response containing the query plan",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = GenericResponse.class))),
+                    content = @Content(schema = @Schema(implementation = GenericResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if parameter validation fails<br>" +
                             "if query logic parameter validation fails<br>" +
@@ -640,14 +661,14 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/predict", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> predict(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
-                    throws QueryException {
-        return queryManagementService.predict(queryLogic, parameters, currentUser);
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
+        return queryManagementService.predict(queryLogic, parameters, getPool(headers), currentUser);
     }
     
     /**
-     * @see LookupService#lookupUUID(MultiValueMap, DatawaveUserDetails)
-     * @see LookupService#lookupUUID(MultiValueMap, DatawaveUserDetails, StreamingResponseListener)
+     * @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails)
+     * @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -660,7 +681,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a base query response containing the first page of results",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if no query results are found",
                     responseCode = "204",
@@ -768,23 +794,23 @@ public class QueryController {
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public Object lookupUUID(@Parameter(description = "The UUID type", example = "PAGE_TITLE") @PathVariable(required = false) String uuidType,
                     @Parameter(description = "The UUID", example = "anarchism") @PathVariable(required = false) String uuid,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser,
-                    @RequestHeader HttpHeaders headers) throws QueryException {
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         parameters.add(LOOKUP_UUID_PAIRS, String.join(LOOKUP_KEY_VALUE_DELIMITER, uuidType, uuid));
         
         if (Boolean.parseBoolean(parameters.getFirst(LOOKUP_STREAMING))) {
             MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
             CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
-            lookupService.lookupUUID(parameters, currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
+            lookupService.lookupUUID(parameters, getPool(headers), currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
             return emitter;
         } else {
-            return lookupService.lookupUUID(parameters, currentUser);
+            return lookupService.lookupUUID(parameters, getPool(headers), currentUser);
         }
     }
     
     /**
-     * @see LookupService#lookupUUID(MultiValueMap, DatawaveUserDetails)
-     * @see LookupService#lookupUUID(MultiValueMap, DatawaveUserDetails, StreamingResponseListener)
+     * @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails)
+     * @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -797,7 +823,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a base query response containing the first page of results",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if no query results are found",
                     responseCode = "204",
@@ -911,21 +942,21 @@ public class QueryController {
     @Timed(name = "dw.query.lookupUUIDBatch", absolute = true)
     @RequestMapping(path = "lookupUUID", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public Object lookupUUIDBatch(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters,
-                    @AuthenticationPrincipal DatawaveUserDetails currentUser, @RequestHeader HttpHeaders headers) throws QueryException {
+    public Object lookupUUIDBatch(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         if (Boolean.parseBoolean(parameters.getFirst(LOOKUP_STREAMING))) {
             MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
             CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
-            lookupService.lookupUUID(parameters, currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
+            lookupService.lookupUUID(parameters, getPool(headers), currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
             return emitter;
         } else {
-            return lookupService.lookupUUID(parameters, currentUser);
+            return lookupService.lookupUUID(parameters, getPool(headers), currentUser);
         }
     }
     
     /**
-     * @see LookupService#lookupContentUUID(MultiValueMap, DatawaveUserDetails)
-     * @see LookupService#lookupContentUUID(MultiValueMap, DatawaveUserDetails, StreamingResponseListener)
+     * @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
+     * @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -938,7 +969,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a base query response containing the first page of results",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if no query results are found",
                     responseCode = "204",
@@ -1046,23 +1082,23 @@ public class QueryController {
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public Object lookupContentUUID(@Parameter(description = "The UUID type", example = "PAGE_TITLE") @PathVariable(required = false) String uuidType,
                     @Parameter(description = "The UUID", example = "anarchism") @PathVariable(required = false) String uuid,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser,
-                    @RequestHeader HttpHeaders headers) throws QueryException {
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         parameters.add(LOOKUP_UUID_PAIRS, String.join(LOOKUP_KEY_VALUE_DELIMITER, uuidType, uuid));
         
         if (Boolean.parseBoolean(parameters.getFirst(LOOKUP_STREAMING))) {
             MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
             CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
-            lookupService.lookupContentUUID(parameters, currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
+            lookupService.lookupContentUUID(parameters, getPool(headers), currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
             return emitter;
         } else {
-            return lookupService.lookupContentUUID(parameters, currentUser);
+            return lookupService.lookupContentUUID(parameters, getPool(headers), currentUser);
         }
     }
     
     /**
-     * @see LookupService#lookupContentUUID(MultiValueMap, DatawaveUserDetails)
-     * @see LookupService#lookupContentUUID(MultiValueMap, DatawaveUserDetails)
+     * @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
+     * @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1075,7 +1111,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a base query response containing the first page of results",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if no query results are found",
                     responseCode = "204",
@@ -1189,20 +1230,20 @@ public class QueryController {
     @Timed(name = "dw.query.lookupContentUUIDBatch", absolute = true)
     @RequestMapping(path = "lookupContentUUID", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public Object lookupContentUUIDBatch(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters,
-                    @AuthenticationPrincipal DatawaveUserDetails currentUser, @RequestHeader HttpHeaders headers) throws QueryException {
+    public Object lookupContentUUIDBatch(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         if (Boolean.parseBoolean(parameters.getFirst(LOOKUP_STREAMING))) {
             MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
             CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
-            lookupService.lookupContentUUID(parameters, currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
+            lookupService.lookupContentUUID(parameters, getPool(headers), currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
             return emitter;
         } else {
-            return lookupService.lookupContentUUID(parameters, currentUser);
+            return lookupService.lookupContentUUID(parameters, getPool(headers), currentUser);
         }
     }
     
     /**
-     * @see TranslateIdService#translateId(String, MultiValueMap, DatawaveUserDetails)
+     * @see TranslateIdService#translateId(String, MultiValueMap, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1213,7 +1254,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a base query response containing the first page of results",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if no query results are found",
                     responseCode = "204",
@@ -1313,13 +1359,13 @@ public class QueryController {
     @RequestMapping(path = "translateId/{id}", method = {RequestMethod.GET}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public BaseQueryResponse translateId(@Parameter(description = "The ID to translate") @PathVariable String id,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
-                    throws QueryException {
-        return translateIdService.translateId(id, parameters, currentUser);
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
+        return translateIdService.translateId(id, parameters, getPool(headers), currentUser);
     }
     
     /**
-     * @see TranslateIdService#translateIds(MultiValueMap, DatawaveUserDetails)
+     * @see TranslateIdService#translateIds(MultiValueMap, String, DatawaveUserDetails)
      */
     // TODO: Shouldn't the case for this path be the same as the singular call?
     // @formatter:off
@@ -1330,7 +1376,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a base query response containing the first page of results",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if no query results are found",
                     responseCode = "204",
@@ -1436,13 +1487,13 @@ public class QueryController {
     // @formatter:on
     @RequestMapping(path = "translateIDs", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public BaseQueryResponse translateIDs(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters,
+    public BaseQueryResponse translateIDs(@Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
-        return translateIdService.translateIds(parameters, currentUser);
+        return translateIdService.translateIds(parameters, getPool(headers), currentUser);
     }
     
     /**
-     * @see QueryManagementService#createAndNext(String, MultiValueMap, DatawaveUserDetails)
+     * @see QueryManagementService#createAndNext(String, MultiValueMap, String, DatawaveUserDetails)
      */
     // @formatter:off
     @Operation(
@@ -1459,7 +1510,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns a base query response containing the first page of results",
                     responseCode = "200",
-                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class))),
+                    content = @Content(schema = @Schema(implementation = BaseQueryResponse.class)),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if no query results are found",
                     responseCode = "204",
@@ -1574,9 +1630,9 @@ public class QueryController {
     @RequestMapping(path = "{queryLogic}/createAndNext", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public BaseQueryResponse createAndNext(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser)
-                    throws QueryException {
-        return queryManagementService.createAndNext(queryLogic, parameters, currentUser);
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
+        return queryManagementService.createAndNext(queryLogic, parameters, getPool(headers), currentUser);
     }
     
     /**
@@ -2426,7 +2482,7 @@ public class QueryController {
     }
     
     /**
-     * @see StreamingService#createAndExecute(String, MultiValueMap, DatawaveUserDetails, StreamingResponseListener)
+     * @see StreamingService#createAndExecute(String, MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -2441,7 +2497,12 @@ public class QueryController {
             @ApiResponse(
                     description = "if successful, returns multiple base query responses containing pages of results",
                     responseCode = "200",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = BaseQueryResponse.class)))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = BaseQueryResponse.class))),
+                    headers = {
+                            @Header(
+                                    name = "Pool",
+                                    description = "the executor pool to target",
+                                    schema = @Schema(defaultValue = "default"))}),
             @ApiResponse(
                     description = "if no query results are found",
                     responseCode = "204",
@@ -2554,11 +2615,12 @@ public class QueryController {
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public ResponseEntity<ResponseBodyEmitter> createAndExecute(
                     @Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
-                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @AuthenticationPrincipal DatawaveUserDetails currentUser,
-                    @RequestHeader HttpHeaders headers) throws QueryException {
+                    @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
+                    @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
         CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
-        String queryId = streamingService.createAndExecute(queryLogic, parameters, currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
+        String queryId = streamingService.createAndExecute(queryLogic, parameters, getPool(headers), currentUser,
+                        new CountingResponseBodyEmitterListener(emitter, contentType));
         
         // unfortunately this needs to be set manually. ResponseBodyAdvice does not run for streaming endpoints
         queryMetricsEnrichmentContext.setMethodType(EnrichQueryMetrics.MethodType.CREATE);
@@ -2632,6 +2694,10 @@ public class QueryController {
         }
         
         return mediaType;
+    }
+    
+    private String getPool(HttpHeaders headers) {
+        return headers.getFirst("Pool");
     }
     
     private ResponseEntity<ResponseBodyEmitter> createStreamingResponse(ResponseBodyEmitter emitter, MediaType contentType) {

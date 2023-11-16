@@ -88,6 +88,8 @@ public class LookupService {
      *
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @param listener
@@ -113,7 +115,8 @@ public class LookupService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public void lookupUUID(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException {
+    public void lookupUUID(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener)
+                    throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: lookupUUID from {} with params: {}", user, parameters);
@@ -122,7 +125,7 @@ public class LookupService {
         }
         
         try {
-            lookup(parameters, currentUser, listener);
+            lookup(parameters, pool, currentUser, listener);
         } catch (QueryException e) {
             throw e;
         } catch (Exception e) {
@@ -141,6 +144,8 @@ public class LookupService {
      *
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @return a base query response containing the first page of results
@@ -165,7 +170,7 @@ public class LookupService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse lookupUUID(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse lookupUUID(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: lookupUUID from {} with params: {}", user, parameters);
@@ -174,7 +179,7 @@ public class LookupService {
         }
         
         try {
-            return lookup(parameters, currentUser, null);
+            return lookup(parameters, pool, currentUser, null);
         } catch (QueryException e) {
             throw e;
         } catch (Exception e) {
@@ -193,6 +198,8 @@ public class LookupService {
      *
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @param listener
@@ -219,7 +226,7 @@ public class LookupService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public <T> T lookupContentUUID(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener)
+    public <T> T lookupContentUUID(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
@@ -230,7 +237,7 @@ public class LookupService {
         
         try {
             // first lookup the UUIDs, then get the content for each UUID
-            return lookupContent(parameters, currentUser, listener);
+            return lookupContent(parameters, pool, currentUser, listener);
         } catch (QueryException e) {
             throw e;
         } catch (Exception e) {
@@ -249,6 +256,8 @@ public class LookupService {
      *
      * @param parameters
      *            the query parameters, not null
+     * @param pool
+     *            the pool to target, may be null
      * @param currentUser
      *            the user who called this method, not null
      * @return a base query response containing the first page of results
@@ -273,7 +282,7 @@ public class LookupService {
      * @throws QueryException
      *             if there is an unknown error
      */
-    public BaseQueryResponse lookupContentUUID(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException {
+    public BaseQueryResponse lookupContentUUID(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: lookupContentUUID from {} with params: {}", user, parameters);
@@ -283,7 +292,7 @@ public class LookupService {
         
         try {
             // first lookup the UUIDs, then get the content for each UUID
-            return lookupContent(parameters, currentUser, null);
+            return lookupContent(parameters, pool, currentUser, null);
         } catch (QueryException e) {
             throw e;
         } catch (Exception e) {
@@ -292,7 +301,7 @@ public class LookupService {
         }
     }
     
-    private <T> T lookup(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener)
+    private <T> T lookup(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException, AuthorizationException {
         List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
         if (lookupTerms == null || lookupTerms.isEmpty()) {
@@ -306,16 +315,16 @@ public class LookupService {
         LookupQueryLogic<?> lookupQueryLogic = validateLookupTerms(lookupTerms, lookupTermMap);
         
         // perform the event lookup
-        return lookupEvents(lookupTermMap, lookupQueryLogic, new LinkedMultiValueMap<>(parameters), currentUser, listener);
+        return lookupEvents(lookupTermMap, lookupQueryLogic, new LinkedMultiValueMap<>(parameters), pool, currentUser, listener);
     }
     
     private BaseQueryResponse lookupEvents(MultiValueMap<String,String> lookupTermMap, LookupQueryLogic<?> lookupQueryLogic,
-                    MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws QueryException, AuthorizationException {
-        return lookupEvents(lookupTermMap, lookupQueryLogic, parameters, currentUser, null);
+                    MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser) throws QueryException, AuthorizationException {
+        return lookupEvents(lookupTermMap, lookupQueryLogic, parameters, pool, currentUser, null);
     }
     
     private <T> T lookupEvents(MultiValueMap<String,String> lookupTermMap, LookupQueryLogic<?> lookupQueryLogic, MultiValueMap<String,String> parameters,
-                    DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException, AuthorizationException {
+                    String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException, AuthorizationException {
         String queryId = null;
         try {
             // add the query logic name and query string to our parameters
@@ -326,7 +335,7 @@ public class LookupService {
             setupEventQueryParameters(parameters, currentUser);
             
             // create the query
-            queryId = queryManagementService.create(parameters.getFirst(QUERY_LOGIC_NAME), parameters, currentUser).getResult();
+            queryId = queryManagementService.create(parameters.getFirst(QUERY_LOGIC_NAME), parameters, pool, currentUser).getResult();
             
             if (listener != null) {
                 // stream results to the listener
@@ -460,7 +469,7 @@ public class LookupService {
         }
     }
     
-    private <T> T lookupContent(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser, StreamingResponseListener listener)
+    private <T> T lookupContent(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException, AuthorizationException {
         List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
         if (lookupTerms == null || lookupTerms.isEmpty()) {
@@ -479,7 +488,7 @@ public class LookupService {
         
         // do the event lookup if necessary
         if (isEventLookupRequired) {
-            response = lookupEvents(lookupTermMap, lookupQueryLogic, new LinkedMultiValueMap<>(parameters), currentUser);
+            response = lookupEvents(lookupTermMap, lookupQueryLogic, new LinkedMultiValueMap<>(parameters), pool, currentUser);
         }
         
         // perform the content lookup
@@ -490,7 +499,7 @@ public class LookupService {
             contentLookupTerms = getContentLookupTerms(response);
         }
         
-        return lookupContent(contentLookupTerms, parameters, currentUser, listener);
+        return lookupContent(contentLookupTerms, parameters, pool, currentUser, listener);
     }
     
     private Set<String> getContentLookupTerms(BaseQueryResponse response) {
@@ -508,7 +517,7 @@ public class LookupService {
                         + String.join(CONTENT_QUERY_VALUE_DELIMITER, eventMetadata.getRow(), eventMetadata.getDataType(), eventMetadata.getInternalId());
     }
     
-    private <T> T lookupContent(Set<String> contentLookupTerms, MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser,
+    private <T> T lookupContent(Set<String> contentLookupTerms, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser,
                     StreamingResponseListener listener) throws QueryException {
         // create queries from the content lookup terms
         List<String> contentQueries = createContentQueries(contentLookupTerms);
@@ -524,10 +533,10 @@ public class LookupService {
             setContentQueryParameters(queryParameters, currentUser);
             
             if (listener != null) {
-                streamingService.createAndExecute(queryParameters.getFirst(QUERY_LOGIC_NAME), queryParameters, currentUser, listener);
+                streamingService.createAndExecute(queryParameters.getFirst(QUERY_LOGIC_NAME), queryParameters, pool, currentUser, listener);
             } else {
                 // run the query
-                EventQueryResponseBase contentQueryResponse = runContentQuery(queryParameters, currentUser);
+                EventQueryResponseBase contentQueryResponse = runContentQuery(queryParameters, pool, currentUser);
                 
                 // merge the response
                 if (contentQueryResponse != null) {
@@ -576,7 +585,7 @@ public class LookupService {
         parameters.set(QUERY_AUTHORIZATIONS, userAuths);
     }
     
-    protected EventQueryResponseBase runContentQuery(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) {
+    protected EventQueryResponseBase runContentQuery(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser) {
         EventQueryResponseBase mergedResponse = null;
         String queryId = null;
         boolean isQueryFinished = false;
@@ -585,7 +594,7 @@ public class LookupService {
             BaseQueryResponse nextResponse = null;
             try {
                 if (queryId == null) {
-                    nextResponse = queryManagementService.createAndNext(parameters.getFirst(QUERY_LOGIC_NAME), parameters, currentUser);
+                    nextResponse = queryManagementService.createAndNext(parameters.getFirst(QUERY_LOGIC_NAME), parameters, pool, currentUser);
                     queryId = nextResponse.getQueryId();
                 } else {
                     nextResponse = queryManagementService.next(queryId, currentUser);
