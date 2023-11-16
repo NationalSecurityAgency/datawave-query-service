@@ -1,6 +1,7 @@
 package datawave.microservice.query.lookup;
 
 import static datawave.core.query.logic.lookup.LookupQueryLogic.LOOKUP_KEY_VALUE_DELIMITER;
+import static datawave.core.query.logic.lookup.uid.LookupUIDQueryLogic.UID_TERM_SEPARATOR;
 import static datawave.microservice.query.QueryParameters.QUERY_AUTHORIZATIONS;
 import static datawave.microservice.query.QueryParameters.QUERY_BEGIN;
 import static datawave.microservice.query.QueryParameters.QUERY_END;
@@ -11,12 +12,14 @@ import static datawave.query.QueryParameters.QUERY_SYNTAX;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.http.HttpStatus;
@@ -303,7 +306,8 @@ public class LookupService {
     
     private <T> T lookup(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException, AuthorizationException {
-        List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
+        List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS).stream().flatMap(x -> Arrays.stream(x.split(UID_TERM_SEPARATOR)))
+                        .collect(Collectors.toList());
         if (lookupTerms == null || lookupTerms.isEmpty()) {
             log.error("Unable to validate lookupUUID parameters: No UUID Pairs");
             throw new BadRequestQueryException(DatawaveErrorCode.MISSING_REQUIRED_PARAMETER);
@@ -471,7 +475,8 @@ public class LookupService {
     
     private <T> T lookupContent(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException, AuthorizationException {
-        List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
+        List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS).stream().flatMap(x -> Arrays.stream(x.split(UID_TERM_SEPARATOR)))
+                        .collect(Collectors.toList());
         if (lookupTerms == null || lookupTerms.isEmpty()) {
             log.error("Unable to validate lookupContentUUID parameters: No UUID Pairs");
             throw new BadRequestQueryException(DatawaveErrorCode.MISSING_REQUIRED_PARAMETER);
