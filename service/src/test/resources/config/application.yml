@@ -45,6 +45,9 @@ datawave:
   query:
     messaging:
       backend: hazelcast
+    metric:
+      client:
+        confirmAckEnabled: false
 
 logging:
   level:
