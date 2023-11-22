@@ -1122,6 +1122,7 @@ public class QueryManagementService implements QueryRequestHandler {
                         // @formatter:off
                         queryMetricClient.submit(
                                 new QueryMetricClient.Request.Builder()
+                                        .withUser((DatawaveUserDetails) logic.getServerUser())
                                         .withMetric(baseQueryMetric.duplicate())
                                         .withMetricType(QueryMetricType.DISTRIBUTED)
                                         .build());
@@ -1328,6 +1329,7 @@ public class QueryManagementService implements QueryRequestHandler {
                     // @formatter:off
                     queryMetricClient.submit(
                             new QueryMetricClient.Request.Builder()
+                                    .withUser((DatawaveUserDetails) logic.getServerUser())
                                     .withMetric(baseQueryMetric.duplicate())
                                     .withMetricType(QueryMetricType.DISTRIBUTED)
                                     .build());

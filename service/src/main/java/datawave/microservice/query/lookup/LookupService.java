@@ -306,12 +306,14 @@ public class LookupService {
     
     private <T> T lookup(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException, AuthorizationException {
-        List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS).stream().flatMap(x -> Arrays.stream(x.split(UID_TERM_SEPARATOR)))
-                        .collect(Collectors.toList());
+        List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
         if (lookupTerms == null || lookupTerms.isEmpty()) {
             log.error("Unable to validate lookupUUID parameters: No UUID Pairs");
             throw new BadRequestQueryException(DatawaveErrorCode.MISSING_REQUIRED_PARAMETER);
         }
+        
+        // flatten out the terms
+        lookupTerms = lookupTerms.stream().flatMap(x -> Arrays.stream(x.split(UID_TERM_SEPARATOR))).collect(Collectors.toList());
         
         MultiValueMap<String,String> lookupTermMap = new LinkedMultiValueMap<>();
         
@@ -343,7 +345,7 @@ public class LookupService {
             
             if (listener != null) {
                 // stream results to the listener
-                streamingService.execute(queryId, currentUser, listener);
+                streamingService.execute(queryId, currentUser, (DatawaveUserDetails) lookupQueryLogic.getServerUser(), listener);
                 return null;
             } else {
                 // get the first page of results
@@ -475,12 +477,14 @@ public class LookupService {
     
     private <T> T lookupContent(MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener)
                     throws QueryException, AuthorizationException {
-        List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS).stream().flatMap(x -> Arrays.stream(x.split(UID_TERM_SEPARATOR)))
-                        .collect(Collectors.toList());
+        List<String> lookupTerms = parameters.get(LOOKUP_UUID_PAIRS);
         if (lookupTerms == null || lookupTerms.isEmpty()) {
             log.error("Unable to validate lookupContentUUID parameters: No UUID Pairs");
             throw new BadRequestQueryException(DatawaveErrorCode.MISSING_REQUIRED_PARAMETER);
         }
+        
+        // flatten out the terms
+        lookupTerms = lookupTerms.stream().flatMap(x -> Arrays.stream(x.split(UID_TERM_SEPARATOR))).collect(Collectors.toList());
         
         MultiValueMap<String,String> lookupTermMap = new LinkedMultiValueMap<>();
         
@@ -504,7 +508,7 @@ public class LookupService {
             contentLookupTerms = getContentLookupTerms(response);
         }
         
-        return lookupContent(contentLookupTerms, parameters, pool, currentUser, listener);
+        return lookupContent(contentLookupTerms, parameters, pool, currentUser, (DatawaveUserDetails) lookupQueryLogic.getServerUser(), listener);
     }
     
     private Set<String> getContentLookupTerms(BaseQueryResponse response) {
@@ -523,7 +527,7 @@ public class LookupService {
     }
     
     private <T> T lookupContent(Set<String> contentLookupTerms, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser,
-                    StreamingResponseListener listener) throws QueryException {
+                    DatawaveUserDetails serverUser, StreamingResponseListener listener) throws QueryException {
         // create queries from the content lookup terms
         List<String> contentQueries = createContentQueries(contentLookupTerms);
         
@@ -538,7 +542,7 @@ public class LookupService {
             setContentQueryParameters(queryParameters, currentUser);
             
             if (listener != null) {
-                streamingService.createAndExecute(queryParameters.getFirst(QUERY_LOGIC_NAME), queryParameters, pool, currentUser, listener);
+                streamingService.createAndExecute(queryParameters.getFirst(QUERY_LOGIC_NAME), queryParameters, pool, currentUser, serverUser, listener);
             } else {
                 // run the query
                 EventQueryResponseBase contentQueryResponse = runContentQuery(queryParameters, pool, currentUser);

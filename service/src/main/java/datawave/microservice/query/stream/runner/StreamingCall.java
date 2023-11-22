@@ -27,6 +27,7 @@ public class StreamingCall implements Callable<Void> {
     final private BaseQueryMetric baseQueryMetric;
     
     final private DatawaveUserDetails currentUser;
+    final private DatawaveUserDetails serverUser;
     final private String queryId;
     
     final private StreamingResponseListener listener;
@@ -37,6 +38,7 @@ public class StreamingCall implements Callable<Void> {
         this.baseQueryMetric = builder.queryManagementService.getBaseQueryMetric().duplicate();
         
         this.currentUser = builder.currentUser;
+        this.serverUser = builder.serverUser;
         this.queryId = builder.queryId;
         
         this.listener = builder.listener;
@@ -121,6 +123,7 @@ public class StreamingCall implements Callable<Void> {
             // @formatter:off
             queryMetricClient.submit(
                     new QueryMetricClient.Request.Builder()
+                            .withUser(serverUser)
                             .withMetric(baseQueryMetric.duplicate())
                             .withMetricType(QueryMetricType.DISTRIBUTED)
                             .build());
@@ -144,6 +147,7 @@ public class StreamingCall implements Callable<Void> {
         private QueryMetricClient queryMetricClient;
         
         private DatawaveUserDetails currentUser;
+        private DatawaveUserDetails serverUser;
         private String queryId;
         
         private StreamingResponseListener listener;
@@ -160,6 +164,11 @@ public class StreamingCall implements Callable<Void> {
         
         public Builder setCurrentUser(DatawaveUserDetails currentUser) {
             this.currentUser = currentUser;
+            return this;
+        }
+        
+        public Builder setServerUser(DatawaveUserDetails serverUser) {
+            this.serverUser = serverUser;
             return this;
         }
         

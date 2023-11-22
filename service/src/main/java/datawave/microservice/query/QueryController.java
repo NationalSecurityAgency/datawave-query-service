@@ -21,7 +21,9 @@ import static datawave.microservice.query.translateid.TranslateIdService.TRANSLA
 import static datawave.query.QueryParameters.QUERY_SYNTAX;
 
 import java.util.List;
+import java.util.function.Supplier;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -82,6 +84,8 @@ public class QueryController {
     
     private final StreamingProperties streamingProperties;
     
+    private final Supplier<DatawaveUserDetails> serverUserDetailsSupplier;
+    
     // Note: baseMethodStatsContext needs to be request scoped
     private final BaseMethodStatsFilter.BaseMethodStatsContext baseMethodStatsContext;
     // Note: queryMetricsEnrichmentContest needs to be request scoped
@@ -89,6 +93,7 @@ public class QueryController {
     
     public QueryController(QueryManagementService queryManagementService, LookupService lookupService, StreamingService streamingService,
                     TranslateIdService translateIdService, StreamingProperties streamingProperties,
+                    @Qualifier("serverUserDetailsSupplier") Supplier<DatawaveUserDetails> serverUserDetailsSupplier,
                     BaseMethodStatsFilter.BaseMethodStatsContext baseMethodStatsContext,
                     QueryMetricsEnrichmentFilterAdvice.QueryMetricsEnrichmentContext queryMetricsEnrichmentContext) {
         this.queryManagementService = queryManagementService;
@@ -96,6 +101,7 @@ public class QueryController {
         this.streamingService = streamingService;
         this.translateIdService = translateIdService;
         this.streamingProperties = streamingProperties;
+        this.serverUserDetailsSupplier = serverUserDetailsSupplier;
         this.baseMethodStatsContext = baseMethodStatsContext;
         this.queryMetricsEnrichmentContext = queryMetricsEnrichmentContext;
     }
@@ -2482,7 +2488,7 @@ public class QueryController {
     }
     
     /**
-     * @see StreamingService#createAndExecute(String, MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
+     * @see StreamingService#createAndExecute(String, MultiValueMap, String, DatawaveUserDetails, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -2619,7 +2625,7 @@ public class QueryController {
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
         MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
         CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
-        String queryId = streamingService.createAndExecute(queryLogic, parameters, getPool(headers), currentUser,
+        String queryId = streamingService.createAndExecute(queryLogic, parameters, getPool(headers), currentUser, serverUserDetailsSupplier.get(),
                         new CountingResponseBodyEmitterListener(emitter, contentType));
         
         // unfortunately this needs to be set manually. ResponseBodyAdvice does not run for streaming endpoints
@@ -2630,7 +2636,7 @@ public class QueryController {
     }
     
     /**
-     * @see StreamingService#execute(String, DatawaveUserDetails, StreamingResponseListener)
+     * @see StreamingService#execute(String, DatawaveUserDetails, DatawaveUserDetails, StreamingResponseListener)
      */
     // @formatter:off
     @Operation(
@@ -2676,7 +2682,7 @@ public class QueryController {
                     @AuthenticationPrincipal DatawaveUserDetails currentUser, @RequestHeader HttpHeaders headers) {
         MediaType contentType = determineContentType(headers.getAccept(), MediaType.parseMediaType(streamingProperties.getDefaultContentType()));
         CountingResponseBodyEmitter emitter = baseMethodStatsContext.createCountingResponseBodyEmitter(streamingProperties.getCallTimeoutMillis());
-        streamingService.execute(queryId, currentUser, new CountingResponseBodyEmitterListener(emitter, contentType));
+        streamingService.execute(queryId, currentUser, serverUserDetailsSupplier.get(), new CountingResponseBodyEmitterListener(emitter, contentType));
         
         return createStreamingResponse(emitter, contentType);
     }

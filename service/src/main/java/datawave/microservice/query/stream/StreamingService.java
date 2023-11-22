@@ -1,5 +1,7 @@
 package datawave.microservice.query.stream;
 
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -71,7 +73,7 @@ public class StreamingService {
      *             if there is an unknown error
      */
     public String createAndExecute(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser,
-                    StreamingResponseListener listener) throws QueryException {
+                    DatawaveUserDetails serverUser, StreamingResponseListener listener) throws QueryException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         if (log.isDebugEnabled()) {
             log.info("Request: {}/createAndExecute from {} with params: {}", queryLogicName, user, parameters);
@@ -80,7 +82,7 @@ public class StreamingService {
         }
         
         String queryId = queryManagementService.create(queryLogicName, parameters, pool, currentUser).getResult();
-        submitStreamingCall(queryId, currentUser, listener);
+        submitStreamingCall(queryId, currentUser, serverUser, listener);
         return queryId;
     }
     
@@ -95,16 +97,18 @@ public class StreamingService {
      *            the query id, not null
      * @param currentUser
      *            the user who called this method, not null
+     * @param serverUser
+     *            the server user, not null
      * @param listener
      *            the listener which will handle the result pages, not null
      */
-    public void execute(String queryId, DatawaveUserDetails currentUser, StreamingResponseListener listener) {
+    public void execute(String queryId, DatawaveUserDetails currentUser, DatawaveUserDetails serverUser, StreamingResponseListener listener) {
         log.info("Request: {}/execute from {}", queryId, ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()));
         
-        submitStreamingCall(queryId, currentUser, listener);
+        submitStreamingCall(queryId, currentUser, serverUser, listener);
     }
     
-    private void submitStreamingCall(String queryId, DatawaveUserDetails currentUser, StreamingResponseListener listener) {
+    private void submitStreamingCall(String queryId, DatawaveUserDetails currentUser, DatawaveUserDetails serverUser, StreamingResponseListener listener) {
         // @formatter:off
         streamingCallExecutor.submit(
                 new StreamingCall.Builder()
@@ -112,6 +116,7 @@ public class StreamingService {
                         .setQueryMetricClient(queryMetricClient)
                         .setQueryId(queryId)
                         .setCurrentUser(currentUser)
+                        .setServerUser(serverUser)
                         .setListener(listener)
                         .build());
         // @formatter:on

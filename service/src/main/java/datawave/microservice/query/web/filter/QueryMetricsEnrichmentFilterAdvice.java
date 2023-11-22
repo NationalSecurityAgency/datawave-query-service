@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.context.annotation.RequestScope;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
+import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
+import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.microservice.query.web.annotation.EnrichQueryMetrics;
@@ -114,12 +116,15 @@ public class QueryMetricsEnrichmentFilterAdvice extends BaseMethodStatsFilter im
                 }
             }
             
-            // determine whether metrics are enabled
+            // retrieve the server user and determine whether metrics are enabled
             boolean isMetricsEnabled = false;
+            DatawaveUserDetails serverUser = null;
             try {
-                isMetricsEnabled = queryLogicFactory.getQueryLogic(queryLogic).getCollectQueryMetrics();
+                QueryLogic<?> logic = queryLogicFactory.getQueryLogic(queryLogic);
+                isMetricsEnabled = logic.getCollectQueryMetrics();
+                serverUser = (DatawaveUserDetails) logic.getServerUser();
             } catch (Exception e) {
-                log.warn("Unable to determine if query logic '" + queryLogic + "' supports metrics");
+                log.warn("Unable to retrieve the server user and determine if query logic '" + queryLogic + "' supports metrics");
             }
             
             if (isMetricsEnabled) {
@@ -157,6 +162,7 @@ public class QueryMetricsEnrichmentFilterAdvice extends BaseMethodStatsFilter im
                     // @formatter:off
                     queryMetricClient.submit(
                             new QueryMetricClient.Request.Builder()
+                                    .withUser(serverUser)
                                     .withMetric(baseQueryMetric.duplicate())
                                     .withMetricType(QueryMetricType.DISTRIBUTED)
                                     .build());

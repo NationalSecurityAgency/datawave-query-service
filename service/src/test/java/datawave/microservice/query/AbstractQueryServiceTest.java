@@ -89,7 +89,6 @@ import datawave.security.authorization.SubjectIssuerDNPair;
 import datawave.webservice.query.exception.QueryExceptionType;
 import datawave.webservice.query.result.event.DefaultEvent;
 import datawave.webservice.query.result.event.DefaultField;
-import datawave.webservice.result.BaseQueryResponse;
 import datawave.webservice.result.BaseResponse;
 import datawave.webservice.result.DefaultEventQueryResponse;
 import datawave.webservice.result.GenericResponse;
@@ -522,7 +521,6 @@ public abstract class AbstractQueryServiceTest {
     
     @Configuration
     @Profile("QueryServiceTest")
-    @ComponentScan(basePackages = "datawave.microservice")
     public static class QueryServiceTestConfiguration {
         @Bean
         public Module queryImplDeserializer(@Lazy ObjectMapper objectMapper) {
