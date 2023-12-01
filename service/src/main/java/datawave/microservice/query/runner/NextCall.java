@@ -22,6 +22,7 @@ import datawave.microservice.query.messaging.QueryResultsManager;
 import datawave.microservice.query.messaging.Result;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryStorageCache;
+import datawave.microservice.query.storage.QueryStorageLock;
 import datawave.microservice.query.storage.TaskStates;
 import datawave.microservice.query.util.QueryStatusUpdateUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
@@ -44,6 +45,8 @@ public class NextCall implements Callable<ResultsPage<Object>> {
     private final long callTimeoutMillis;
     private final long shortCircuitCheckTimeMillis;
     private final long shortCircuitTimeoutMillis;
+    private final int maxLongRunningQueryTimeouts;
+    private final boolean allowLongRunningQueryEmptyPages;
     
     private final int userResultsPerPage;
     private final boolean maxResultsOverridden;
@@ -89,10 +92,12 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             shortCircuitCheckTimeMillis = builder.expirationProperties.getShortCircuitCheckTimeMillis();
             shortCircuitTimeoutMillis = builder.expirationProperties.getShortCircuitTimeoutMillis();
         }
+        this.maxLongRunningQueryTimeouts = builder.expirationProperties.getMaxLongRunningTimeoutRetries();
         
         this.userResultsPerPage = status.getQuery().getPagesize();
         this.maxResultsOverridden = status.getQuery().isMaxResultsOverridden();
         this.maxResultsOverride = status.getQuery().getMaxResultsOverride();
+        this.allowLongRunningQueryEmptyPages = status.isAllowLongRunningQueryEmptyPages();
         
         this.logicResultsPerPage = builder.queryLogic.getMaxPageSize();
         this.logicBytesPerPage = builder.queryLogic.getPageByteTrigger();
@@ -302,7 +307,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             finished = true;
         }
         
-        // 9) have we been in this next call too long? if so, return
+        // 9) have we been in this next call too long?
         if (!finished && callExpiredTimeout(callTimeMillis)) {
             log.info("Query [{}]: max call time reached, returning existing results: {} of {} results in {}ms", queryId, results.size(), maxResultsPerPage,
                             callTimeMillis);
@@ -335,7 +340,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
     private boolean shortCircuitTimeout(long callTimeMillis) {
         boolean timeout = false;
         
-        // only return prematurely if we have at least 1 result
+        // return prematurely if we have at least 1 result
         if (!results.isEmpty()) {
             // if after the page size short circuit check time
             if (callTimeMillis >= shortCircuitCheckTimeMillis) {
@@ -350,6 +355,25 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             // if after the page short circuit timeout, then break out
             if (callTimeMillis >= shortCircuitTimeoutMillis) {
                 timeout = true;
+            }
+        } else if (allowLongRunningQueryEmptyPages) {
+            // in the case of allowing long-running query timeouts, we can return an empty page
+            // before the query times out but only allow this so many times
+            if (callTimeMillis >= shortCircuitTimeoutMillis) {
+                QueryStorageLock lock = queryStorageCache.getQueryStatusLock(queryId);
+                lock.lock();
+                try {
+                    QueryStatus status = queryStorageCache.getQueryStatus(queryId);
+                    int longRunningQueryTimeouts = status.getLongRunningQueryTimeouts();
+                    if ((longRunningQueryTimeouts + 1) < maxLongRunningQueryTimeouts) {
+                        // update the status with a count
+                        status.setLongRunningQueryTimeouts(longRunningQueryTimeouts + 1);
+                        queryStorageCache.updateQueryStatus(status);
+                        timeout = true;
+                    }
+                } finally {
+                    lock.unlock();
+                }
             }
         }
         
