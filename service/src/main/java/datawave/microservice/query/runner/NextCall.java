@@ -22,7 +22,6 @@ import datawave.microservice.query.messaging.QueryResultsManager;
 import datawave.microservice.query.messaging.Result;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryStorageCache;
-import datawave.microservice.query.storage.QueryStorageLock;
 import datawave.microservice.query.storage.TaskStates;
 import datawave.microservice.query.util.QueryStatusUpdateUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
@@ -360,19 +359,18 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             // in the case of allowing long-running query timeouts, we can return an empty page
             // before the query times out but only allow this so many times
             if (callTimeMillis >= shortCircuitTimeoutMillis) {
-                QueryStorageLock lock = queryStorageCache.getQueryStatusLock(queryId);
-                lock.lock();
-                try {
-                    QueryStatus status = queryStorageCache.getQueryStatus(queryId);
-                    int longRunningQueryTimeouts = status.getLongRunningQueryTimeouts();
-                    if ((longRunningQueryTimeouts + 1) < maxLongRunningQueryTimeouts) {
-                        // update the status with a count
-                        status.setLongRunningQueryTimeouts(longRunningQueryTimeouts + 1);
-                        queryStorageCache.updateQueryStatus(status);
+                if (queryStatus.getLongRunningQueryTimeouts() < maxLongRunningQueryTimeouts) {
+                    try {
+                        queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, queryStatus1 -> {
+                            // update the status with a count
+                            queryStatus1.setLongRunningQueryTimeouts(Math.min(queryStatus1.getLongRunningQueryTimeouts() + 1, maxLongRunningQueryTimeouts));
+                        });
+                    } catch (Exception e) {
+                        log.warn("Unable to update long running query timeouts for query {}", queryId);
+                    }
+                    if (queryStatus.getLongRunningQueryTimeouts() < maxLongRunningQueryTimeouts) {
                         timeout = true;
                     }
-                } finally {
-                    lock.unlock();
                 }
             }
         }
