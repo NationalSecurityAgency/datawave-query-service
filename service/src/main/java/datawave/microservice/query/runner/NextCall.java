@@ -44,7 +44,8 @@ public class NextCall implements Callable<ResultsPage<Object>> {
     private final long callTimeoutMillis;
     private final long shortCircuitCheckTimeMillis;
     private final long shortCircuitTimeoutMillis;
-    private final int maxLongRunningQueryTimeouts;
+    private final long queryStartTimeMillis;
+    private final long longRunningQueryTimeoutMillis;
     private final boolean allowLongRunningQueryEmptyPages;
     
     private final int userResultsPerPage;
@@ -91,12 +92,13 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             shortCircuitCheckTimeMillis = builder.expirationProperties.getShortCircuitCheckTimeMillis();
             shortCircuitTimeoutMillis = builder.expirationProperties.getShortCircuitTimeoutMillis();
         }
-        this.maxLongRunningQueryTimeouts = builder.expirationProperties.getMaxLongRunningTimeoutRetries();
         
         this.userResultsPerPage = status.getQuery().getPagesize();
         this.maxResultsOverridden = status.getQuery().isMaxResultsOverridden();
         this.maxResultsOverride = status.getQuery().getMaxResultsOverride();
         this.allowLongRunningQueryEmptyPages = status.isAllowLongRunningQueryEmptyPages();
+        this.queryStartTimeMillis = status.getQueryStartMillis();
+        this.longRunningQueryTimeoutMillis = builder.expirationProperties.getLongRunningQueryTimeoutMillis();
         
         this.logicResultsPerPage = builder.queryLogic.getMaxPageSize();
         this.logicBytesPerPage = builder.queryLogic.getPageByteTrigger();
@@ -357,20 +359,10 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             }
         } else if (allowLongRunningQueryEmptyPages) {
             // in the case of allowing long-running query timeouts, we can return an empty page
-            // before the query times out but only allow this so many times
+            // before the query times out. However we can only allow this query to run so long...
             if (callTimeMillis >= shortCircuitTimeoutMillis) {
-                if (queryStatus.getLongRunningQueryTimeouts() < maxLongRunningQueryTimeouts) {
-                    try {
-                        queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, queryStatus1 -> {
-                            // update the status with a count
-                            queryStatus1.setLongRunningQueryTimeouts(Math.min(queryStatus1.getLongRunningQueryTimeouts() + 1, maxLongRunningQueryTimeouts));
-                        });
-                    } catch (Exception e) {
-                        log.warn("Unable to update long running query timeouts for query {}", queryId);
-                    }
-                    if (queryStatus.getLongRunningQueryTimeouts() < maxLongRunningQueryTimeouts) {
-                        timeout = true;
-                    }
+                if ((System.currentTimeMillis() - queryStartTimeMillis) < longRunningQueryTimeoutMillis) {
+                    timeout = true;
                 }
             }
         }
