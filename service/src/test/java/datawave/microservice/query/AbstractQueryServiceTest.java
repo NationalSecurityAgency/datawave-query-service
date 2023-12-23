@@ -478,7 +478,9 @@ public abstract class AbstractQueryServiceTest {
     protected void assertAuditSent(String queryId) {
         mockServer.verify();
         Assertions.assertEquals(1, auditIds.size());
-        Assertions.assertEquals(queryId, auditIds.get(0));
+        if (queryId != null) {
+            Assertions.assertEquals(queryId, auditIds.get(0));
+        }
     }
     
     protected void assertAuditNotSent() {

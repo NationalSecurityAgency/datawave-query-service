@@ -10,6 +10,7 @@ import static datawave.microservice.query.QueryParameters.QUERY_NAME;
 import static datawave.microservice.query.QueryParameters.QUERY_STRING;
 import static datawave.query.QueryParameters.QUERY_SYNTAX;
 
+import java.security.Principal;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,9 +18,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.http.HttpStatus;
@@ -30,19 +34,25 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Iterables;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.core.query.logic.lookup.LookupQueryLogic;
+import datawave.core.query.util.QueryUtil;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.authorization.util.AuthorizationsUtil;
 import datawave.microservice.query.DefaultQueryParameters;
+import datawave.microservice.query.Query;
+import datawave.microservice.query.QueryImpl;
 import datawave.microservice.query.QueryManagementService;
 import datawave.microservice.query.QueryParameters;
 import datawave.microservice.query.stream.StreamingService;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
 import datawave.query.data.UUIDType;
 import datawave.security.authorization.AuthorizationException;
+import datawave.security.authorization.DatawavePrincipal;
+import datawave.security.authorization.ProxiedUserDetails;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.query.exception.BadRequestQueryException;
 import datawave.webservice.query.exception.DatawaveErrorCode;
@@ -53,6 +63,7 @@ import datawave.webservice.query.exception.UnauthorizedQueryException;
 import datawave.webservice.query.result.event.Metadata;
 import datawave.webservice.result.BaseQueryResponse;
 import datawave.webservice.result.EventQueryResponseBase;
+import datawave.webservice.result.VoidResponse;
 
 @Service
 public class LookupService {
@@ -338,7 +349,7 @@ public class LookupService {
             parameters.put(QUERY_STRING, Collections.singletonList(lookupQueryLogic.createQueryFromLookupTerms(lookupTermMap)));
             
             // update the parameters for query
-            setupEventQueryParameters(parameters, currentUser);
+            setupEventQueryParameters(parameters, lookupQueryLogic, currentUser);
             
             // create the query
             queryId = queryManagementService.create(parameters.getFirst(QUERY_LOGIC_NAME), parameters, pool, currentUser).getResult();
@@ -440,18 +451,69 @@ public class LookupService {
     }
     
     @SuppressWarnings("ConstantConditions")
-    protected void setupEventQueryParameters(MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws AuthorizationException {
+    public Query createSettings(Map<String,List<String>> queryParameters) {
+        log.debug("Initial query parameters: " + queryParameters);
+        Query query = new QueryImpl();
+        if (queryParameters != null) {
+            MultiValueMap<String,String> expandedQueryParameters = new LinkedMultiValueMap<>();
+            List<String> params = queryParameters.get(QueryParameters.QUERY_PARAMS);
+            String delimitedParams = null;
+            if (params != null && !params.isEmpty()) {
+                delimitedParams = params.get(0);
+            }
+            if (delimitedParams != null) {
+                for (QueryImpl.Parameter pm : QueryUtil.parseParameters(delimitedParams)) {
+                    expandedQueryParameters.add(pm.getParameterName(), pm.getParameterValue());
+                }
+            }
+            expandedQueryParameters.putAll(queryParameters);
+            log.debug("Final query parameters: " + expandedQueryParameters);
+            query.setOptionalQueryParameters(expandedQueryParameters);
+            for (String key : expandedQueryParameters.keySet()) {
+                if (expandedQueryParameters.get(key).size() == 1) {
+                    query.addParameter(key, expandedQueryParameters.getFirst(key));
+                }
+            }
+        }
+        return query;
+    }
+    
+    public String getAuths(MultiValueMap<String,String> queryParameters, QueryLogic<?> queryLogic, DatawaveUserDetails currentUser)
+                    throws AuthorizationException {
+        Query query = createSettings(queryParameters);
+        
+        String userAuths;
+        try {
+            String queryAuths = null;
+            if (queryParameters.containsKey(QUERY_AUTHORIZATIONS)) {
+                queryAuths = queryParameters.getFirst(QUERY_AUTHORIZATIONS);
+                queryLogic.preInitialize(query, AuthorizationsUtil.buildAuthorizations(Collections.singleton(AuthorizationsUtil.splitAuths(queryAuths))));
+            } else {
+                // if no requested auths, then use the overall auths for any filtering of the query operations
+                queryLogic.preInitialize(query, AuthorizationsUtil.buildAuthorizations(currentUser.getAuthorizations()));
+            }
+            
+            // the query principal is our local principal unless the query logic has a ddifferent user operations
+            ProxiedUserDetails queryPrincipal = ((queryLogic.getUserOperations() == null) ? currentUser
+                            : queryLogic.getUserOperations().getRemoteUser(currentUser));
+            
+            if (queryAuths != null) {
+                userAuths = AuthorizationsUtil.downgradeUserAuths(queryAuths, currentUser, queryPrincipal);
+            } else {
+                userAuths = AuthorizationsUtil.buildUserAuthorizationString(queryPrincipal);
+            }
+        } catch (Exception e) {
+            log.error("Failed to get user query authorizations", e);
+            throw new AuthorizationException("Failed to get user query authorizations", e);
+        }
+        
+        return userAuths;
+    }
+    
+    protected void setupEventQueryParameters(MultiValueMap<String,String> parameters, LookupQueryLogic<?> queryLogic, DatawaveUserDetails currentUser)
+                    throws AuthorizationException {
         String user = ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName());
         final String queryName = user + "-" + UUID.randomUUID().toString();
-        
-        // Override the extraneous query details
-        String userAuths;
-        if (parameters.containsKey(QUERY_AUTHORIZATIONS)) {
-            // TODO: JWO: We will probably need to update this to take the query logic's remote user operations into consideration...
-            userAuths = AuthorizationsUtil.downgradeUserAuths(parameters.getFirst(QUERY_AUTHORIZATIONS), currentUser, currentUser);
-        } else {
-            userAuths = AuthorizationsUtil.buildUserAuthorizationString(currentUser);
-        }
         
         final String endDate;
         try {
@@ -462,11 +524,13 @@ public class LookupService {
         
         setOptionalQueryParameters(parameters);
         
+        // Override the extraneous query details
         parameters.set(QUERY_SYNTAX, LUCENE_UUID_SYNTAX);
         parameters.set(QUERY_NAME, queryName);
-        parameters.set(QUERY_AUTHORIZATIONS, userAuths);
         parameters.set(QUERY_BEGIN, lookupProperties.getBeginDate());
         parameters.set(QUERY_END, endDate);
+        
+        parameters.set(QUERY_AUTHORIZATIONS, getAuths(parameters, queryLogic, currentUser));
     }
     
     protected void setOptionalQueryParameters(MultiValueMap<String,String> parameters) {

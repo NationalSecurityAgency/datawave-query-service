@@ -163,7 +163,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         RequestEntity<MultiValueMap<String,String>> requestEntity = jwtRestTemplate.createRequestEntity(authUser, map, null, HttpMethod.POST, uri);
         
         // setup a mock audit service
-        auditNotSentSetup();
+        auditSentSetup();
         
         ResponseEntity<GenericResponse> resp = jwtRestTemplate.exchange(requestEntity, GenericResponse.class);
         
@@ -193,7 +193,7 @@ public class QueryServiceCreateTest extends AbstractQueryServiceTest {
         Assertions.assertTrue(queryStorageCache.getQueryStatus().isEmpty());
         
         // verify that no audit message was sent
-        assertAuditNotSent();
+        assertAuditSent(null);
     }
     
     @Test

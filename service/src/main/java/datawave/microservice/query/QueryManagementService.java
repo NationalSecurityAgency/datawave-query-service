@@ -18,6 +18,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -523,24 +524,30 @@ public class QueryManagementService implements QueryRequestHandler {
         
         Query query = createQuery(queryLogicName, parameters, currentUser, queryId);
         
-        // TODO: Downgrade the auths before or after auditing???
+        // if this is a create request, or a plan request where we are expanding values, send an audit record to the auditor
+        if (queryType == CREATE || (queryType == PLAN && queryParameters.isExpandValues())) {
+            audit(query, queryLogic, parameters, currentUser);
+        }
+        
         // downgrade the auths
         QueryParameters queryParameters = getQueryParameters();
         Set<Authorizations> downgradedAuthorizations;
         try {
+            // the overall principal (the one with combined auths across remote user operations) is our own user operations (probably the UserOperationsBean)
+            DatawaveUserDetails overallUserDetails = (DatawaveUserDetails) ((userOperations == null) ? currentUser : userOperations.getRemoteUser(currentUser));
+            if (queryParameters.getAuths() == null) {
+                // if no requested auths, then use the overall auths for any filtering of the query operations
+                queryLogic.preInitialize(query, AuthorizationsUtil.buildAuthorizations(overallUserDetails.getAuthorizations()));
+            } else {
+                queryLogic.preInitialize(query,
+                                AuthorizationsUtil.buildAuthorizations(Collections.singleton(AuthorizationsUtil.splitAuths(query.getQueryAuthorizations()))));
+            }
             // the query principal is our local principal unless the query logic has a different user operations
             DatawaveUserDetails queryUserDetails = (DatawaveUserDetails) ((queryLogic.getUserOperations() == null) ? currentUser
                             : queryLogic.getUserOperations().getRemoteUser(currentUser));
-            // the overall principal (the one with combined auths across remote user operations) is our own user operations (probably the UserOperationsBean)
-            DatawaveUserDetails overallUserDetails = (DatawaveUserDetails) ((userOperations == null) ? currentUser : userOperations.getRemoteUser(currentUser));
             downgradedAuthorizations = AuthorizationsUtil.getDowngradedAuthorizations(queryParameters.getAuths(), overallUserDetails, queryUserDetails);
         } catch (Exception e) {
             throw new BadRequestQueryException("Unable to downgrade authorizations", e, HttpStatus.SC_BAD_REQUEST + "-1");
-        }
-        
-        // if this is a create request, or a plan request where we are expanding values, send an audit record to the auditor
-        if (queryType == CREATE || (queryType == PLAN && queryParameters.isExpandValues())) {
-            audit(query, queryLogic, parameters, currentUser);
         }
         
         try {
