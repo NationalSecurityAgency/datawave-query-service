@@ -1,16 +1,15 @@
 package datawave.microservice.query.lookup;
 
 import static datawave.core.query.logic.lookup.LookupQueryLogic.LOOKUP_KEY_VALUE_DELIMITER;
-import static datawave.core.query.logic.lookup.uid.LookupUIDQueryLogic.UID_TERM_SEPARATOR;
 import static datawave.microservice.query.QueryParameters.QUERY_AUTHORIZATIONS;
 import static datawave.microservice.query.QueryParameters.QUERY_BEGIN;
 import static datawave.microservice.query.QueryParameters.QUERY_END;
 import static datawave.microservice.query.QueryParameters.QUERY_LOGIC_NAME;
 import static datawave.microservice.query.QueryParameters.QUERY_NAME;
+import static datawave.microservice.query.QueryParameters.QUERY_PARAMS;
 import static datawave.microservice.query.QueryParameters.QUERY_STRING;
 import static datawave.query.QueryParameters.QUERY_SYNTAX;
 
-import java.security.Principal;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,8 +22,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.MultivaluedMap;
-
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
@@ -34,7 +31,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Iterables;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
@@ -51,7 +47,6 @@ import datawave.microservice.query.stream.StreamingService;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
 import datawave.query.data.UUIDType;
 import datawave.security.authorization.AuthorizationException;
-import datawave.security.authorization.DatawavePrincipal;
 import datawave.security.authorization.ProxiedUserDetails;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.query.exception.BadRequestQueryException;
@@ -63,7 +58,6 @@ import datawave.webservice.query.exception.UnauthorizedQueryException;
 import datawave.webservice.query.result.event.Metadata;
 import datawave.webservice.result.BaseQueryResponse;
 import datawave.webservice.result.EventQueryResponseBase;
-import datawave.webservice.result.VoidResponse;
 
 @Service
 public class LookupService {
@@ -72,6 +66,14 @@ public class LookupService {
     public static final String LOOKUP_UUID_PAIRS = "uuidPairs";
     public static final String LUCENE_UUID_SYNTAX = "LUCENE-UUID";
     public static final String LOOKUP_STREAMING = "streaming";
+    
+    public static final String PARAM_HIT_LIST = "hit.list";
+    protected static final String EMPTY_STRING = "";
+    private static final String SPACE = " ";
+    private static final String REGEX_GROUPING_CHARS = "[()]";
+    private static final String REGEX_NONWORD_CHARS = "[\\W&&[^:_\\.\\s-]]";
+    private static final String REGEX_OR_OPERATOR = "[\\s][oO][rR][\\s]";
+    private static final String REGEX_WHITESPACE_CHARS = "\\s";
     
     private static final String CONTENT_QUERY_TERM_DELIMITER = ":";
     private static final String CONTENT_QUERY_VALUE_DELIMITER = "/";
@@ -324,29 +326,38 @@ public class LookupService {
         }
         
         // flatten out the terms
-        lookupTerms = lookupTerms.stream().flatMap(x -> Arrays.stream(x.split(UID_TERM_SEPARATOR))).collect(Collectors.toList());
-        
-        MultiValueMap<String,String> lookupTermMap = new LinkedMultiValueMap<>();
+        lookupTerms = lookupTerms.stream().flatMap(x -> Arrays.stream(reformatQuery(x).split(REGEX_WHITESPACE_CHARS))).collect(Collectors.toList());
         
         // validate the lookup terms
-        LookupQueryLogic<?> lookupQueryLogic = validateLookupTerms(lookupTerms, lookupTermMap);
+        LookupQueryLogic<?> lookupQueryLogic = validateLookupTerms(lookupTerms);
         
         // perform the event lookup
-        return lookupEvents(lookupTermMap, lookupQueryLogic, new LinkedMultiValueMap<>(parameters), pool, currentUser, listener);
+        return lookupEvents(lookupQueryLogic, new LinkedMultiValueMap<>(parameters), pool, currentUser, listener);
     }
     
-    private BaseQueryResponse lookupEvents(MultiValueMap<String,String> lookupTermMap, LookupQueryLogic<?> lookupQueryLogic,
-                    MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser) throws QueryException, AuthorizationException {
-        return lookupEvents(lookupTermMap, lookupQueryLogic, parameters, pool, currentUser, null);
+    private String reformatQuery(String query) {
+        String reformattedQuery = EMPTY_STRING;
+        if (query != null) {
+            reformattedQuery = query;
+            reformattedQuery = reformattedQuery.replaceAll(REGEX_GROUPING_CHARS, SPACE); // Replace grouping characters with whitespace
+            reformattedQuery = reformattedQuery.replaceAll(REGEX_NONWORD_CHARS, EMPTY_STRING); // Remove most, but not all, non-word characters
+            reformattedQuery = reformattedQuery.replaceAll(REGEX_OR_OPERATOR, SPACE); // Remove OR operators
+        }
+        return reformattedQuery;
     }
     
-    private <T> T lookupEvents(MultiValueMap<String,String> lookupTermMap, LookupQueryLogic<?> lookupQueryLogic, MultiValueMap<String,String> parameters,
-                    String pool, DatawaveUserDetails currentUser, StreamingResponseListener listener) throws QueryException, AuthorizationException {
+    private BaseQueryResponse lookupEvents(LookupQueryLogic<?> lookupQueryLogic, MultiValueMap<String,String> parameters, String pool,
+                    DatawaveUserDetails currentUser) throws QueryException, AuthorizationException {
+        return lookupEvents(lookupQueryLogic, parameters, pool, currentUser, null);
+    }
+    
+    private <T> T lookupEvents(LookupQueryLogic<?> lookupQueryLogic, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser,
+                    StreamingResponseListener listener) throws QueryException, AuthorizationException {
         String queryId = null;
         try {
             // add the query logic name and query string to our parameters
             parameters.put(QUERY_LOGIC_NAME, Collections.singletonList(lookupQueryLogic.getLogicName()));
-            parameters.put(QUERY_STRING, Collections.singletonList(lookupQueryLogic.createQueryFromLookupTerms(lookupTermMap)));
+            parameters.put(QUERY_STRING, Collections.singletonList(parameters.getFirst(LOOKUP_UUID_PAIRS)));
             
             // update the parameters for query
             setupEventQueryParameters(parameters, lookupQueryLogic, currentUser);
@@ -371,9 +382,13 @@ public class LookupService {
         }
     }
     
+    protected LookupQueryLogic<?> validateLookupTerms(List<String> lookupUUIDPairs) throws QueryException {
+        return validateLookupTerms(lookupUUIDPairs, null);
+    }
+    
     protected LookupQueryLogic<?> validateLookupTerms(List<String> lookupUUIDPairs, MultiValueMap<String,String> lookupUUIDMap) throws QueryException {
         String queryLogicName = null;
-        
+
         // make sure there aren't too many terms to lookup
         if (lookupProperties.getBatchLookupLimit() > 0 && lookupUUIDPairs.size() <= lookupProperties.getBatchLookupLimit()) {
             
@@ -411,7 +426,9 @@ public class LookupService {
                             throw new BadRequestQueryException(new IllegalArgumentException(message), HttpStatus.SC_BAD_REQUEST + "-1");
                         }
                         
-                        lookupUUIDMap.add(field, value);
+                        if (lookupUUIDMap != null) {
+                            lookupUUIDMap.add(field, value);
+                        }
                     }
                     // if the field or value is empty
                     else {
@@ -548,7 +565,7 @@ public class LookupService {
         }
         
         // flatten out the terms
-        lookupTerms = lookupTerms.stream().flatMap(x -> Arrays.stream(x.split(UID_TERM_SEPARATOR))).collect(Collectors.toList());
+        lookupTerms = lookupTerms.stream().flatMap(x -> Arrays.stream(reformatQuery(x).split(REGEX_WHITESPACE_CHARS))).collect(Collectors.toList());
         
         MultiValueMap<String,String> lookupTermMap = new LinkedMultiValueMap<>();
         
@@ -561,7 +578,7 @@ public class LookupService {
         
         // do the event lookup if necessary
         if (isEventLookupRequired) {
-            response = lookupEvents(lookupTermMap, lookupQueryLogic, new LinkedMultiValueMap<>(parameters), pool, currentUser);
+            response = lookupEvents(lookupQueryLogic, new LinkedMultiValueMap<>(parameters), pool, currentUser);
         }
         
         // perform the content lookup
@@ -595,12 +612,17 @@ public class LookupService {
         // create queries from the content lookup terms
         List<String> contentQueries = createContentQueries(contentLookupTerms);
         
+        // Required so that we can return identifiers alongside the content returned in the content lookup.
+        String params = parameters.getFirst(QUERY_PARAMS) != null ? parameters.getFirst(QUERY_PARAMS) : "";
+        params += ";" + PARAM_HIT_LIST + ":true";
+        
         EventQueryResponseBase mergedResponse = null;
         for (String contentQuery : contentQueries) {
             MultiValueMap<String,String> queryParameters = new LinkedMultiValueMap<>(parameters);
             
             // set the content query string
             queryParameters.put(QUERY_STRING, Collections.singletonList(contentQuery));
+            queryParameters.put(QUERY_PARAMS, Collections.singletonList(params));
             
             // update parameters for the query
             setContentQueryParameters(queryParameters, currentUser);
