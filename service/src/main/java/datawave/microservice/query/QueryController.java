@@ -15,6 +15,7 @@ import static datawave.microservice.query.QueryParameters.QUERY_PLAN_EXPAND_VALU
 import static datawave.microservice.query.QueryParameters.QUERY_POOL;
 import static datawave.microservice.query.QueryParameters.QUERY_STRING;
 import static datawave.microservice.query.QueryParameters.QUERY_VISIBILITY;
+import static datawave.microservice.query.lookup.LookupService.LOOKUP_CONTEXT;
 import static datawave.microservice.query.lookup.LookupService.LOOKUP_STREAMING;
 import static datawave.microservice.query.lookup.LookupService.LOOKUP_UUID_PAIRS;
 import static datawave.microservice.query.translateid.TranslateIdService.TRANSLATE_ID;
@@ -723,6 +724,12 @@ public class QueryController {
                     schema = @Schema(implementation = Boolean.class),
                     example = "true"),
             @Parameter(
+                    name = LOOKUP_CONTEXT,
+                    in = ParameterIn.QUERY,
+                    description = "The lookup UUID type context",
+                    example = "default",
+                    array = @ArraySchema(schema = @Schema(implementation = String.class))),
+            @Parameter(
                     name = QUERY_BEGIN,
                     in = ParameterIn.QUERY,
                     description = "The query begin date",
@@ -864,6 +871,12 @@ public class QueryController {
                     description = "if true, streams all results back",
                     schema = @Schema(implementation = Boolean.class),
                     example = "true"),
+            @Parameter(
+                    name = LOOKUP_CONTEXT,
+                    in = ParameterIn.QUERY,
+                    description = "The lookup UUID type context",
+                    example = "default",
+                    array = @ArraySchema(schema = @Schema(implementation = String.class))),
             @Parameter(
                     name = LOOKUP_UUID_PAIRS,
                     in = ParameterIn.QUERY,
@@ -1011,6 +1024,12 @@ public class QueryController {
                     schema = @Schema(implementation = Boolean.class),
                     example = "true"),
             @Parameter(
+                    name = LOOKUP_CONTEXT,
+                    in = ParameterIn.QUERY,
+                    description = "The lookup UUID type context",
+                    example = "default",
+                    array = @ArraySchema(schema = @Schema(implementation = String.class))),
+            @Parameter(
                     name = QUERY_BEGIN,
                     in = ParameterIn.QUERY,
                     description = "The query begin date",
@@ -1152,6 +1171,12 @@ public class QueryController {
                     description = "if true, streams all results back",
                     schema = @Schema(implementation = Boolean.class),
                     example = "true"),
+            @Parameter(
+                    name = LOOKUP_CONTEXT,
+                    in = ParameterIn.QUERY,
+                    description = "The lookup UUID type context",
+                    example = "default",
+                    array = @ArraySchema(schema = @Schema(implementation = String.class))),
             @Parameter(
                     name = LOOKUP_UUID_PAIRS,
                     in = ParameterIn.QUERY,

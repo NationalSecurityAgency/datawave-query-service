@@ -156,8 +156,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
-        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy");
-        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:accessiblecomputing");
+        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy OR PAGE_TITLE:accessiblecomputing");
         
         Future<ResponseEntity<DefaultEventQueryResponse>> future = batchLookupUUID(authUser, uuidParams);
         
@@ -392,8 +391,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
-        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy");
-        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:accessiblecomputing");
+        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy OR PAGE_TITLE:accessiblecomputing");
         uuidParams.add(QUERY_MAX_RESULTS_OVERRIDE, "10");
         
         Future<ResponseEntity<DefaultEventQueryResponse>> future = batchLookupContentUUID(authUser, uuidParams);
@@ -572,8 +570,7 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         DatawaveUserDetails authUser = createUserDetails();
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
-        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy");
-        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_NUMBER:accessiblecomputing");
+        uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy OR PAGE_NUMBER:accessiblecomputing");
         
         UriComponents uri = createUri("lookupUUID");
         
@@ -682,9 +679,14 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         
         MultiValueMap<String,String> uuidParams = createUUIDParams();
         
+        StringBuilder lookupUUIDPairs = new StringBuilder();
         for (int i = 0; i < lookupProperties.getBatchLookupLimit() + 1; i++) {
-            uuidParams.add(LOOKUP_UUID_PAIRS, "PAGE_TITLE:anarchy-" + i);
+            if (i > 0) {
+                lookupUUIDPairs.append(" OR ");
+            }
+            lookupUUIDPairs.append("PAGE_TITLE:anarchy-").append(i);
         }
+        uuidParams.add(LOOKUP_UUID_PAIRS, lookupUUIDPairs.toString());
         
         UriComponents uri = createUri("lookupUUID");
         

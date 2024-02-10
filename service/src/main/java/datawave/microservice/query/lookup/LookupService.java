@@ -66,6 +66,7 @@ public class LookupService {
     public static final String LOOKUP_UUID_PAIRS = "uuidPairs";
     public static final String LUCENE_UUID_SYNTAX = "LUCENE-UUID";
     public static final String LOOKUP_STREAMING = "streaming";
+    public static final String LOOKUP_CONTEXT = "context";
     
     public static final String PARAM_HIT_LIST = "hit.list";
     protected static final String EMPTY_STRING = "";
@@ -325,11 +326,13 @@ public class LookupService {
             throw new BadRequestQueryException(DatawaveErrorCode.MISSING_REQUIRED_PARAMETER);
         }
         
+        String uuidTypeContext = parameters.getFirst(LOOKUP_CONTEXT);
+        
         // flatten out the terms
         lookupTerms = lookupTerms.stream().flatMap(x -> Arrays.stream(reformatQuery(x).split(REGEX_WHITESPACE_CHARS))).collect(Collectors.toList());
         
         // validate the lookup terms
-        LookupQueryLogic<?> lookupQueryLogic = validateLookupTerms(lookupTerms);
+        LookupQueryLogic<?> lookupQueryLogic = validateLookupTerms(uuidTypeContext, lookupTerms);
         
         // perform the event lookup
         return lookupEvents(lookupQueryLogic, new LinkedMultiValueMap<>(parameters), pool, currentUser, listener);
@@ -382,13 +385,14 @@ public class LookupService {
         }
     }
     
-    protected LookupQueryLogic<?> validateLookupTerms(List<String> lookupUUIDPairs) throws QueryException {
-        return validateLookupTerms(lookupUUIDPairs, null);
+    protected LookupQueryLogic<?> validateLookupTerms(String uuidTypeContext, List<String> lookupUUIDPairs) throws QueryException {
+        return validateLookupTerms(uuidTypeContext, lookupUUIDPairs, null);
     }
     
-    protected LookupQueryLogic<?> validateLookupTerms(List<String> lookupUUIDPairs, MultiValueMap<String,String> lookupUUIDMap) throws QueryException {
+    protected LookupQueryLogic<?> validateLookupTerms(String uuidTypeContext, List<String> lookupUUIDPairs, MultiValueMap<String,String> lookupUUIDMap)
+                    throws QueryException {
         String queryLogicName = null;
-
+        
         // make sure there aren't too many terms to lookup
         if (lookupProperties.getBatchLookupLimit() > 0 && lookupUUIDPairs.size() <= lookupProperties.getBatchLookupLimit()) {
             
@@ -408,11 +412,11 @@ public class LookupService {
                         UUIDType uuidType = lookupProperties.getTypes().get(field.toUpperCase());
                         if (uuidType != null) {
                             if (queryLogicName == null) {
-                                queryLogicName = uuidType.getQueryLogic();
+                                queryLogicName = uuidType.getQueryLogic(uuidTypeContext);
                             }
                             // if we are mixing and matching query logics
-                            else if (!queryLogicName.equals(uuidType.getQueryLogic())) {
-                                String message = "Multiple UUID types '" + queryLogicName + "' and '" + uuidType.getQueryLogic()
+                            else if (!queryLogicName.equals(uuidType.getQueryLogic(uuidTypeContext))) {
+                                String message = "Multiple UUID types '" + queryLogicName + "' and '" + uuidType.getQueryLogic(uuidTypeContext)
                                                 + "' not supported within the same lookup request";
                                 log.error(message);
                                 throw new BadRequestQueryException(new IllegalArgumentException(message), HttpStatus.SC_BAD_REQUEST + "-1");
@@ -564,13 +568,15 @@ public class LookupService {
             throw new BadRequestQueryException(DatawaveErrorCode.MISSING_REQUIRED_PARAMETER);
         }
         
+        String uuidTypeContext = parameters.getFirst(LOOKUP_CONTEXT);
+        
         // flatten out the terms
         lookupTerms = lookupTerms.stream().flatMap(x -> Arrays.stream(reformatQuery(x).split(REGEX_WHITESPACE_CHARS))).collect(Collectors.toList());
         
         MultiValueMap<String,String> lookupTermMap = new LinkedMultiValueMap<>();
         
         // validate the lookup terms
-        LookupQueryLogic<?> lookupQueryLogic = validateLookupTerms(lookupTerms, lookupTermMap);
+        LookupQueryLogic<?> lookupQueryLogic = validateLookupTerms(uuidTypeContext, lookupTerms, lookupTermMap);
         
         BaseQueryResponse response = null;
         
