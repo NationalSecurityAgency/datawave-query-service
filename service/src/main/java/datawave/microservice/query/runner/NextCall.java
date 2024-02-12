@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import datawave.core.query.cache.ResultsPage;
 import datawave.core.query.logic.QueryLogic;
+import datawave.core.query.logic.ResultPostprocessor;
 import datawave.microservice.query.config.NextCallProperties;
 import datawave.microservice.query.config.QueryExpirationProperties;
 import datawave.microservice.query.config.QueryProperties;
@@ -56,6 +57,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
     private final long logicBytesPerPage;
     private final long logicMaxWork;
     private final long maxResultsPerPage;
+    private final ResultPostprocessor resultPostprocessor;
     
     private final List<Object> results = new LinkedList<>();
     private long pageSizeBytes;
@@ -111,6 +113,8 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             log.info("Maximum results set to " + this.maxResults + " instead of default " + builder.queryLogic.getMaxResults() + ", user "
                             + status.getQuery().getUserDN() + " has a DN configured with a different limit");
         }
+        
+        this.resultPostprocessor = builder.queryLogic.getResultPostprocessor();
     }
     
     @Override
@@ -128,6 +132,8 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                     Object payload = result.getPayload();
                     if (payload != null) {
                         results.add(payload);
+                        
+                        resultPostprocessor.apply(results);
                         
                         numResultsConsumed++;
                         
