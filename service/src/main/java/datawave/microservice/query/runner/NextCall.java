@@ -20,6 +20,7 @@ import datawave.microservice.query.config.QueryExpirationProperties;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.messaging.QueryResultsListener;
 import datawave.microservice.query.messaging.QueryResultsManager;
+import datawave.microservice.query.messaging.QueryResultsPublisher;
 import datawave.microservice.query.messaging.Result;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryStorageCache;
@@ -70,6 +71,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
     private long lastTaskStatesUpdateTime = 0L;
     private TaskStates taskStates;
     private long numResultsConsumed = 0L;
+    private boolean returnIntermediateResult = false;
     
     private long hitMaxResultsTimeMillis = 0L;
     
@@ -114,7 +116,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                             + status.getQuery().getUserDN() + " has a DN configured with a different limit");
         }
         
-        this.resultPostprocessor = builder.queryLogic.getResultPostprocessor();
+        this.resultPostprocessor = builder.queryLogic.getResultPostprocessor(getQueryStatus().getConfig());
     }
     
     @Override
@@ -149,6 +151,17 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         } catch (Exception e) {
             log.error("Encountered an error while fetching results from the listener", e);
             throw e;
+        }
+        
+        // if we are aggregating results and we short-circuit,
+        // return the intermediate result(s) to the queue
+        if (returnIntermediateResult) {
+            try (QueryResultsPublisher publisher = queryResultsManager.createPublisher(queryId)) {
+                for (Object result : results) {
+                    publisher.publish(new Result(UUID.randomUUID().toString(), result));
+                }
+            }
+            results.clear();
         }
         
         // update some values for metrics
@@ -347,8 +360,8 @@ public class NextCall implements Callable<ResultsPage<Object>> {
     private boolean shortCircuitTimeout(long callTimeMillis) {
         boolean timeout = false;
         
-        // return prematurely if we have at least 1 result
-        if (!results.isEmpty()) {
+        // return prematurely if we have at least 1 result, and we aren't aggregating results
+        if (!results.isEmpty() && !queryStatus.getConfig().isAggregateResults()) {
             // if after the page size short circuit check time
             if (callTimeMillis >= shortCircuitCheckTimeMillis) {
                 float percentTimeComplete = (float) callTimeMillis / (float) (callTimeoutMillis);
@@ -369,6 +382,10 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             if (callTimeMillis >= shortCircuitTimeoutMillis) {
                 if ((System.currentTimeMillis() - queryStartTimeMillis) < longRunningQueryTimeoutMillis) {
                     timeout = true;
+                    
+                    // if we are aggregating results, return the intermediate
+                    // result to the queue before returning a blank page
+                    returnIntermediateResult = queryStatus.getConfig().isAggregateResults();
                 }
             }
         }
