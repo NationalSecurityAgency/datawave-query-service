@@ -361,7 +361,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         boolean timeout = false;
         
         // return prematurely if we have at least 1 result, and we aren't aggregating results
-        if (!results.isEmpty() && !queryStatus.getConfig().isAggregateResults()) {
+        if (!results.isEmpty() && !queryStatus.getConfig().isReduceResults()) {
             // if after the page size short circuit check time
             if (callTimeMillis >= shortCircuitCheckTimeMillis) {
                 float percentTimeComplete = (float) callTimeMillis / (float) (callTimeoutMillis);
@@ -385,7 +385,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                     
                     // if we are aggregating results, return the intermediate
                     // result to the queue before returning a blank page
-                    returnIntermediateResult = queryStatus.getConfig().isAggregateResults();
+                    returnIntermediateResult = queryStatus.getConfig().isReduceResults();
                 }
             }
         }
