@@ -8,8 +8,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -72,7 +72,7 @@ public class DefaultQueryParameters implements QueryParameters {
      * @param parameters
      *            - a Map of QueryParameters
      * @throws IllegalArgumentException
-     *             if not exactly 1 value per parameter
+     *             when a bad argument is encountered
      */
     public void validate(Map<String,List<String>> parameters) throws IllegalArgumentException {
         for (String param : KNOWN_PARAMS) {
@@ -297,7 +297,7 @@ public class DefaultQueryParameters implements QueryParameters {
     /**
      * Convenience method to generate a {@code Map<String,List<String>>} from the specified arguments. If an argument is null, it's associated parameter name
      * (key) will not be added to the map, which is why Integer and Boolean wrappers are used for greater flexibility.
-     * 
+     *
      * The 'parameters' argument will not be parsed, so its internal elements will not be placed into the map. If non-null, the 'parameters' value will be
      * mapped directly to the QUERY_PARAMS key.
      *
@@ -311,7 +311,7 @@ public class DefaultQueryParameters implements QueryParameters {
      * @param queryName
      *            - client-supplied name of query
      * @param queryVisibility
-     *            -
+     *            - query
      * @param beginDate
      *            - start date
      * @param endDate
@@ -319,22 +319,22 @@ public class DefaultQueryParameters implements QueryParameters {
      * @param queryAuthorizations
      *            - what auths the query should run with
      * @param expirationDate
-     *            -
+     *            - expiration date
      * @param pagesize
-     *            -
+     *            - page size
      * @param pageTimeout
-     *            -
+     *            - page timeout
      * @param maxResultsOverride
-     *            -
+     *            - max results override
      * @param persistenceMode
-     *            -
+     *            - persistence mode
      * @param systemFrom
-     *            -
+     *            - system from
      * @param parameters
      *            - additional parameters passed in as map
      * @param trace
-     *            -
-     * @return the parameters
+     *            - trace flag
+     * @return parameter map
      * @throws ParseException
      *             on date parse/format error
      */
