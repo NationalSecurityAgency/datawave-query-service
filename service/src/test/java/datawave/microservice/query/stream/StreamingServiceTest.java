@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
+import datawave.core.query.configuration.GenericQueryConfiguration;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.AbstractQueryServiceTest;
@@ -62,6 +63,10 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
         fieldValues.add("LOKI", "ALLIGATOR");
         fieldValues.add("LOKI", "CLASSIC");
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         // @formatter:off
         publishEventsToQueue(
@@ -176,6 +181,10 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
         fieldValues.add("LOKI", "ALLIGATOR");
         fieldValues.add("LOKI", "CLASSIC");
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         // @formatter:off
         publishEventsToQueue(

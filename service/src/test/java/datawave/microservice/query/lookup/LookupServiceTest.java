@@ -33,6 +33,7 @@ import org.springframework.web.util.UriComponents;
 
 import com.google.common.collect.Iterables;
 
+import datawave.core.query.configuration.GenericQueryConfiguration;
 import datawave.core.query.logic.QueryKey;
 import datawave.marking.ColumnVisibilitySecurityMarking;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
@@ -46,7 +47,6 @@ import datawave.microservice.query.storage.QueryStatus;
 import datawave.webservice.query.result.event.DefaultEvent;
 import datawave.webservice.query.result.event.DefaultField;
 import datawave.webservice.query.result.event.Metadata;
-import datawave.webservice.result.BaseQueryResponse;
 import datawave.webservice.result.DefaultEventQueryResponse;
 import datawave.webservice.result.VoidResponse;
 
@@ -71,10 +71,12 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         String queryId = null;
         
         // get the lookup query id
+        QueryStatus queryStatus = null;
         long startTime = System.currentTimeMillis();
         while ((System.currentTimeMillis() - startTime) < TEST_WAIT_TIME_MILLIS && queryId == null) {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
+                queryStatus = queryStatuses.get(0);
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
             } else {
                 Thread.sleep(500);
@@ -82,11 +84,15 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         }
         
         // pump enough results into the queue to trigger a complete page
-        int pageSize = queryStorageCache.getQueryStatus(queryId).getQuery().getPagesize();
+        int pageSize = queryStatus.getQuery().getPagesize();
         
         // test field value pairings
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
         fieldValues.add(uuidType, uuid);
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         // @formatter:off
         publishEventsToQueue(
@@ -163,10 +169,12 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         String queryId = null;
         
         // get the lookup query id
+        QueryStatus queryStatus = null;
         long startTime = System.currentTimeMillis();
         while ((System.currentTimeMillis() - startTime) < TEST_WAIT_TIME_MILLIS && queryId == null) {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
+                queryStatus = queryStatuses.get(0);
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
             } else {
                 Thread.sleep(500);
@@ -180,6 +188,10 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
         fieldValues.add("PAGE_TITLE", "anarchy");
         fieldValues.add("PAGE_TITLE", "accessiblecomputing");
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         // @formatter:off
         publishEventsToQueue(
@@ -257,10 +269,12 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         String queryId = null;
         
         // get the lookup query id
+        QueryStatus queryStatus = null;
         long startTime = System.currentTimeMillis();
         while ((System.currentTimeMillis() - startTime) < TEST_WAIT_TIME_MILLIS && queryId == null) {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
+                queryStatus = queryStatuses.get(0);
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
             } else {
                 Thread.sleep(500);
@@ -268,11 +282,15 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         }
         
         // pump enough results into the queue to trigger a complete page
-        int pageSize = queryStorageCache.getQueryStatus(queryId).getQuery().getPagesize();
+        int pageSize = queryStatus.getQuery().getPagesize();
         
         // test field value pairings
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
         fieldValues.add(uuidType, uuid);
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         // @formatter:off
         publishEventsToQueue(
@@ -291,6 +309,11 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
             if (queryStatuses.size() == 1 + Math.ceil((double) pageSize / lookupProperties.getBatchLookupLimit())) {
                 contentQueryIds = queryStatuses.stream().map(QueryStatus::getQueryKey).map(QueryKey::getQueryId)
                                 .filter(contentQueryId -> !contentQueryId.equals(eventQueryId)).collect(Collectors.toSet());
+            }
+            // add a config object to the query status, which would normally be added by the executor service
+            for (QueryStatus status : queryStatuses) {
+                status.setConfig(new GenericQueryConfiguration());
+                queryStorageCache.updateQueryStatus(status);
             }
             Thread.sleep(500);
         }
@@ -399,10 +422,12 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         String queryId = null;
         
         // get the lookup query id
+        QueryStatus queryStatus = null;
         long startTime = System.currentTimeMillis();
         while ((System.currentTimeMillis() - startTime) < TEST_WAIT_TIME_MILLIS && queryId == null) {
             List<QueryStatus> queryStatuses = queryStorageCache.getQueryStatus();
             if (queryStatuses.size() > 0) {
+                queryStatus = queryStatuses.get(0);
                 queryId = queryStatuses.get(0).getQueryKey().getQueryId();
             } else {
                 Thread.sleep(500);
@@ -410,12 +435,16 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
         }
         
         // pump enough results into the queue to trigger a complete page
-        int pageSize = queryStorageCache.getQueryStatus(queryId).getQuery().getPagesize();
+        int pageSize = queryStatus.getQuery().getPagesize();
         
         // test field value pairings
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
         fieldValues.add("PAGE_TITLE", "anarchy");
         fieldValues.add("PAGE_TITLE", "accessiblecomputing");
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         // @formatter:off
         publishEventsToQueue(
@@ -434,6 +463,11 @@ public class LookupServiceTest extends AbstractQueryServiceTest {
             if (queryStatuses.size() == 1 + Math.ceil((double) pageSize / lookupProperties.getBatchLookupLimit())) {
                 contentQueryIds = queryStatuses.stream().map(QueryStatus::getQueryKey).map(QueryKey::getQueryId)
                                 .filter(contentQueryId -> !contentQueryId.equals(eventQueryId)).collect(Collectors.toSet());
+            }
+            // add a config object to the query status, which would normally be added by the executor service
+            for (QueryStatus status : queryStatuses) {
+                status.setConfig(new GenericQueryConfiguration());
+                queryStorageCache.updateQueryStatus(status);
             }
             Thread.sleep(500);
         }

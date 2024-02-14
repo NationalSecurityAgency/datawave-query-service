@@ -8,7 +8,7 @@ datawave:
     awaitExecutorCreateResponse: false
     nextCall:
       resultPollInterval: 500
-      statusUpdateInterval: 500
+      statusUpdateInterval: 0
     logic:
       factory:
         # Uncomment the following line to override the query logic beans to load

@@ -20,6 +20,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Iterables;
 
+import datawave.core.query.configuration.GenericQueryConfiguration;
 import datawave.microservice.authorization.service.RemoteAuthorizationServiceUserDetailsService;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.remote.QueryRequest;
@@ -43,12 +44,17 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         String queryId = createQuery(authUser, createParams());
         
         // pump enough results into the queue to trigger a complete page
-        int pageSize = queryStorageCache.getQueryStatus(queryId).getQuery().getPagesize();
+        QueryStatus queryStatus = queryStorageCache.getQueryStatus(queryId);
+        int pageSize = queryStatus.getQuery().getPagesize();
         
         // test field value pairings
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
         fieldValues.add("LOKI", "ALLIGATOR");
         fieldValues.add("LOKI", "CLASSIC");
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         // @formatter:off
         publishEventsToQueue(
@@ -120,7 +126,8 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         String queryId = createQuery(authUser, createParams());
         
         // pump enough results into the queue to trigger two complete pages
-        int pageSize = queryStorageCache.getQueryStatus(queryId).getQuery().getPagesize();
+        QueryStatus queryStatus = queryStorageCache.getQueryStatus(queryId);
+        int pageSize = queryStatus.getQuery().getPagesize();
         
         // test field value pairings
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
@@ -136,6 +143,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
                 queryId,
                 queryRequestEvents.removeLast());
         // @formatter:off
+
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
 
         for (int page = 1; page <= 2; page++) {
             // TODO: We have to generate the results in between next calls because the test queue manager does not handle requeueing of unused messages :(
@@ -205,7 +216,8 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         String queryId = createQuery(authUser, createParams());
         
         // pump enough results into the queue to trigger a complete page
-        int pageSize = queryStorageCache.getQueryStatus(queryId).getQuery().getPagesize();
+        QueryStatus queryStatus = queryStorageCache.getQueryStatus(queryId);
+        int pageSize = queryStatus.getQuery().getPagesize();
         
         // test field value pairings
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
@@ -213,6 +225,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         fieldValues.add("LOKI", "CLASSIC");
         
         int numEvents = (int) (0.5 * pageSize);
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         // @formatter:off
         publishEventsToQueue(
@@ -307,7 +323,8 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         String queryId = createQuery(authUser, createParams());
         
         // pump enough results into the queue to trigger two complete pages
-        int pageSize = queryStorageCache.getQueryStatus(queryId).getQuery().getPagesize();
+        QueryStatus queryStatus = queryStorageCache.getQueryStatus(queryId);
+        int pageSize = queryStatus.getQuery().getPagesize();
         
         // test field value pairings
         MultiValueMap<String,String> fieldValues = new LinkedMultiValueMap<>();
@@ -323,6 +340,10 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
                 queryId,
                 queryRequestEvents.removeLast());
         // @formatter:on
+        
+        // add a config object to the query status, which would normally be added by the executor service
+        queryStatus.setConfig(new GenericQueryConfiguration());
+        queryStorageCache.updateQueryStatus(queryStatus);
         
         for (int page = 1; page <= 4; page++) {
             // TODO: We have to generate the results in between next calls because the test queue manager does not handle requeueing of unused messages :(
