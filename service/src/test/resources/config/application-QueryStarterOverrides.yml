@@ -13,6 +13,8 @@ datawave:
       factory:
         # Uncomment the following line to override the query logic beans to load
         xmlBeansPath: "classpath:TestQueryLogicFactory.xml"
+        queryLogicsByName:
+          "AltEventQuery": "AltEventQuery"
       logics:
         BaseEventQuery:
           maxResults: 369
