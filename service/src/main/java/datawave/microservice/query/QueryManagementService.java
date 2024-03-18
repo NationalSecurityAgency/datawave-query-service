@@ -54,6 +54,7 @@ import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.marking.SecurityMarking;
 import datawave.microservice.audit.AuditClient;
+import datawave.microservice.authorization.federation.FederatedAuthorizationService;
 import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.authorization.util.AuthorizationsUtil;
 import datawave.microservice.query.config.QueryProperties;
@@ -69,6 +70,7 @@ import datawave.microservice.query.util.QueryUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
+import datawave.security.authorization.DatawavePrincipal;
 import datawave.security.authorization.UserOperations;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.common.audit.AuditParameters;
@@ -535,11 +537,9 @@ public class QueryManagementService implements QueryRequestHandler {
         QueryParameters queryParameters = getQueryParameters();
         Set<Authorizations> downgradedAuthorizations;
         try {
-            // the overall principal (the one with combined auths across remote user operations) is our own user operations (probably the UserOperationsBean)
-            DatawaveUserDetails overallUserDetails = ((federatedUserOperationsList == null) ? currentUser : getRemoteUser(currentUser));
             if (queryParameters.getAuths() == null) {
                 // if no requested auths, then use the overall auths for any filtering of the query operations
-                queryLogic.preInitialize(query, AuthorizationsUtil.buildAuthorizations(overallUserDetails.getAuthorizations()));
+                queryLogic.preInitialize(query, AuthorizationsUtil.buildAuthorizations(currentUser.getAuthorizations()));
             } else {
                 queryLogic.preInitialize(query,
                                 AuthorizationsUtil.buildAuthorizations(Collections.singleton(AuthorizationsUtil.splitAuths(query.getQueryAuthorizations()))));
@@ -547,6 +547,11 @@ public class QueryManagementService implements QueryRequestHandler {
             // the query principal is our local principal unless the query logic has a different user operations
             DatawaveUserDetails queryUserDetails = (DatawaveUserDetails) ((queryLogic.getUserOperations() == null) ? currentUser
                             : queryLogic.getUserOperations().getRemoteUser(currentUser));
+            // the overall principal (the one with combined auths across remote user operations) is our own user operations (probably the UserOperationsBean)
+            // don't call remote user operations if it's asked not to
+            DatawaveUserDetails overallUserDetails = (queryLogic.getUserOperations() == null
+                            || "false".equalsIgnoreCase(parameters.getFirst(FederatedAuthorizationService.INCLUDE_REMOTE_SERVICES))) ? queryUserDetails
+                                            : queryLogic.getUserOperations().getRemoteUser(queryUserDetails);
             downgradedAuthorizations = AuthorizationsUtil.getDowngradedAuthorizations(queryParameters.getAuths(), overallUserDetails, queryUserDetails);
         } catch (Exception e) {
             throw new BadRequestQueryException("Unable to downgrade authorizations", e, HttpStatus.SC_BAD_REQUEST + "-1");
