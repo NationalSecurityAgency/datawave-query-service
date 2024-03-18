@@ -412,7 +412,8 @@ public class QueryServiceListTest extends AbstractQueryServiceTest {
         
         String[] expectedQueryLogics = new String[] {"AltEventQuery", "ContentQuery", "CountQuery", "DiscoveryQuery", "EdgeEventQuery", "EdgeQuery",
                 "ErrorCountQuery", "ErrorDiscoveryQuery", "ErrorEventQuery", "ErrorFieldIndexCountQuery", "EventQuery", "FacetedQuery", "FieldIndexCountQuery",
-                "HitHighlights", "IndexStatsQuery", "LuceneUUIDEventQuery", "QueryMetricsQuery", "InternalQueryMetricsQuery", "TermFrequencyQuery"};
+                "HitHighlights", "IndexStatsQuery", "LuceneUUIDEventQuery", "QueryMetricsQuery", "InternalQueryMetricsQuery", "TermFrequencyQuery",
+                "FederatedEventQuery"};
         
         Assertions.assertEquals(expectedQueryLogics.length, qlResponse.getQueryLogicList().size());
         

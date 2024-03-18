@@ -109,7 +109,7 @@ public class QueryManagementService implements QueryRequestHandler {
     private final BaseQueryMetric baseQueryMetric;
     
     private final QueryLogicFactory queryLogicFactory;
-    private final UserOperations userOperations;
+    private final List<UserOperations> federatedUserOperationsList = new ArrayList<>();
     private final QueryMetricClient queryMetricClient;
     private final ResponseObjectFactory responseObjectFactory;
     private final QueryStorageCache queryStorageCache;
@@ -133,7 +133,7 @@ public class QueryManagementService implements QueryRequestHandler {
     
     public QueryManagementService(QueryProperties queryProperties, ApplicationEventPublisher eventPublisher, BusProperties busProperties,
                     QueryParameters queryParameters, SecurityMarking securityMarking, BaseQueryMetric baseQueryMetric, QueryLogicFactory queryLogicFactory,
-                    @Autowired(required = false) UserOperations userOperations, QueryMetricClient queryMetricClient,
+                    @Autowired(required = false) List<UserOperations> federatedUserOperationsList, QueryMetricClient queryMetricClient,
                     ResponseObjectFactory responseObjectFactory, QueryStorageCache queryStorageCache, QueryResultsManager queryResultsManager,
                     AuditClient auditClient, ThreadPoolTaskExecutor nextCallExecutor) {
         this.queryProperties = queryProperties;
@@ -143,7 +143,9 @@ public class QueryManagementService implements QueryRequestHandler {
         this.securityMarking = securityMarking;
         this.baseQueryMetric = baseQueryMetric;
         this.queryLogicFactory = queryLogicFactory;
-        this.userOperations = userOperations;
+        if (federatedUserOperationsList != null) {
+            this.federatedUserOperationsList.addAll(federatedUserOperationsList);
+        }
         this.queryMetricClient = queryMetricClient;
         this.responseObjectFactory = responseObjectFactory;
         this.queryStorageCache = queryStorageCache;
@@ -161,7 +163,7 @@ public class QueryManagementService implements QueryRequestHandler {
      * Gets a list of descriptions for the configured query logics, sorted by query logic name.
      * <p>
      * The descriptions include things like the audit type, optional and required parameters, required roles, and response class.
-     * 
+     *
      * @param currentUser
      *            the user who called this method, not null
      * @return the query logic descriptions
@@ -534,7 +536,7 @@ public class QueryManagementService implements QueryRequestHandler {
         Set<Authorizations> downgradedAuthorizations;
         try {
             // the overall principal (the one with combined auths across remote user operations) is our own user operations (probably the UserOperationsBean)
-            DatawaveUserDetails overallUserDetails = (DatawaveUserDetails) ((userOperations == null) ? currentUser : userOperations.getRemoteUser(currentUser));
+            DatawaveUserDetails overallUserDetails = ((federatedUserOperationsList == null) ? currentUser : getRemoteUser(currentUser));
             if (queryParameters.getAuths() == null) {
                 // if no requested auths, then use the overall auths for any filtering of the query operations
                 queryLogic.preInitialize(query, AuthorizationsUtil.buildAuthorizations(overallUserDetails.getAuthorizations()));
@@ -616,6 +618,18 @@ public class QueryManagementService implements QueryRequestHandler {
             log.error("Unknown error storing query", e);
             throw new QueryException(DatawaveErrorCode.RUNNING_QUERY_CACHE_ERROR, e);
         }
+    }
+    
+    private DatawaveUserDetails getRemoteUser(DatawaveUserDetails userDetails) {
+        for (UserOperations remote : federatedUserOperationsList) {
+            try {
+                DatawaveUserDetails federatedUserDetails = (DatawaveUserDetails) remote.getRemoteUser(userDetails);
+                userDetails = AuthorizationsUtil.mergeProxiedUserDetails(userDetails, federatedUserDetails);
+            } catch (Exception e) {
+                log.error("Failed to lookup users from federated user service", e);
+            }
+        }
+        return userDetails;
     }
     
     private void sendRequestAwaitResponse(QueryRequest request, String computedPool, boolean isAwaitResponse) throws QueryException {
