@@ -35,7 +35,6 @@ import org.apache.accumulo.core.security.Authorizations;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.bus.BusProperties;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -70,8 +69,6 @@ import datawave.microservice.query.util.QueryUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
-import datawave.security.authorization.DatawavePrincipal;
-import datawave.security.authorization.UserOperations;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.common.audit.AuditParameters;
 import datawave.webservice.common.audit.Auditor;
@@ -111,7 +108,6 @@ public class QueryManagementService implements QueryRequestHandler {
     private final BaseQueryMetric baseQueryMetric;
     
     private final QueryLogicFactory queryLogicFactory;
-    private final List<UserOperations> federatedUserOperationsList = new ArrayList<>();
     private final QueryMetricClient queryMetricClient;
     private final ResponseObjectFactory responseObjectFactory;
     private final QueryStorageCache queryStorageCache;
@@ -135,9 +131,8 @@ public class QueryManagementService implements QueryRequestHandler {
     
     public QueryManagementService(QueryProperties queryProperties, ApplicationEventPublisher eventPublisher, BusProperties busProperties,
                     QueryParameters queryParameters, SecurityMarking securityMarking, BaseQueryMetric baseQueryMetric, QueryLogicFactory queryLogicFactory,
-                    @Autowired(required = false) List<UserOperations> federatedUserOperationsList, QueryMetricClient queryMetricClient,
-                    ResponseObjectFactory responseObjectFactory, QueryStorageCache queryStorageCache, QueryResultsManager queryResultsManager,
-                    AuditClient auditClient, ThreadPoolTaskExecutor nextCallExecutor) {
+                    QueryMetricClient queryMetricClient, ResponseObjectFactory responseObjectFactory, QueryStorageCache queryStorageCache,
+                    QueryResultsManager queryResultsManager, AuditClient auditClient, ThreadPoolTaskExecutor nextCallExecutor) {
         this.queryProperties = queryProperties;
         this.eventPublisher = eventPublisher;
         this.busProperties = busProperties;
@@ -145,9 +140,6 @@ public class QueryManagementService implements QueryRequestHandler {
         this.securityMarking = securityMarking;
         this.baseQueryMetric = baseQueryMetric;
         this.queryLogicFactory = queryLogicFactory;
-        if (federatedUserOperationsList != null) {
-            this.federatedUserOperationsList.addAll(federatedUserOperationsList);
-        }
         this.queryMetricClient = queryMetricClient;
         this.responseObjectFactory = responseObjectFactory;
         this.queryStorageCache = queryStorageCache;
@@ -623,18 +615,6 @@ public class QueryManagementService implements QueryRequestHandler {
             log.error("Unknown error storing query", e);
             throw new QueryException(DatawaveErrorCode.RUNNING_QUERY_CACHE_ERROR, e);
         }
-    }
-    
-    private DatawaveUserDetails getRemoteUser(DatawaveUserDetails userDetails) {
-        for (UserOperations remote : federatedUserOperationsList) {
-            try {
-                DatawaveUserDetails federatedUserDetails = (DatawaveUserDetails) remote.getRemoteUser(userDetails);
-                userDetails = AuthorizationsUtil.mergeProxiedUserDetails(userDetails, federatedUserDetails);
-            } catch (Exception e) {
-                log.error("Failed to lookup users from federated user service", e);
-            }
-        }
-        return userDetails;
     }
     
     private void sendRequestAwaitResponse(QueryRequest request, String computedPool, boolean isAwaitResponse) throws QueryException {
