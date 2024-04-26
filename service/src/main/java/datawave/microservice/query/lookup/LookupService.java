@@ -514,7 +514,7 @@ public class LookupService {
                 queryLogic.preInitialize(query, AuthorizationsUtil.buildAuthorizations(currentUser.getAuthorizations()));
             }
             
-            // the query principal is our local principal unless the query logic has a ddifferent user operations
+            // the query principal is our local principal unless the query logic has a different user operations
             ProxiedUserDetails queryPrincipal = ((queryLogic.getUserOperations() == null) ? currentUser
                             : queryLogic.getUserOperations().getRemoteUser(currentUser));
             
