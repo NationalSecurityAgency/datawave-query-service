@@ -409,14 +409,6 @@ public class MapReduceQueryController {
         // @formatter:on
     }
     
-    // TODO: This endpoint triggers the following warning, which we should resolve
-    // !!!
-    // An Executor is required to handle java.util.concurrent.Callable return values.
-    // Please, configure a TaskExecutor in the MVC config under "async support".
-    // The SimpleAsyncTaskExecutor currently in use is not suitable under load.
-    // ------------------------------
-    // Request URI: '/query/v1/mapreduce/<mapreduce query id>/getAllFiles'
-    // !!!
     /**
      * @see MapReduceQueryManagementService#getAllFiles(String, DatawaveUserDetails)
      */
