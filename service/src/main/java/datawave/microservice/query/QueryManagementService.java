@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.accumulo.core.security.Authorizations;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -453,7 +455,7 @@ public class QueryManagementService implements QueryRequestHandler {
             QueryStatus status = queryStorageCache.getQueryStatus(taskKey.getQueryId());
             if (status != null) {
                 Set<BaseQueryMetric.Prediction> predictions = status.getPredictions();
-                if (predictions != null && !predictions.isEmpty()) {
+                if (CollectionUtils.isNotEmpty(predictions)) {
                     queryPrediction = predictions.toString();
                 }
             }
@@ -1814,7 +1816,7 @@ public class QueryManagementService implements QueryRequestHandler {
                     throws BadRequestQueryException {
         boolean paramsUpdated = false;
         for (String paramName : parameterNames) {
-            if (newParameters.get(paramName) != null && !newParameters.get(paramName).isEmpty()) {
+            if (CollectionUtils.isNotEmpty(newParameters.get(paramName))) {
                 if (!newParameters.get(paramName).get(0).equals(currentParams.getFirst(paramName))) {
                     // if the new value differs from the old value, update the old value
                     currentParams.put(paramName, newParameters.remove(paramName));
@@ -1890,7 +1892,7 @@ public class QueryManagementService implements QueryRequestHandler {
     private QueryImplListResponse list(String queryId, String queryName, String userId) throws QueryException {
         try {
             List<Query> queries;
-            if (queryId != null && !queryId.isEmpty()) {
+            if (StringUtils.isNotBlank(queryId)) {
                 // get the query for the given id
                 queries = new ArrayList<>();
                 
@@ -1982,7 +1984,7 @@ public class QueryManagementService implements QueryRequestHandler {
             QueryStatus queryStatus = validateRequest(queryId, currentUser);
             
             GenericResponse<String> response = new GenericResponse<>();
-            if (queryStatus.getPredictions() != null && !queryStatus.getPredictions().isEmpty()) {
+            if (CollectionUtils.isNotEmpty(queryStatus.getPredictions())) {
                 response.setResult(queryStatus.getPredictions().toString());
                 response.setHasResults(true);
             }
@@ -2149,7 +2151,7 @@ public class QueryManagementService implements QueryRequestHandler {
         if (auditType != Auditor.AuditType.NONE) {
             // audit the query before execution
             try {
-                if (selectors != null && !selectors.isEmpty()) {
+                if (CollectionUtils.isNotEmpty(selectors)) {
                     parameters.put(PrivateAuditConstants.SELECTORS, selectors);
                 }
                 
