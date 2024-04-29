@@ -12,15 +12,15 @@ public class QueryExpirationProperties {
     @Positive
     private long idleTimeout = 15;
     @NotNull
-    private TimeUnit idleTimeUnit = TimeUnit.MINUTES;
+    private TimeUnit idleTimeoutUnit = TimeUnit.MINUTES;
     @Positive
     private long progressTimeout = 5;
     @NotNull
-    private TimeUnit progressTimeUnit = TimeUnit.MINUTES;
+    private TimeUnit progressTimeoutUnit = TimeUnit.MINUTES;
     @Positive
     private long callTimeout = 60;
     @NotNull
-    private TimeUnit callTimeUnit = TimeUnit.MINUTES;
+    private TimeUnit callTimeoutUnit = TimeUnit.MINUTES;
     @Positive
     private long callTimeoutInterval = 1;
     @NotNull
@@ -28,11 +28,11 @@ public class QueryExpirationProperties {
     @Positive
     private long pageMinTimeout = 1;
     @NotNull
-    private TimeUnit pageMinTimeUnit = TimeUnit.MINUTES;
+    private TimeUnit pageMinTimeoutUnit = TimeUnit.MINUTES;
     @Positive
     private long pageMaxTimeout = 60;
     @NotNull
-    private TimeUnit pageMaxTimeUnit = TimeUnit.MINUTES;
+    private TimeUnit pageMaxTimeoutUnit = TimeUnit.MINUTES;
     @Positive
     private long shortCircuitCheckTime = callTimeout / 2;
     @NotNull
@@ -40,14 +40,14 @@ public class QueryExpirationProperties {
     @Positive
     private long shortCircuitTimeout = Math.round(0.97 * callTimeout);
     @NotNull
-    private TimeUnit shortCircuitTimeUnit = TimeUnit.MINUTES;
+    private TimeUnit shortCircuitTimeoutUnit = TimeUnit.MINUTES;
     
     @Positive
     @Deprecated // to be replaced by the long running query timeout
     private int maxLongRunningTimeoutRetries = 3;
     
     @Positive
-    private long longRunningQueryTimeout = (maxLongRunningTimeoutRetries + 1) * callTimeUnit.toMinutes(callTimeout);
+    private long longRunningQueryTimeout = (maxLongRunningTimeoutRetries + 1) * callTimeoutUnit.toMinutes(callTimeout);
     
     @NotNull
     private TimeUnit longRunningQueryTimeoutUnit = TimeUnit.MINUTES;
@@ -57,19 +57,19 @@ public class QueryExpirationProperties {
     }
     
     public long getIdleTimeoutMillis() {
-        return idleTimeUnit.toMillis(idleTimeout);
+        return idleTimeoutUnit.toMillis(idleTimeout);
     }
     
     public void setIdleTimeout(long idleTimeout) {
         this.idleTimeout = idleTimeout;
     }
     
-    public TimeUnit getIdleTimeUnit() {
-        return idleTimeUnit;
+    public TimeUnit getIdleTimeoutUnit() {
+        return idleTimeoutUnit;
     }
     
-    public void setIdleTimeUnit(TimeUnit idleTimeUnit) {
-        this.idleTimeUnit = idleTimeUnit;
+    public void setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
+        this.idleTimeoutUnit = idleTimeoutUnit;
     }
     
     public long getProgressTimeout() {
@@ -77,19 +77,19 @@ public class QueryExpirationProperties {
     }
     
     public long getProgressTimeoutMillis() {
-        return progressTimeUnit.toMillis(progressTimeout);
+        return progressTimeoutUnit.toMillis(progressTimeout);
     }
     
     public void setProgressTimeout(long progressTimeout) {
         this.progressTimeout = progressTimeout;
     }
     
-    public TimeUnit getProgressTimeUnit() {
-        return progressTimeUnit;
+    public TimeUnit getProgressTimeoutUnit() {
+        return progressTimeoutUnit;
     }
     
-    public void setProgressTimeUnit(TimeUnit progressTimeUnit) {
-        this.progressTimeUnit = progressTimeUnit;
+    public void setProgressTimeoutUnit(TimeUnit progressTimeoutUnit) {
+        this.progressTimeoutUnit = progressTimeoutUnit;
     }
     
     public long getCallTimeout() {
@@ -97,19 +97,19 @@ public class QueryExpirationProperties {
     }
     
     public long getCallTimeoutMillis() {
-        return callTimeUnit.toMillis(callTimeout);
+        return callTimeoutUnit.toMillis(callTimeout);
     }
     
     public void setCallTimeout(long callTimeout) {
         this.callTimeout = callTimeout;
     }
     
-    public TimeUnit getCallTimeUnit() {
-        return callTimeUnit;
+    public TimeUnit getCallTimeoutUnit() {
+        return callTimeoutUnit;
     }
     
-    public void setCallTimeUnit(TimeUnit callTimeUnit) {
-        this.callTimeUnit = callTimeUnit;
+    public void setCallTimeoutUnit(TimeUnit callTimeoutUnit) {
+        this.callTimeoutUnit = callTimeoutUnit;
     }
     
     public long getCallTimeoutInterval() {
@@ -137,19 +137,19 @@ public class QueryExpirationProperties {
     }
     
     public long getPageMinTimeoutMillis() {
-        return pageMinTimeUnit.toMillis(pageMinTimeout);
+        return pageMinTimeoutUnit.toMillis(pageMinTimeout);
     }
     
     public void setPageMinTimeout(long pageMinTimeout) {
         this.pageMinTimeout = pageMinTimeout;
     }
     
-    public TimeUnit getPageMinTimeUnit() {
-        return pageMinTimeUnit;
+    public TimeUnit getPageMinTimeoutUnit() {
+        return pageMinTimeoutUnit;
     }
     
-    public void setPageMinTimeUnit(TimeUnit pageMinTimeUnit) {
-        this.pageMinTimeUnit = pageMinTimeUnit;
+    public void setPageMinTimeoutUnit(TimeUnit pageMinTimeoutUnit) {
+        this.pageMinTimeoutUnit = pageMinTimeoutUnit;
     }
     
     public long getPageMaxTimeout() {
@@ -157,19 +157,19 @@ public class QueryExpirationProperties {
     }
     
     public long getPageMaxTimeoutMillis() {
-        return pageMaxTimeUnit.toMillis(pageMaxTimeout);
+        return pageMaxTimeoutUnit.toMillis(pageMaxTimeout);
     }
     
     public void setPageMaxTimeout(long pageMaxTimeout) {
         this.pageMaxTimeout = pageMaxTimeout;
     }
     
-    public TimeUnit getPageMaxTimeUnit() {
-        return pageMaxTimeUnit;
+    public TimeUnit getPageMaxTimeoutUnit() {
+        return pageMaxTimeoutUnit;
     }
     
-    public void setPageMaxTimeUnit(TimeUnit pageMaxTimeUnit) {
-        this.pageMaxTimeUnit = pageMaxTimeUnit;
+    public void setPageMaxTimeoutUnit(TimeUnit pageMaxTimeoutUnit) {
+        this.pageMaxTimeoutUnit = pageMaxTimeoutUnit;
     }
     
     public long getShortCircuitCheckTime() {
@@ -197,19 +197,19 @@ public class QueryExpirationProperties {
     }
     
     public long getShortCircuitTimeoutMillis() {
-        return shortCircuitTimeUnit.toMillis(shortCircuitTimeout);
+        return shortCircuitTimeoutUnit.toMillis(shortCircuitTimeout);
     }
     
     public void setShortCircuitTimeout(long shortCircuitTimeout) {
         this.shortCircuitTimeout = shortCircuitTimeout;
     }
     
-    public TimeUnit getShortCircuitTimeUnit() {
-        return shortCircuitTimeUnit;
+    public TimeUnit getShortCircuitTimeoutUnit() {
+        return shortCircuitTimeoutUnit;
     }
     
-    public void setShortCircuitTimeUnit(TimeUnit shortCircuitTimeUnit) {
-        this.shortCircuitTimeUnit = shortCircuitTimeUnit;
+    public void setShortCircuitTimeoutUnit(TimeUnit shortCircuitTimeoutUnit) {
+        this.shortCircuitTimeoutUnit = shortCircuitTimeoutUnit;
     }
     
     public int getMaxLongRunningTimeoutRetries() {

@@ -16,7 +16,7 @@ public class MonitorProperties {
     @PositiveOrZero
     private long monitorInterval = TimeUnit.MILLISECONDS.toMillis(30);
     @NotNull
-    private TimeUnit monitorIntervalTimeUnit = TimeUnit.MILLISECONDS;
+    private TimeUnit monitorIntervalUnit = TimeUnit.MILLISECONDS;
     // The amount of time to wait for the monitor lock to be acquired
     @PositiveOrZero
     private long lockWaitTime = 0;
@@ -31,7 +31,7 @@ public class MonitorProperties {
     @PositiveOrZero
     private long inactiveQueryTimeToLive = 1;
     @NotNull
-    private TimeUnit inactiveQueryTimeUnit = TimeUnit.DAYS;
+    private TimeUnit inactiveQueryTimeToLiveUnit = TimeUnit.DAYS;
     
     public String getSchedulerCrontab() {
         return schedulerCrontab;
@@ -46,19 +46,19 @@ public class MonitorProperties {
     }
     
     public long getMonitorIntervalMillis() {
-        return monitorIntervalTimeUnit.toMillis(monitorInterval);
+        return monitorIntervalUnit.toMillis(monitorInterval);
     }
     
     public void setMonitorInterval(long monitorInterval) {
         this.monitorInterval = monitorInterval;
     }
     
-    public TimeUnit getMonitorIntervalTimeUnit() {
-        return monitorIntervalTimeUnit;
+    public TimeUnit getMonitorIntervalUnit() {
+        return monitorIntervalUnit;
     }
     
-    public void setMonitorIntervalTimeUnit(TimeUnit monitorIntervalTimeUnit) {
-        this.monitorIntervalTimeUnit = monitorIntervalTimeUnit;
+    public void setMonitorIntervalUnit(TimeUnit monitorIntervalUnit) {
+        this.monitorIntervalUnit = monitorIntervalUnit;
     }
     
     public long getLockWaitTime() {
@@ -106,18 +106,18 @@ public class MonitorProperties {
     }
     
     public long getInactiveQueryTimeToLiveMillis() {
-        return inactiveQueryTimeUnit.toMillis(inactiveQueryTimeToLive);
+        return inactiveQueryTimeToLiveUnit.toMillis(inactiveQueryTimeToLive);
     }
     
     public void setInactiveQueryTimeToLive(long inactiveQueryTimeToLive) {
         this.inactiveQueryTimeToLive = inactiveQueryTimeToLive;
     }
     
-    public TimeUnit getInactiveQueryTimeUnit() {
-        return inactiveQueryTimeUnit;
+    public TimeUnit getInactiveQueryTimeToLiveUnit() {
+        return inactiveQueryTimeToLiveUnit;
     }
     
-    public void setInactiveQueryTimeUnit(TimeUnit inactiveQueryTimeUnit) {
-        this.inactiveQueryTimeUnit = inactiveQueryTimeUnit;
+    public void setInactiveQueryTimeToLiveUnit(TimeUnit inactiveQueryTimeToLiveUnit) {
+        this.inactiveQueryTimeToLiveUnit = inactiveQueryTimeToLiveUnit;
     }
 }

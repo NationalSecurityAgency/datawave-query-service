@@ -127,7 +127,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             // keep waiting for results until we're finished
             // Note: isFinished should be checked once per result
             while (!isFinished(queryId)) {
-                Result result = resultListener.receive(nextCallProperties.getResultPollInterval(), nextCallProperties.getResultPollTimeUnit());
+                Result result = resultListener.receive(nextCallProperties.getResultPollInterval(), nextCallProperties.getResultPollIntervalUnit());
                 if (result != null) {
                     result.acknowledge(ACK);
                     
