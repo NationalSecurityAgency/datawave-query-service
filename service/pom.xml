@@ -24,6 +24,9 @@
         <version.microservice.starter-audit>4.0.0-SNAPSHOT</version.microservice.starter-audit>
         <version.microservice.starter-cached-results>1.0.0-SNAPSHOT</version.microservice.starter-cached-results>
         <version.microservice.starter-query>1.0.0-SNAPSHOT</version.microservice.starter-query>
+        <version.webjars.foundation>6.4.3-1</version.webjars.foundation>
+        <version.webjars.jquery>3.3.1-1</version.webjars.jquery>
+        <version.webjars.locator-core>0.30</version.webjars.locator-core>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -197,17 +200,17 @@
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>foundation</artifactId>
-            <version>6.4.3-1</version>
+            <version>${version.webjars.foundation}</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
-            <version>3.3.1-1</version>
+            <version>${version.webjars.jquery}</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>webjars-locator-core</artifactId>
-            <version>0.30</version>
+            <version>${version.webjars.locator-core}</version>
         </dependency>
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
