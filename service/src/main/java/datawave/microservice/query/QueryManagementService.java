@@ -53,6 +53,7 @@ import datawave.core.common.audit.PrivateAuditConstants;
 import datawave.core.query.cache.ResultsPage;
 import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
+import datawave.core.query.util.QueryUtil;
 import datawave.marking.SecurityMarking;
 import datawave.microservice.audit.AuditClient;
 import datawave.microservice.authorization.federation.FederatedAuthorizationService;
@@ -67,7 +68,6 @@ import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryStorageCache;
 import datawave.microservice.query.storage.TaskKey;
 import datawave.microservice.query.util.QueryStatusUpdateUtil;
-import datawave.microservice.query.util.QueryUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
@@ -514,6 +514,8 @@ public class QueryManagementService implements QueryRequestHandler {
      */
     private TaskKey storeQuery(String queryLogicName, MultiValueMap<String,String> parameters, String pool, DatawaveUserDetails currentUser,
                     QueryStatus.QUERY_STATE queryType, String queryId) throws BadRequestQueryException, QueryException {
+        long callStartTimeMillis = System.currentTimeMillis();
+        
         // validate query and get a query logic
         QueryLogic<?> queryLogic = validateQuery(queryLogicName, parameters, currentUser);
         
@@ -573,9 +575,13 @@ public class QueryManagementService implements QueryRequestHandler {
                         currentUser,
                         downgradedAuthorizations,
                         getMaxConcurrentTasks(queryLogic));
+
+                sendRequestAwaitResponse(
+                        QueryRequest.create(taskKey.getQueryId()),
+                        computedPool,
+                        queryProperties.isAwaitExecutorCreateResponse(),
+                        callStartTimeMillis);
                 // @formatter:on
-                
-                sendRequestAwaitResponse(QueryRequest.create(taskKey.getQueryId()), computedPool, queryProperties.isAwaitExecutorCreateResponse());
             } else if (queryType == PLAN) {
                 // @formatter:off
                 taskKey = queryStorageCache.planQuery(
@@ -583,9 +589,13 @@ public class QueryManagementService implements QueryRequestHandler {
                         query,
                         currentUser,
                         downgradedAuthorizations);
+
+                sendRequestAwaitResponse(
+                        QueryRequest.plan(taskKey.getQueryId()),
+                        computedPool,
+                        true,
+                        callStartTimeMillis);
                 // @formatter:on
-                
-                sendRequestAwaitResponse(QueryRequest.plan(taskKey.getQueryId()), computedPool, true);
             } else if (queryType == PREDICT) {
                 // @formatter:off
                 taskKey = queryStorageCache.predictQuery(
@@ -593,9 +603,13 @@ public class QueryManagementService implements QueryRequestHandler {
                         query,
                         currentUser,
                         downgradedAuthorizations);
+
+                sendRequestAwaitResponse(
+                        QueryRequest.predict(taskKey.getQueryId()),
+                        computedPool,
+                        true,
+                        callStartTimeMillis);
                 // @formatter:on
-                
-                sendRequestAwaitResponse(QueryRequest.predict(taskKey.getQueryId()), computedPool, true);
             }
             
             if (taskKey == null) {
@@ -619,7 +633,7 @@ public class QueryManagementService implements QueryRequestHandler {
         }
     }
     
-    private void sendRequestAwaitResponse(QueryRequest request, String computedPool, boolean isAwaitResponse) throws QueryException {
+    private void sendRequestAwaitResponse(QueryRequest request, String computedPool, boolean isAwaitResponse, long startTimeMillis) throws QueryException {
         if (isAwaitResponse) {
             // before publishing the message, create a latch based on the query ID
             queryLatchMap.put(request.getQueryId(), new CountDownLatch(1));
@@ -629,9 +643,6 @@ public class QueryManagementService implements QueryRequestHandler {
         publishExecutorEvent(request, computedPool);
         
         if (isAwaitResponse) {
-            // TODO: Should we incorporate the call start time into this check?
-            long startTimeMillis = System.currentTimeMillis();
-            
             log.info("Waiting on query {} response from the executor.", request.getMethod().name());
             
             try {
@@ -718,8 +729,6 @@ public class QueryManagementService implements QueryRequestHandler {
             queryId = create(queryLogicName, parameters, pool, currentUser).getResult();
             return executeNext(queryId, currentUser);
         } catch (Exception e) {
-            // TODO: QueryException results in VoidResponse. This differs from the original RestAPI where an exception was returned in a
-            // DefaultEventQueryResponse.
             QueryException qe;
             if (!(e instanceof QueryException)) {
                 log.error("Unknown error calling create and next. {}", queryId, e);
@@ -785,8 +794,6 @@ public class QueryManagementService implements QueryRequestHandler {
                 throw new BadRequestQueryException("Cannot call next on a query that is not running", HttpStatus.SC_BAD_REQUEST + "-1");
             }
         } catch (Exception e) {
-            // TODO: QueryException results in VoidResponse. This differs from the original RestAPI where an exception was returned in a
-            // DefaultEventQueryResponse.
             QueryException qe;
             if (!(e instanceof QueryException)) {
                 log.error("Unknown error getting next page for query {}", queryId, e);
@@ -2032,7 +2039,6 @@ public class QueryManagementService implements QueryRequestHandler {
             if (!query.getOwner().equals(userId)) {
                 throw new UnauthorizedQueryException(DatawaveErrorCode.QUERY_OWNER_MISMATCH, MessageFormat.format("{0} != {1}", userId, query.getOwner()));
             }
-            // TODO: JWO: Should we update lastUsedMillis since the user interacted with this query? I think yes...
         }
         
         return queryStatus;
@@ -2384,7 +2390,11 @@ public class QueryManagementService implements QueryRequestHandler {
         // This supports the deprecated "params" value (both on the old and new API). Once we remove the deprecated
         // parameter, this code block can go away.
         if (parameters.get(QueryParameters.QUERY_PARAMS) != null) {
-            parameters.get(QueryParameters.QUERY_PARAMS).stream().map(QueryUtil::parseParameters).forEach(parameters::addAll);
+            // @formatter:off
+            parameters.get(QueryParameters.QUERY_PARAMS).stream()
+                .flatMap(params -> QueryUtil.parseParameters(params).stream())
+                .forEach(x -> parameters.add(x.getParameterName(), x.getParameterValue()));
+            // @formatter:on
         }
         
         parameters.remove(AuditParameters.QUERY_SECURITY_MARKING_COLVIZ);

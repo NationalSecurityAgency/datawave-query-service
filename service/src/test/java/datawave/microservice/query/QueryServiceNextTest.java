@@ -149,7 +149,7 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         queryStorageCache.updateQueryStatus(queryStatus);
 
         for (int page = 1; page <= 2; page++) {
-            // TODO: We have to generate the results in between next calls because the test queue manager does not handle requeueing of unused messages :(
+            // NOTE: We have to generate the results in between next calls because the test queue manager does not handle requeueing of unused messages :(
             // @formatter:off
             publishEventsToQueue(
                     queryId,
@@ -346,7 +346,7 @@ public class QueryServiceNextTest extends AbstractQueryServiceTest {
         queryStorageCache.updateQueryStatus(queryStatus);
         
         for (int page = 1; page <= 4; page++) {
-            // TODO: We have to generate the results in between next calls because the test queue manager does not handle requeueing of unused messages :(
+            // NOTE: We have to generate the results in between next calls because the test queue manager does not handle requeueing of unused messages :(
             // @formatter:off
             publishEventsToQueue(
                     queryId,

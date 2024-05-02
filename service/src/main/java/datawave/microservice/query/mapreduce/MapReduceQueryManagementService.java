@@ -256,7 +256,7 @@ public class MapReduceQueryManagementService implements MapReduceQueryRequestHan
         queryManagementService.audit(id,
                 oozieJob.getAuditType(),
                 workflow,
-                oozieJob.getQuery(auditParameters), // TODO: JWO: What am I supposed to put for this?
+                oozieJob.getQuery(auditParameters),
                 oozieJob.getSelectors(auditParameters),
                 auditParameters,
                 currentUser);
@@ -476,7 +476,6 @@ public class MapReduceQueryManagementService implements MapReduceQueryRequestHan
         }
     }
     
-    // TODO: JWO: reset vs restart - consistency
     public GenericResponse<String> restart(String id, DatawaveUserDetails currentUser) throws QueryException {
         log.info("Request: restart from {} for {}", ProxiedEntityUtils.getShortName(currentUser.getPrimaryUser().getName()), id);
         
@@ -584,7 +583,6 @@ public class MapReduceQueryManagementService implements MapReduceQueryRequestHan
             if (!query.getOwner().equals(userId)) {
                 throw new UnauthorizedQueryException(DatawaveErrorCode.QUERY_OWNER_MISMATCH, MessageFormat.format("{0} != {1}", userId, query.getOwner()));
             }
-            // TODO: JWO: Should we update lastUsedMillis since the user interacted with this query? I think yes...
         }
         
         return mapReduceQueryStatus;

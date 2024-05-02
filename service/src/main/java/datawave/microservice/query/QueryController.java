@@ -1398,7 +1398,6 @@ public class QueryController {
     /**
      * @see TranslateIdService#translateIds(MultiValueMap, String, DatawaveUserDetails)
      */
-    // TODO: Shouldn't the case for this path be the same as the singular call?
     // @formatter:off
     @Operation(
             summary = "Get the ID(s), if any, associated with the specified IDs.",

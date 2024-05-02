@@ -238,8 +238,6 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             
             // check to see if the number of results consumed is >= to the number of results generated
             if (queryResultsRemaining < 0) {
-                // TODO: Consider this as a potential backend-agnostic exit condition, but be mindful of the possibility of a next call failing before the
-                // consumed results can be returned
                 log.warn("Query [{}]: The number of results consumed [{}] exceeds the number of results generated [{}]", queryId,
                                 queryStatus.getNumResultsConsumed(), queryStatus.getNumResultsGenerated());
             }
