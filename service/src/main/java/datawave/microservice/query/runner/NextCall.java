@@ -2,6 +2,7 @@ package datawave.microservice.query.runner;
 
 import static datawave.microservice.query.messaging.AcknowledgementCallback.Status.ACK;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -160,6 +161,11 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                 for (Object result : results) {
                     publisher.publish(new Result(UUID.randomUUID().toString(), result));
                 }
+                // also flush any results being cached in the results post processor
+                Iterator<Object> it = resultPostprocessor.flushResults();
+                while(it.hasNext()) {
+                    publisher.publish(new Result(UUID.randomUUID().toString(), it.next()));
+                }
             }
             results.clear();
         }
@@ -170,9 +176,9 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             lifecycle = BaseQueryMetric.Lifecycle.RESULTS;
         }
         
-        // update num results consumed for query status
-        updateNumResultsConsumed();
-        
+        // update num results consumed for query status and any result processor state
+        updateNumResultsConsumedAndConfig();
+
         return new ResultsPage<>(results, status);
     }
     
@@ -354,7 +360,23 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         }
         return queryStatus;
     }
-    
+
+    private QueryStatus updateNumResultsConsumedAndConfig() {
+        if (numResultsConsumed > 0) {
+            try {
+                queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, queryStatus1 -> {
+                    queryStatus1.incrementNumResultsConsumed(numResultsConsumed);
+                    numResultsConsumed = 0;
+                    resultPostprocessor.saveState(queryStatus1.getConfig());
+                });
+                lastQueryStatusUpdateTime = System.currentTimeMillis();
+            } catch (Exception e) {
+                log.warn("Unable to update number of results consumed for query {}", queryId);
+            }
+        }
+        return queryStatus;
+    }
+
     private boolean shortCircuitTimeout(long callTimeMillis) {
         boolean timeout = false;
         
