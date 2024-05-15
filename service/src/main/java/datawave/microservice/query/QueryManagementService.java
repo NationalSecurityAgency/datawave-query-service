@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import datawave.core.query.logic.CheckpointableQueryLogic;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -848,7 +849,7 @@ public class QueryManagementService implements QueryRequestHandler {
             // get the query logic
             String queryLogicName = queryStatus.getQuery().getQueryLogicName();
             QueryLogic<?> queryLogic = queryLogicFactory.getQueryLogic(queryStatus.getQuery().getQueryLogicName(), currentUser);
-            
+
             // update query metrics
             BaseQueryMetric baseQueryMetric = getBaseQueryMetric();
             baseQueryMetric.setQueryId(queryId);
@@ -878,7 +879,7 @@ public class QueryManagementService implements QueryRequestHandler {
                 
                 // format the response
                 if (!resultsPage.getResults().isEmpty()) {
-                    BaseQueryResponse response = queryLogic.getTransformer(queryStatus.getQuery()).createResponse(resultsPage);
+                    BaseQueryResponse response = queryLogic.getEnrichedTransformer(queryStatus.getQuery()).createResponse(resultsPage);
                     
                     // after all of our work is done, perform our final query status update for this next call
                     queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, status -> {
