@@ -101,7 +101,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         this.userResultsPerPage = status.getQuery().getPagesize();
         this.maxResultsOverridden = status.getQuery().isMaxResultsOverridden();
         this.maxResultsOverride = status.getQuery().getMaxResultsOverride();
-        this.allowLongRunningQueryEmptyPages = status.isAllowLongRunningQueryEmptyPages();
+        this.allowLongRunningQueryEmptyPages = status.getConfig().isLongRunningQuery();
         this.queryStartTimeMillis = status.getQueryStartMillis();
         this.longRunningQueryTimeoutMillis = builder.expirationProperties.getLongRunningQueryTimeoutMillis();
         
@@ -163,7 +163,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                 }
                 // also flush any results being cached in the results post processor
                 Iterator<Object> it = resultPostprocessor.flushResults();
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     publisher.publish(new Result(UUID.randomUUID().toString(), it.next()));
                 }
             }
@@ -178,7 +178,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         
         // update num results consumed for query status and any result processor state
         updateNumResultsConsumedAndConfig();
-
+        
         return new ResultsPage<>(results, status);
     }
     
@@ -360,7 +360,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         }
         return queryStatus;
     }
-
+    
     private QueryStatus updateNumResultsConsumedAndConfig() {
         if (numResultsConsumed > 0) {
             try {
@@ -376,7 +376,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         }
         return queryStatus;
     }
-
+    
     private boolean shortCircuitTimeout(long callTimeMillis) {
         boolean timeout = false;
         
