@@ -2,6 +2,7 @@ package datawave.microservice.query.runner;
 
 import static datawave.microservice.query.messaging.AcknowledgementCallback.Status.ACK;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,6 +75,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
     private TaskStates taskStates;
     private long numResultsConsumed = 0L;
     private boolean returnIntermediateResult = false;
+    private boolean flushed = false;
     
     private long hitMaxResultsTimeMillis = 0L;
     
@@ -127,6 +130,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         try (QueryResultsListener resultListener = queryResultsManager.createListener(UUID.randomUUID().toString(), queryId)) {
             // keep waiting for results until we're finished
             // Note: isFinished should be checked once per result
+            // Note: isFinished will handle flushing results from the post processor if needed
             while (!isFinished(queryId)) {
                 Result result = resultListener.receive(nextCallProperties.getResultPollInterval(), nextCallProperties.getResultPollIntervalUnit());
                 if (result != null) {
@@ -136,7 +140,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                     if (payload != null) {
                         results.add(payload);
                         
-                        resultPostprocessor.apply(results);
+                        resultPostprocessor.apply(results, flushed);
                         
                         numResultsConsumed++;
                         
@@ -154,22 +158,6 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             throw e;
         }
         
-        // if we are aggregating results and we short-circuit,
-        // return the intermediate result(s) to the queue
-        if (returnIntermediateResult) {
-            try (QueryResultsPublisher publisher = queryResultsManager.createPublisher(queryId)) {
-                for (Object result : results) {
-                    publisher.publish(new Result(UUID.randomUUID().toString(), result));
-                }
-                // also flush any results being cached in the results post processor
-                Iterator<Object> it = resultPostprocessor.flushResults();
-                while (it.hasNext()) {
-                    publisher.publish(new Result(UUID.randomUUID().toString(), it.next()));
-                }
-            }
-            results.clear();
-        }
-        
         // update some values for metrics
         stopTimeMillis = System.currentTimeMillis();
         if (lifecycle == null && !results.isEmpty()) {
@@ -182,12 +170,41 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         return new ResultsPage<>(results, status);
     }
     
+    /**
+     * Flush results. This will change the state of the query to flush, and publish results back into the results queue
+     * 
+     * @return true if any results were added to the queue
+     * @throws QueryException
+     * @throws InterruptedException
+     */
+    public boolean flushResults() throws QueryException, InterruptedException {
+        final AtomicBoolean gotResults = new AtomicBoolean(false);
+        queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, queryStatus1 -> {
+            queryStatus1.setCreateStage(QueryStatus.CREATE_STAGE.FLUSH);
+            
+            // flushing the results in the query status update to ensure only one instanceof the results post processor
+            // is flushing at any one point in time.
+            try (QueryResultsPublisher publisher = queryResultsManager.createPublisher(queryId)) {
+                // also flush any results being cached in the results post processor
+                Iterator<Object> it = resultPostprocessor.flushResults(queryStatus1.getConfig());
+                gotResults.set(it.hasNext());
+                while (it.hasNext()) {
+                    publisher.publish(new Result(UUID.randomUUID().toString(), it.next()));
+                }
+            } catch (IOException e) {
+                throw new QueryException("Unable to flush results", e);
+            }
+        });
+        flushed = true;
+        return gotResults.get();
+    }
+    
     public void updateQueryMetric(BaseQueryMetric baseQueryMetric) {
         baseQueryMetric.addPageTime(results.size(), stopTimeMillis - startTimeMillis, startTimeMillis, stopTimeMillis);
         baseQueryMetric.setLifecycle(lifecycle);
     }
     
-    private boolean isFinished(String queryId) throws QueryException {
+    private boolean isFinished(String queryId) throws QueryException, InterruptedException {
         boolean finished = false;
         long callTimeMillis = System.currentTimeMillis() - startTimeMillis;
         QueryStatus queryStatus = getQueryStatus();
@@ -197,6 +214,12 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             log.error("Query [{}]: query failed, aborting next call. Cause: {}", queryId, queryStatus.getFailureMessage());
             
             throw new QueryException(queryStatus.getErrorCode(), queryStatus.getFailureMessage());
+        }
+        
+        // check if we are flushed already
+        if (queryStatus.getCreateStage() == QueryStatus.CREATE_STAGE.FLUSH) {
+            // we have already flushed
+            flushed = true;
         }
         
         // 1) have we hit the user's results-per-page limit?
@@ -237,7 +260,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         if (!finished && (queryStatus.getCreateStage() == QueryStatus.CREATE_STAGE.RESULTS) && !getTaskStates().hasUnfinishedTasks()) {
             
             // update the number of results consumed
-            queryStatus = updateNumResultsConsumed();
+            queryStatus = updateNumResultsConsumedAndConfig();
             
             // how many results do the query services think are left
             long queryResultsRemaining = queryStatus.getNumResultsGenerated() - queryStatus.getNumResultsConsumed();
@@ -257,29 +280,35 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             // if the broker thinks there are not results left, we may be done
             if (brokerResultsRemaining == 0) {
                 
-                // if the query service thinks there are no results left, we are done
-                // we can have negative results remaining if we consumed duplicate records
-                if (queryResultsRemaining <= 0) {
-                    log.info("Query [{}]: all query tasks complete, and all results retrieved, aborting next call", queryId);
+                // now is the time to flush results if any
+                // if we actually flushed any results, then we can continue
+                if (!flushResults()) {
                     
-                    status = ResultsPage.Status.PARTIAL;
-                    
-                    finished = true;
-                }
-                // if the query services think there are results left, we may need to wait
-                // this can happen if messages are in flux with the message broker due to nacking
-                else {
-                    // if we aren't in a max results waiting period, start waiting
-                    if (hitMaxResultsTimeMillis == 0) {
-                        hitMaxResultsTimeMillis = System.currentTimeMillis();
-                    }
-                    // if we are finished waiting, we are done
-                    else if (System.currentTimeMillis() >= (hitMaxResultsTimeMillis + nextCallProperties.getMaxResultsTimeoutMillis())) {
-                        log.info("Query [{}]: all query tasks complete, but timed out waiting for all results to be retrieved, aborting next call", queryId);
+                    // if the query service thinks there are no results left, we are done
+                    // we can have negative results remaining if we consumed duplicate records
+                    if (queryResultsRemaining <= 0) {
+                        log.info("Query [{}]: all query tasks complete, and all results retrieved, aborting next call", queryId);
                         
                         status = ResultsPage.Status.PARTIAL;
                         
                         finished = true;
+                    }
+                    // if the query services think there are results left, we may need to wait
+                    // this can happen if messages are in flux with the message broker due to nacking
+                    else {
+                        // if we aren't in a max results waiting period, start waiting
+                        if (hitMaxResultsTimeMillis == 0) {
+                            hitMaxResultsTimeMillis = System.currentTimeMillis();
+                        }
+                        // if we are finished waiting, we are done
+                        else if (System.currentTimeMillis() >= (hitMaxResultsTimeMillis + nextCallProperties.getMaxResultsTimeoutMillis())) {
+                            log.info("Query [{}]: all query tasks complete, but timed out waiting for all results to be retrieved, aborting next call",
+                                            queryId);
+                            
+                            status = ResultsPage.Status.PARTIAL;
+                            
+                            finished = true;
+                        }
                     }
                 }
             }
@@ -380,8 +409,8 @@ public class NextCall implements Callable<ResultsPage<Object>> {
     private boolean shortCircuitTimeout(long callTimeMillis) {
         boolean timeout = false;
         
-        // return prematurely if we have at least 1 result, and we aren't aggregating results
-        if (!results.isEmpty() && !queryStatus.getConfig().isReduceResults()) {
+        // return prematurely if we have at least 1 result and we are past the timeout
+        if (!results.isEmpty()) {
             // if after the page size short circuit check time
             if (callTimeMillis >= shortCircuitCheckTimeMillis) {
                 float percentTimeComplete = (float) callTimeMillis / (float) (callTimeoutMillis);
@@ -403,9 +432,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                 if ((System.currentTimeMillis() - queryStartTimeMillis) < longRunningQueryTimeoutMillis) {
                     timeout = true;
                     
-                    // if we are aggregating results, return the intermediate
-                    // result to the queue before returning a blank page
-                    returnIntermediateResult = queryStatus.getConfig().isReduceResults();
+                    returnIntermediateResult = true;
                 }
             }
         }
