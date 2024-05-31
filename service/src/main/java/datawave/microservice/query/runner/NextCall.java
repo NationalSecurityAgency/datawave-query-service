@@ -11,6 +11,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.LongAccumulator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -138,13 +139,19 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                     
                     Object payload = result.getPayload();
                     if (payload != null) {
-                        results.add(payload);
+                        int initialResultsSize = results.size();
                         
-                        resultPostprocessor.apply(results, flushed);
+                        if (flushed) {
+                            results.add(payload);
+                            log.info("Added1 result to page of " + results.size() + " results");
+                        } else {
+                            resultPostprocessor.apply(results, payload);
+                            log.info("After post processing " + results.size() + " results remain");
+                        }
                         
                         numResultsConsumed++;
                         
-                        if (logicBytesPerPage > 0) {
+                        if (logicBytesPerPage > 0 && results.size() > initialResultsSize) {
                             pageSizeBytes += ObjectSizeOf.Sizer.getObjectSize(payload);
                         }
                     } else {
@@ -178,25 +185,37 @@ public class NextCall implements Callable<ResultsPage<Object>> {
      * @throws InterruptedException
      */
     public boolean flushResults() throws QueryException, InterruptedException {
-        final AtomicBoolean gotResults = new AtomicBoolean(false);
+        // if already flushed, then nothing to do
+        if (flushed) {
+            return false;
+        }
+        
         queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, queryStatus1 -> {
-            queryStatus1.setCreateStage(QueryStatus.CREATE_STAGE.FLUSH);
-            
-            // flushing the results in the query status update to ensure only one instanceof the results post processor
-            // is flushing at any one point in time.
-            try (QueryResultsPublisher publisher = queryResultsManager.createPublisher(queryId)) {
-                // also flush any results being cached in the results post processor
-                Iterator<Object> it = resultPostprocessor.flushResults(queryStatus1.getConfig());
-                gotResults.set(it.hasNext());
-                while (it.hasNext()) {
-                    publisher.publish(new Result(UUID.randomUUID().toString(), it.next()));
+            if (queryStatus1.getCreateStage() == QueryStatus.CREATE_STAGE.RESULTS) {
+                long count = 0;
+                
+                // flushing inside of a query status lock to ensure only one thread is flushing this query
+                try (QueryResultsPublisher publisher = queryResultsManager.createPublisher(queryId)) {
+                    // flush any results being cached in the results post processor
+                    Iterator<Object> it = resultPostprocessor.flushResults(queryStatus.getConfig());
+                    while (it.hasNext()) {
+                        publisher.publish(new Result(UUID.randomUUID().toString(), it.next()));
+                        queryStatus1.incrementNumResultsGenerated(1);
+                        count++;
+                    }
+                } catch (IOException e) {
+                    throw new QueryException("Unable to flush results", e);
                 }
-            } catch (IOException e) {
-                throw new QueryException("Unable to flush results", e);
+                
+                log.info("Setting stage to FLUSH for queryId=" + queryId + " with " + count + " additional results");
+                queryStatus1.setCreateStage(QueryStatus.CREATE_STAGE.FLUSH);
             }
         });
+        
         flushed = true;
-        return gotResults.get();
+        
+        // now either this thread or some other thread has flushed... continue checking for results
+        return true;
     }
     
     public void updateQueryMetric(BaseQueryMetric baseQueryMetric) {
@@ -216,9 +235,8 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             throw new QueryException(queryStatus.getErrorCode(), queryStatus.getFailureMessage());
         }
         
-        // check if we are flushed already
+        // update the flushed flag
         if (queryStatus.getCreateStage() == QueryStatus.CREATE_STAGE.FLUSH) {
-            // we have already flushed
             flushed = true;
         }
         
@@ -257,7 +275,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
         }
         
         // 5) have we retrieved all of the results?
-        if (!finished && (queryStatus.getCreateStage() == QueryStatus.CREATE_STAGE.RESULTS) && !getTaskStates().hasUnfinishedTasks()) {
+        if (!finished && !getTaskStates().hasUnfinishedTasks() && (flushed || (queryStatus.getCreateStage() == QueryStatus.CREATE_STAGE.RESULTS))) {
             
             // update the number of results consumed
             queryStatus = updateNumResultsConsumedAndConfig();
@@ -280,36 +298,36 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             // if the broker thinks there are not results left, we may be done
             if (brokerResultsRemaining == 0) {
                 
-                // now is the time to flush results if any
-                // if we actually flushed any results, then we can continue
-                if (!flushResults()) {
+                // if the query service thinks there are no results left, we are done
+                // we can have negative results remaining if we consumed duplicate records
+                if (queryResultsRemaining <= 0) {
+                    log.info("Query [{}]: all query tasks complete, and all results retrieved, aborting next call", queryId);
                     
-                    // if the query service thinks there are no results left, we are done
-                    // we can have negative results remaining if we consumed duplicate records
-                    if (queryResultsRemaining <= 0) {
-                        log.info("Query [{}]: all query tasks complete, and all results retrieved, aborting next call", queryId);
+                    status = ResultsPage.Status.PARTIAL;
+                    
+                    finished = true;
+                }
+                // if the query services think there are results left, we may need to wait
+                // this can happen if messages are in flux with the message broker due to nacking
+                else {
+                    // if we aren't in a max results waiting period, start waiting
+                    if (hitMaxResultsTimeMillis == 0) {
+                        hitMaxResultsTimeMillis = System.currentTimeMillis();
+                    }
+                    // if we are finished waiting, we are done
+                    else if (System.currentTimeMillis() >= (hitMaxResultsTimeMillis + nextCallProperties.getMaxResultsTimeoutMillis())) {
+                        log.info("Query [{}]: all query tasks complete, but timed out waiting for all results to be retrieved, aborting next call", queryId);
                         
                         status = ResultsPage.Status.PARTIAL;
                         
                         finished = true;
                     }
-                    // if the query services think there are results left, we may need to wait
-                    // this can happen if messages are in flux with the message broker due to nacking
-                    else {
-                        // if we aren't in a max results waiting period, start waiting
-                        if (hitMaxResultsTimeMillis == 0) {
-                            hitMaxResultsTimeMillis = System.currentTimeMillis();
-                        }
-                        // if we are finished waiting, we are done
-                        else if (System.currentTimeMillis() >= (hitMaxResultsTimeMillis + nextCallProperties.getMaxResultsTimeoutMillis())) {
-                            log.info("Query [{}]: all query tasks complete, but timed out waiting for all results to be retrieved, aborting next call",
-                                            queryId);
-                            
-                            status = ResultsPage.Status.PARTIAL;
-                            
-                            finished = true;
-                        }
-                    }
+                }
+                
+                // if we are the point where all results generated by the executors have been processed,
+                // then see if we can flush any results in which case we are not actually finished
+                if (finished && flushResults()) {
+                    finished = false;
                 }
             }
         }
