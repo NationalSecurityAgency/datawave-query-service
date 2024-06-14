@@ -141,12 +141,13 @@ public class NextCall implements Callable<ResultsPage<Object>> {
                     if (payload != null) {
                         int initialResultsSize = results.size();
                         
-                        if (flushed) {
+                        if (flushed || resultPostprocessor == null) {
                             results.add(payload);
-                            log.info("Added1 result to page of " + results.size() + " results");
-                        } else {
+                            log.info("Added 1 result to page of " + results.size() + " results");
+                        } else if (resultPostprocessor != null) {
+                            log.info("Before post processing " + results.size() + " results exists");
                             resultPostprocessor.apply(results, payload);
-                            log.info("After post processing " + results.size() + " results remain");
+                            log.info("After post processing with " + resultPostprocessor.getClass() + ", " + results.size() + " results remain");
                         }
                         
                         numResultsConsumed++;
@@ -274,6 +275,10 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             finished = true;
         }
         
+        log.info("[{}]: {}", queryId, getTaskStates().getTaskStatesAsStrings());
+        log.info("[{}]: ready: {} running: {} flushed: {} stage: {}", queryId, getTaskStates().hasReadyTasks(), getTaskStates().hasRunningTasks(), flushed,
+                        queryStatus.getCreateStage());
+        
         // 5) have we retrieved all of the results?
         if (!finished && !getTaskStates().hasUnfinishedTasks() && (flushed || (queryStatus.getCreateStage() == QueryStatus.CREATE_STAGE.RESULTS))) {
             
@@ -282,6 +287,7 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             
             // how many results do the query services think are left
             long queryResultsRemaining = queryStatus.getNumResultsGenerated() - queryStatus.getNumResultsConsumed();
+            log.info(queryId + " : " + queryStatus.getNumResultsGenerated() + " - " + queryStatus.getNumResultsConsumed() + " = " + queryResultsRemaining);
             
             // check to see if the number of results consumed is >= to the number of results generated
             if (queryResultsRemaining < 0) {
@@ -389,6 +395,8 @@ public class NextCall implements Callable<ResultsPage<Object>> {
             
             finished = true;
         }
+        
+        log.info("IsFinished + " + queryId + " -> " + finished);
         
         return finished;
     }
