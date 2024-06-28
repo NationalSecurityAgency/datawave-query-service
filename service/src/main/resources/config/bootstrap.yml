@@ -17,6 +17,7 @@ spring:
       uri: '${CONFIG_SERVER_URL:http://configuration:8888/configserver}'
     stream:
       rabbit:
+        port: 5673
         bindings:
           queryMetricSource-out-0:
             producer:
