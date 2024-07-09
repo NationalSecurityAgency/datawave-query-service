@@ -19,11 +19,11 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.query.QueryService</start-class>
+        <version.datawave.query-api>1.0.0</version.datawave.query-api>
+        <version.datawave.starter-audit>4.0.0</version.datawave.starter-audit>
+        <version.datawave.starter-cached-results>1.0.0</version.datawave.starter-cached-results>
+        <version.datawave.starter-query>1.0.0</version.datawave.starter-query>
         <version.hadoop>3.3.4</version.hadoop>
-        <version.query-api>1.0.0</version.query-api>
-        <version.starter-audit>4.0.0</version.starter-audit>
-        <version.starter-cached-results>1.0.0</version.starter-cached-results>
-        <version.starter-query>1.0.0</version.starter-query>
         <version.webjars.foundation>6.4.3-1</version.webjars.foundation>
         <version.webjars.jquery>3.3.1-1</version.webjars.jquery>
         <version.webjars.locator-core>0.30</version.webjars.locator-core>
@@ -33,22 +33,22 @@
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>query-api</artifactId>
-                <version>${version.query-api}</version>
+                <version>${version.datawave.query-api}</version>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave-audit</artifactId>
-                <version>${version.starter-audit}</version>
+                <version>${version.datawave.starter-audit}</version>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave-cached-results</artifactId>
-                <version>${version.starter-cached-results}</version>
+                <version>${version.datawave.starter-cached-results}</version>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave-query</artifactId>
-                <version>${version.starter-query}</version>
+                <version>${version.datawave.starter-query}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -134,21 +134,21 @@
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave-cached-results</artifactId>
-                <version>${version.starter-cached-results}</version>
+                <version>${version.datawave.starter-cached-results}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave-query</artifactId>
-                <version>${version.starter-query}</version>
+                <version>${version.datawave.starter-query}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave-query</artifactId>
-                <version>${version.starter-query}</version>
+                <version>${version.datawave.starter-query}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
             </dependency>
