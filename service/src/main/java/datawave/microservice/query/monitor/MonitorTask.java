@@ -14,6 +14,8 @@ import datawave.microservice.query.monitor.cache.MonitorStatusCache;
 import datawave.microservice.query.monitor.config.MonitorProperties;
 import datawave.microservice.query.storage.QueryStatus;
 import datawave.microservice.query.storage.QueryStorageCache;
+import datawave.microservice.querymetric.BaseQueryMetric;
+import datawave.microservice.querymetric.QueryMetricFactory;
 import datawave.webservice.query.exception.QueryException;
 
 public class MonitorTask implements Callable<Void> {
@@ -25,15 +27,18 @@ public class MonitorTask implements Callable<Void> {
     private final QueryStorageCache queryStorageCache;
     private final QueryResultsManager queryQueueManager;
     private final QueryManagementService queryManagementService;
+    private final QueryMetricFactory queryMetricFactory;
     
     public MonitorTask(MonitorProperties monitorProperties, QueryExpirationProperties expirationProperties, MonitorStatusCache monitorStatusCache,
-                    QueryStorageCache queryStorageCache, QueryResultsManager queryQueueManager, QueryManagementService queryManagementService) {
+                    QueryStorageCache queryStorageCache, QueryResultsManager queryQueueManager, QueryManagementService queryManagementService,
+                    QueryMetricFactory queryMetricFactory) {
         this.monitorProperties = monitorProperties;
         this.expirationProperties = expirationProperties;
         this.monitorStatusCache = monitorStatusCache;
         this.queryStorageCache = queryStorageCache;
         this.queryQueueManager = queryQueueManager;
         this.queryManagementService = queryManagementService;
+        this.queryMetricFactory = queryMetricFactory;
     }
     
     @Override
@@ -94,12 +99,18 @@ public class MonitorTask implements Callable<Void> {
     }
     
     private void cancelQuery(String queryId) {
+        // since this is running in a separate thread, we need to set and use the thread-local baseQueryMetric
+        ThreadLocal<BaseQueryMetric> baseQueryMetricOverride = queryManagementService.getBaseQueryMetricOverride();
+        baseQueryMetricOverride.set(queryMetricFactory.createMetric());
+        
         try {
             queryManagementService.cancel(queryId, true);
         } catch (InterruptedException e) {
             log.error("Interrupted while trying to cancel idle query: " + queryId, e);
         } catch (QueryException e) {
             log.error("Encountered error while trying to cancel idle query: " + queryId, e);
+        } finally {
+            baseQueryMetricOverride.remove();
         }
     }
     
