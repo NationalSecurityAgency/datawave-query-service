@@ -2221,14 +2221,23 @@ public class QueryManagementService implements QueryRequestHandler {
     /**
      * Gets the pool name for this request.
      * <p>
-     * If no pool is specified in the query parameters, the default pool will be used.
+     * If no pool is specified in the query parameters, the default pool will be used. If a pool override is specified, we will always use that.
      *
      * @return the pool name for this query
      */
-    protected String getPoolName(String pool, boolean isAdminUser) {
+    protected String getPoolName(String requestedPool, boolean isAdminUser) {
         QueryParameters requestQueryParameters = queryParameters.get();
-        return (isAdminUser && (requestQueryParameters.getPool() != null)) ? requestQueryParameters.getPool()
-                        : ((pool != null) ? pool : queryProperties.getDefaultParams().getPool());
+        String pool = null;
+        if (queryProperties.getPoolOverride() != null) {
+            pool = queryProperties.getPoolOverride();
+        } else if (isAdminUser && (requestQueryParameters.getPool() != null)) {
+            pool = requestQueryParameters.getPool();
+        } else if (requestedPool != null) {
+            pool = requestedPool;
+        } else {
+            pool = queryProperties.getDefaultParams().getPool();
+        }
+        return pool;
     }
     
     /**
