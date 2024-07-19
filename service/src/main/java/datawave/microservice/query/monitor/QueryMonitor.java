@@ -18,6 +18,7 @@ import datawave.microservice.query.messaging.QueryResultsManager;
 import datawave.microservice.query.monitor.cache.MonitorStatusCache;
 import datawave.microservice.query.monitor.config.MonitorProperties;
 import datawave.microservice.query.storage.QueryStorageCache;
+import datawave.microservice.querymetric.QueryMetricFactory;
 
 @Component
 @ConditionalOnProperty(name = "datawave.query.monitor.enabled", havingValue = "true", matchIfMissing = true)
@@ -30,19 +31,22 @@ public class QueryMonitor {
     private final QueryStorageCache queryStorageCache;
     private final QueryResultsManager queryResultsManager;
     private final QueryManagementService queryManagementService;
+    private final QueryMetricFactory queryMetricFactory;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     
     private long taskStartTime;
     private Future<Void> taskFuture;
     
     public QueryMonitor(MonitorProperties monitorProperties, QueryProperties queryProperties, MonitorStatusCache monitorStatusCache,
-                    QueryStorageCache queryStorageCache, QueryResultsManager queryResultsManager, QueryManagementService queryManagementService) {
+                    QueryStorageCache queryStorageCache, QueryResultsManager queryResultsManager, QueryManagementService queryManagementService,
+                    QueryMetricFactory queryMetricFactory) {
         this.monitorProperties = monitorProperties;
         this.expirationProperties = queryProperties.getExpiration();
         this.monitorStatusCache = monitorStatusCache;
         this.queryStorageCache = queryStorageCache;
         this.queryResultsManager = queryResultsManager;
         this.queryManagementService = queryManagementService;
+        this.queryMetricFactory = queryMetricFactory;
     }
     
     // this runs in a separate thread every 30 seconds (by default)
@@ -76,7 +80,8 @@ public class QueryMonitor {
                             monitorStatusCache,
                             queryStorageCache,
                             queryResultsManager,
-                            queryManagementService));
+                            queryManagementService,
+                            queryMetricFactory));
             // @formatter:on
         }
     }

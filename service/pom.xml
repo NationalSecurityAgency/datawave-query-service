@@ -8,7 +8,7 @@
         <relativePath>../../../microservice-service-parent/pom.xml</relativePath>
     </parent>
     <artifactId>query-service</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.0.2-SNAPSHOT</version>
     <description>DATAWAVE Query Microservice</description>
     <url>https://github.com/NationalSecurityAgency/datawave-query-service</url>
     <scm>
@@ -21,8 +21,8 @@
         <start-class>datawave.microservice.query.QueryService</start-class>
         <version.datawave.query-api>1.0.0</version.datawave.query-api>
         <version.datawave.starter-audit>4.0.0</version.datawave.starter-audit>
-        <version.datawave.starter-cached-results>1.0.0</version.datawave.starter-cached-results>
-        <version.datawave.starter-query>1.0.0</version.datawave.starter-query>
+        <version.datawave.starter-cached-results>1.0.1</version.datawave.starter-cached-results>
+        <version.datawave.starter-query>1.0.1</version.datawave.starter-query>
         <version.hadoop>3.3.4</version.hadoop>
         <version.webjars.foundation>6.4.3-1</version.webjars.foundation>
         <version.webjars.jquery>3.3.1-1</version.webjars.jquery>
@@ -155,6 +155,17 @@
         </dependencies>
     </dependencyManagement>
     <dependencies>
+        <!-- Don't sort the import scope dependencies since we are relying on them to manage various artifact versions -->
+        <?SORTPOM IGNORE?>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>spring-boot-starter-datawave-query</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>spring-boot-starter-datawave-cached-results</artifactId>
+        </dependency>
+        <?SORTPOM RESUME?>
         <dependency>
             <groupId>gov.nsa.datawave.core</groupId>
             <artifactId>datawave-core-query</artifactId>
@@ -176,14 +187,6 @@
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>spring-boot-starter-datawave-audit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>gov.nsa.datawave.microservice</groupId>
-            <artifactId>spring-boot-starter-datawave-cached-results</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>gov.nsa.datawave.microservice</groupId>
-            <artifactId>spring-boot-starter-datawave-query</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
