@@ -43,6 +43,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter
 import com.codahale.metrics.annotation.Timed;
 
 import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.lookup.LookupService;
 import datawave.microservice.query.stream.StreamingProperties;
 import datawave.microservice.query.stream.StreamingService;
@@ -78,6 +79,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping(path = "/v1/query", produces = MediaType.APPLICATION_JSON_VALUE)
 public class QueryController {
+    private final QueryProperties queryProperties;
     private final QueryManagementService queryManagementService;
     private final LookupService lookupService;
     private final StreamingService streamingService;
@@ -92,11 +94,12 @@ public class QueryController {
     // Note: queryMetricsEnrichmentContest needs to be request scoped
     private final QueryMetricsEnrichmentFilterAdvice.QueryMetricsEnrichmentContext queryMetricsEnrichmentContext;
     
-    public QueryController(QueryManagementService queryManagementService, LookupService lookupService, StreamingService streamingService,
-                    TranslateIdService translateIdService, StreamingProperties streamingProperties,
+    public QueryController(QueryProperties queryProperties, QueryManagementService queryManagementService, LookupService lookupService,
+                    StreamingService streamingService, TranslateIdService translateIdService, StreamingProperties streamingProperties,
                     @Qualifier("serverUserDetailsSupplier") Supplier<DatawaveUserDetails> serverUserDetailsSupplier,
                     BaseMethodStatsFilter.BaseMethodStatsContext baseMethodStatsContext,
                     QueryMetricsEnrichmentFilterAdvice.QueryMetricsEnrichmentContext queryMetricsEnrichmentContext) {
+        this.queryProperties = queryProperties;
         this.queryManagementService = queryManagementService;
         this.lookupService = lookupService;
         this.streamingService = streamingService;
@@ -2727,7 +2730,7 @@ public class QueryController {
     }
     
     private String getPool(HttpHeaders headers) {
-        return headers.getFirst("Pool");
+        return headers.getFirst(queryProperties.getPoolHeader());
     }
     
     private ResponseEntity<ResponseBodyEmitter> createStreamingResponse(ResponseBodyEmitter emitter, MediaType contentType) {
