@@ -110,10 +110,10 @@ public class QueryManagementService implements QueryRequestHandler {
     // Note: for requests which don't originate with a rest call, provide ThreadLocal queryParameters
     private final RequestScopeBeanSupplier<QueryParameters> queryParameters;
     // Note: SecurityMarking needs to be request scoped
-    // Note: for requests which don't originate with a rest call, provide ThreadLocal queryParameters
+    // Note: for requests which don't originate with a rest call, provide ThreadLocal querySecurityMarking
     private final RequestScopeBeanSupplier<SecurityMarking> querySecurityMarking;
     // Note: BaseQueryMetric needs to be request scoped
-    // Note: for requests which don't originate with a rest call, provide ThreadLocal queryParameters
+    // Note: for requests which don't originate with a rest call, provide ThreadLocal baseQueryMetric
     private final RequestScopeBeanSupplier<BaseQueryMetric> baseQueryMetric;
     
     private final QueryLogicFactory queryLogicFactory;
