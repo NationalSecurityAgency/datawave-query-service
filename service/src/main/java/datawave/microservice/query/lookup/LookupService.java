@@ -32,6 +32,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.google.common.collect.Iterables;
 
+import datawave.core.query.data.UUIDType;
 import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.core.query.logic.lookup.LookupQueryLogic;
@@ -45,7 +46,6 @@ import datawave.microservice.query.QueryManagementService;
 import datawave.microservice.query.QueryParameters;
 import datawave.microservice.query.stream.StreamingService;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
-import datawave.query.data.UUIDType;
 import datawave.security.authorization.AuthorizationException;
 import datawave.security.authorization.ProxiedUserDetails;
 import datawave.security.util.ProxiedEntityUtils;
