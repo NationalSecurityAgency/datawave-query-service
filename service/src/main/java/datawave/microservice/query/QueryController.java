@@ -43,13 +43,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter
 import com.codahale.metrics.annotation.Timed;
 
 import datawave.microservice.authorization.user.DatawaveUserDetails;
+import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.lookup.LookupService;
 import datawave.microservice.query.stream.StreamingProperties;
 import datawave.microservice.query.stream.StreamingService;
 import datawave.microservice.query.stream.listener.CountingResponseBodyEmitterListener;
 import datawave.microservice.query.stream.listener.StreamingResponseListener;
 import datawave.microservice.query.translateid.TranslateIdService;
+import datawave.microservice.query.web.QuerySessionIdAdvice;
+import datawave.microservice.query.web.annotation.ClearQuerySessionId;
 import datawave.microservice.query.web.annotation.EnrichQueryMetrics;
+import datawave.microservice.query.web.annotation.GenerateQuerySessionId;
 import datawave.microservice.query.web.filter.BaseMethodStatsFilter;
 import datawave.microservice.query.web.filter.CountingResponseBodyEmitter;
 import datawave.microservice.query.web.filter.QueryMetricsEnrichmentFilterAdvice;
@@ -78,6 +82,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping(path = "/v1/query", produces = MediaType.APPLICATION_JSON_VALUE)
 public class QueryController {
+    private final QueryProperties queryProperties;
     private final QueryManagementService queryManagementService;
     private final LookupService lookupService;
     private final StreamingService streamingService;
@@ -91,12 +96,16 @@ public class QueryController {
     private final BaseMethodStatsFilter.BaseMethodStatsContext baseMethodStatsContext;
     // Note: queryMetricsEnrichmentContest needs to be request scoped
     private final QueryMetricsEnrichmentFilterAdvice.QueryMetricsEnrichmentContext queryMetricsEnrichmentContext;
+    // Note: querySessionIdContext needs to be request scoped
+    private final QuerySessionIdAdvice.QuerySessionIdContext querySessionIdContext;
     
-    public QueryController(QueryManagementService queryManagementService, LookupService lookupService, StreamingService streamingService,
-                    TranslateIdService translateIdService, StreamingProperties streamingProperties,
+    public QueryController(QueryProperties queryProperties, QueryManagementService queryManagementService, LookupService lookupService,
+                    StreamingService streamingService, TranslateIdService translateIdService, StreamingProperties streamingProperties,
                     @Qualifier("serverUserDetailsSupplier") Supplier<DatawaveUserDetails> serverUserDetailsSupplier,
                     BaseMethodStatsFilter.BaseMethodStatsContext baseMethodStatsContext,
-                    QueryMetricsEnrichmentFilterAdvice.QueryMetricsEnrichmentContext queryMetricsEnrichmentContext) {
+                    QueryMetricsEnrichmentFilterAdvice.QueryMetricsEnrichmentContext queryMetricsEnrichmentContext,
+                    QuerySessionIdAdvice.QuerySessionIdContext querySessionIdContext) {
+        this.queryProperties = queryProperties;
         this.queryManagementService = queryManagementService;
         this.lookupService = lookupService;
         this.streamingService = streamingService;
@@ -105,6 +114,7 @@ public class QueryController {
         this.serverUserDetailsSupplier = serverUserDetailsSupplier;
         this.baseMethodStatsContext = baseMethodStatsContext;
         this.queryMetricsEnrichmentContext = queryMetricsEnrichmentContext;
+        this.querySessionIdContext = querySessionIdContext;
     }
     
     /**
@@ -232,13 +242,16 @@ public class QueryController {
     })
     // @formatter:on
     @Timed(name = "dw.query.defineQuery", absolute = true)
+    @GenerateQuerySessionId(cookieBasePath = "/query/v1/query/")
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.CREATE)
     @RequestMapping(path = "{queryLogic}/define", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> define(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
                     @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
-        return queryManagementService.define(queryLogic, parameters, getPool(headers), currentUser);
+        GenericResponse<String> response = queryManagementService.define(queryLogic, parameters, getPool(headers), currentUser);
+        querySessionIdContext.setQueryId(response.getResult());
+        return response;
     }
     
     /**
@@ -381,13 +394,16 @@ public class QueryController {
     })
     // @formatter:on
     @Timed(name = "dw.query.createQuery", absolute = true)
+    @GenerateQuerySessionId(cookieBasePath = "/query/v1/query/")
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.CREATE)
     @RequestMapping(path = "{queryLogic}/create", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> create(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
                     @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
-        return queryManagementService.create(queryLogic, parameters, getPool(headers), currentUser);
+        GenericResponse<String> response = queryManagementService.create(queryLogic, parameters, getPool(headers), currentUser);
+        querySessionIdContext.setQueryId(response.getResult());
+        return response;
     }
     
     /**
@@ -1656,13 +1672,16 @@ public class QueryController {
     })
     // @formatter:on
     @Timed(name = "dw.query.createAndNext", absolute = true)
+    @GenerateQuerySessionId(cookieBasePath = "/query/v1/query/")
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.CREATE_AND_NEXT)
     @RequestMapping(path = "{queryLogic}/createAndNext", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public BaseQueryResponse createAndNext(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
                     @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
-        return queryManagementService.createAndNext(queryLogic, parameters, getPool(headers), currentUser);
+        BaseQueryResponse response = queryManagementService.createAndNext(queryLogic, parameters, getPool(headers), currentUser);
+        querySessionIdContext.setQueryId(response.getQueryId());
+        return response;
     }
     
     /**
@@ -1749,6 +1768,7 @@ public class QueryController {
                     content = @Content(schema = @Schema(implementation = VoidResponse.class)))})
     // @formatter:on
     @Timed(name = "dw.query.cancel", absolute = true)
+    @ClearQuerySessionId
     @RequestMapping(path = "{queryId}/cancel", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public VoidResponse cancel(@Parameter(description = "The query ID") @PathVariable String queryId, @AuthenticationPrincipal DatawaveUserDetails currentUser)
@@ -1832,6 +1852,7 @@ public class QueryController {
                     content = @Content(schema = @Schema(implementation = VoidResponse.class)))})
     // @formatter:on
     @Timed(name = "dw.query.close", absolute = true)
+    @ClearQuerySessionId
     @RequestMapping(path = "{queryId}/close", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public VoidResponse close(@Parameter(description = "The query ID") @PathVariable String queryId, @AuthenticationPrincipal DatawaveUserDetails currentUser)
@@ -1922,11 +1943,14 @@ public class QueryController {
                     content = @Content(schema = @Schema(implementation = VoidResponse.class)))})
     // @formatter:on
     @Timed(name = "dw.query.reset", absolute = true)
+    @GenerateQuerySessionId(cookieBasePath = "/query/v1/query/")
     @RequestMapping(path = "{queryId}/reset", method = {RequestMethod.PUT, RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json",
             "text/yaml", "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> reset(@Parameter(description = "The query ID") @PathVariable String queryId,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
-        return queryManagementService.reset(queryId, currentUser);
+        GenericResponse<String> response = queryManagementService.reset(queryId, currentUser);
+        querySessionIdContext.setQueryId(response.getResult());
+        return response;
     }
     
     /**
@@ -2727,7 +2751,7 @@ public class QueryController {
     }
     
     private String getPool(HttpHeaders headers) {
-        return headers.getFirst("Pool");
+        return headers.getFirst(queryProperties.getPoolHeader());
     }
     
     private ResponseEntity<ResponseBodyEmitter> createStreamingResponse(ResponseBodyEmitter emitter, MediaType contentType) {
