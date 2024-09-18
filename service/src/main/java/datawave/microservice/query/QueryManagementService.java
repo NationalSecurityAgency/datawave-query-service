@@ -55,6 +55,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import datawave.core.common.audit.PrivateAuditConstants;
 import datawave.core.query.cache.ResultsPage;
+import datawave.core.query.logic.CheckpointableQueryLogic;
 import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
 import datawave.core.query.util.QueryUtil;
@@ -894,7 +895,7 @@ public class QueryManagementService implements QueryRequestHandler {
                 
                 // format the response
                 if (!resultsPage.getResults().isEmpty()) {
-                    BaseQueryResponse response = queryLogic.getTransformer(queryStatus.getQuery()).createResponse(resultsPage);
+                    BaseQueryResponse response = queryLogic.getEnrichedTransformer(queryStatus.getQuery()).createResponse(resultsPage);
                     
                     // after all of our work is done, perform our final query status update for this next call
                     queryStatus = queryStatusUpdateUtil.lockedUpdate(queryId, status -> {
