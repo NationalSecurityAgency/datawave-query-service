@@ -32,6 +32,16 @@ public class MonitorProperties {
     private long inactiveQueryTimeToLive = 1;
     @NotNull
     private TimeUnit inactiveQueryTimeToLiveUnit = TimeUnit.DAYS;
+    // The amount of time to wait for the executor status cache lock
+    @PositiveOrZero
+    private long executorStatusLockWaitTime = 30;
+    @NotNull
+    private TimeUnit executorStatusLockWaitTimeUnit = TimeUnit.SECONDS;
+    // The amount of time that the executor status cache lock will be held before being automatically released
+    @Positive
+    private long executorStatusLockLeaseTime = 30;
+    @NotNull
+    private TimeUnit executorStatusLockLeaseTimeUnit = TimeUnit.SECONDS;
     
     public String getSchedulerCrontab() {
         return schedulerCrontab;
@@ -119,5 +129,45 @@ public class MonitorProperties {
     
     public void setInactiveQueryTimeToLiveUnit(TimeUnit inactiveQueryTimeToLiveUnit) {
         this.inactiveQueryTimeToLiveUnit = inactiveQueryTimeToLiveUnit;
+    }
+    
+    public long getExecutorStatusLockWaitTime() {
+        return executorStatusLockWaitTime;
+    }
+    
+    public long getExecutorStatusLockWaitTimeMillis() {
+        return executorStatusLockWaitTimeUnit.toMillis(executorStatusLockWaitTime);
+    }
+    
+    public void setExecutorStatusLockWaitTime(long executorStatusLockWaitTime) {
+        this.executorStatusLockWaitTime = executorStatusLockWaitTime;
+    }
+    
+    public TimeUnit getExecutorStatusLockWaitTimeUnit() {
+        return executorStatusLockWaitTimeUnit;
+    }
+    
+    public void setExecutorStatusLockWaitTimeUnit(TimeUnit executorStatusLockWaitTimeUnit) {
+        this.executorStatusLockWaitTimeUnit = executorStatusLockWaitTimeUnit;
+    }
+    
+    public long getExecutorStatusLockLeaseTime() {
+        return executorStatusLockLeaseTime;
+    }
+    
+    public long getExecutorStatusLockLeaseTimeMillis() {
+        return executorStatusLockLeaseTimeUnit.toMillis(executorStatusLockLeaseTime);
+    }
+    
+    public void setExecutorStatusLockLeaseTime(long executorStatusLockLeaseTime) {
+        this.executorStatusLockLeaseTime = executorStatusLockLeaseTime;
+    }
+    
+    public TimeUnit getExecutorStatusLockLeaseTimeUnit() {
+        return executorStatusLockLeaseTimeUnit;
+    }
+    
+    public void setExecutorStatusLockLeaseTimeUnit(TimeUnit executorStatusLockLeaseTimeUnit) {
+        this.executorStatusLockLeaseTimeUnit = executorStatusLockLeaseTimeUnit;
     }
 }

@@ -1,6 +1,6 @@
 package datawave.microservice.query.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,8 +20,8 @@ import datawave.microservice.querymetric.QueryMetricFactoryImpl;
 public class QueryServiceConfiguration {
     
     @Bean
-    @ConditionalOnMissingBean
     @RequestScope
+    @ConditionalOnProperty(name = "datawave.defaults.QueryParameters.enabled", havingValue = "true", matchIfMissing = true)
     public QueryParameters queryParameters() {
         DefaultQueryParameters queryParameters = new DefaultQueryParameters();
         queryParameters.clear();
@@ -29,23 +29,22 @@ public class QueryServiceConfiguration {
     }
     
     @Bean
-    @ConditionalOnMissingBean
     @RequestScope
-    public SecurityMarking securityMarking() {
+    @ConditionalOnProperty(name = "datawave.defaults.SecurityMarking.enabled", havingValue = "true", matchIfMissing = true)
+    public SecurityMarking querySecurityMarking() {
         SecurityMarking securityMarking = new ColumnVisibilitySecurityMarking();
         securityMarking.clear();
         return securityMarking;
     }
     
     @Bean
-    @ConditionalOnMissingBean
     @RequestScope
-    public BaseQueryMetric baseQueryMetric() {
-        return queryMetricFactory().createMetric();
+    public BaseQueryMetric baseQueryMetric(QueryMetricFactory queryMetricFactory) {
+        return queryMetricFactory.createMetric();
     }
     
     @Bean
-    @ConditionalOnMissingBean(type = "QueryMetricFactory")
+    @ConditionalOnProperty(name = "datawave.defaults.QueryMetricFactory.enabled", havingValue = "true", matchIfMissing = true)
     public QueryMetricFactory queryMetricFactory() {
         return new QueryMetricFactoryImpl();
     }

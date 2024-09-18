@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.accumulo.core.security.Authorizations;
@@ -37,6 +38,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.framework.Advised;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.bus.BusProperties;
 import org.springframework.cloud.bus.event.RemoteQueryRequestEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -104,14 +108,18 @@ public class QueryManagementService implements QueryRequestHandler {
     private final BusProperties busProperties;
     
     // Note: QueryParameters needs to be request scoped
-    private final QueryParameters queryParameters;
+    // Note: for requests which don't originate with a rest call, provide ThreadLocal queryParameters
+    private final RequestScopeBeanSupplier<QueryParameters> queryParameters;
     // Note: SecurityMarking needs to be request scoped
-    private final SecurityMarking securityMarking;
+    // Note: for requests which don't originate with a rest call, provide ThreadLocal querySecurityMarking
+    private final RequestScopeBeanSupplier<SecurityMarking> querySecurityMarking;
     // Note: BaseQueryMetric needs to be request scoped
-    private final BaseQueryMetric baseQueryMetric;
+    // Note: for requests which don't originate with a rest call, provide ThreadLocal baseQueryMetric
+    private final RequestScopeBeanSupplier<BaseQueryMetric> baseQueryMetric;
     
     private final QueryLogicFactory queryLogicFactory;
     private final QueryMetricClient queryMetricClient;
+    private final Supplier<DatawaveUserDetails> serverUserDetailsSupplier;
     private final ResponseObjectFactory responseObjectFactory;
     private final QueryStorageCache queryStorageCache;
     private final QueryResultsManager queryResultsManager;
@@ -123,27 +131,23 @@ public class QueryManagementService implements QueryRequestHandler {
     
     private final String selfDestination;
     
-    // Note: for requests which don't originate with a rest call, provide ThreadLocal queryParameters
-    private final ThreadLocal<QueryParameters> queryParametersOverride;
-    // Note: for requests which don't originate with a rest call, provide ThreadLocal securityMarkings
-    private final ThreadLocal<SecurityMarking> securityMarkingOverride;
-    // Note: for requests which don't originate with a rest call, provide ThreadLocal baseQueryMetric
-    private final ThreadLocal<BaseQueryMetric> baseQueryMetricOverride;
-    
     private final Map<String,CountDownLatch> queryLatchMap = new ConcurrentHashMap<>();
     
     public QueryManagementService(QueryProperties queryProperties, ApplicationEventPublisher eventPublisher, BusProperties busProperties,
-                    QueryParameters queryParameters, SecurityMarking securityMarking, BaseQueryMetric baseQueryMetric, QueryLogicFactory queryLogicFactory,
-                    QueryMetricClient queryMetricClient, ResponseObjectFactory responseObjectFactory, QueryStorageCache queryStorageCache,
-                    QueryResultsManager queryResultsManager, AuditClient auditClient, ThreadPoolTaskExecutor nextCallExecutor) {
+                    QueryParameters queryParameters, SecurityMarking querySecurityMarking, BaseQueryMetric baseQueryMetric, QueryLogicFactory queryLogicFactory,
+                    QueryMetricClient queryMetricClient,
+                    @Autowired(required = false) @Qualifier("serverUserDetailsSupplier") Supplier<DatawaveUserDetails> serverUserDetailsSupplier,
+                    ResponseObjectFactory responseObjectFactory, QueryStorageCache queryStorageCache, QueryResultsManager queryResultsManager,
+                    AuditClient auditClient, ThreadPoolTaskExecutor nextCallExecutor) {
         this.queryProperties = queryProperties;
         this.eventPublisher = eventPublisher;
         this.busProperties = busProperties;
-        this.queryParameters = queryParameters;
-        this.securityMarking = securityMarking;
-        this.baseQueryMetric = baseQueryMetric;
+        this.queryParameters = new RequestScopeBeanSupplier<>(queryParameters);
+        this.querySecurityMarking = new RequestScopeBeanSupplier<>(querySecurityMarking);
+        this.baseQueryMetric = new RequestScopeBeanSupplier<>(baseQueryMetric);
         this.queryLogicFactory = queryLogicFactory;
         this.queryMetricClient = queryMetricClient;
+        this.serverUserDetailsSupplier = serverUserDetailsSupplier;
         this.responseObjectFactory = responseObjectFactory;
         this.queryStorageCache = queryStorageCache;
         this.queryResultsManager = queryResultsManager;
@@ -151,9 +155,6 @@ public class QueryManagementService implements QueryRequestHandler {
         this.nextCallExecutor = nextCallExecutor;
         this.queryStatusUpdateUtil = new QueryStatusUpdateUtil(this.queryProperties, this.queryStorageCache);
         this.selfDestination = getSelfDestination();
-        this.queryParametersOverride = new ThreadLocal<>();
-        this.securityMarkingOverride = new ThreadLocal<>();
-        this.baseQueryMetricOverride = new ThreadLocal<>();
     }
     
     /**
@@ -526,15 +527,15 @@ public class QueryManagementService implements QueryRequestHandler {
         Query query = createQuery(queryLogicName, parameters, currentUser, queryId);
         
         // if this is a create request, or a plan request where we are expanding values, send an audit record to the auditor
-        if (queryType == CREATE || (queryType == PLAN && queryParameters.isExpandValues())) {
+        if (queryType == CREATE || (queryType == PLAN && queryParameters.get().isExpandValues())) {
             audit(query, queryLogic, parameters, currentUser);
         }
         
         // downgrade the auths
-        QueryParameters queryParameters = getQueryParameters();
+        QueryParameters requestQueryParameters = queryParameters.get();
         Set<Authorizations> downgradedAuthorizations;
         try {
-            if (queryParameters.getAuths() == null) {
+            if (requestQueryParameters.getAuths() == null) {
                 // if no requested auths, then use the overall auths for any filtering of the query operations
                 queryLogic.preInitialize(query, AuthorizationsUtil.buildAuthorizations(currentUser.getAuthorizations()));
             } else {
@@ -549,13 +550,15 @@ public class QueryManagementService implements QueryRequestHandler {
             DatawaveUserDetails overallUserDetails = (queryLogic.getUserOperations() == null
                             || "false".equalsIgnoreCase(parameters.getFirst(FederatedAuthorizationService.INCLUDE_REMOTE_SERVICES))) ? queryUserDetails
                                             : queryLogic.getUserOperations().getRemoteUser(queryUserDetails);
-            downgradedAuthorizations = AuthorizationsUtil.getDowngradedAuthorizations(queryParameters.getAuths(), overallUserDetails, queryUserDetails);
+            downgradedAuthorizations = AuthorizationsUtil.getDowngradedAuthorizations(requestQueryParameters.getAuths(), overallUserDetails, queryUserDetails);
         } catch (Exception e) {
             throw new BadRequestQueryException("Unable to downgrade authorizations", e, HttpStatus.SC_BAD_REQUEST + "-1");
         }
         
         try {
             String computedPool = getPoolName(pool, isAdminUser(currentUser));
+            QueryRequest queryRequest = null;
+            boolean awaitExecutorResponse = false;
             
             // persist the query w/ query id in the query storage cache
             TaskKey taskKey = null;
@@ -576,13 +579,10 @@ public class QueryManagementService implements QueryRequestHandler {
                         currentUser,
                         downgradedAuthorizations,
                         getMaxConcurrentTasks(queryLogic));
-
-                sendRequestAwaitResponse(
-                        QueryRequest.create(taskKey.getQueryId()),
-                        computedPool,
-                        queryProperties.isAwaitExecutorCreateResponse(),
-                        callStartTimeMillis);
                 // @formatter:on
+                
+                queryRequest = QueryRequest.create(taskKey.getQueryId());
+                awaitExecutorResponse = queryProperties.isAwaitExecutorCreateResponse();
             } else if (queryType == PLAN) {
                 // @formatter:off
                 taskKey = queryStorageCache.planQuery(
@@ -590,13 +590,10 @@ public class QueryManagementService implements QueryRequestHandler {
                         query,
                         currentUser,
                         downgradedAuthorizations);
-
-                sendRequestAwaitResponse(
-                        QueryRequest.plan(taskKey.getQueryId()),
-                        computedPool,
-                        true,
-                        callStartTimeMillis);
                 // @formatter:on
+                
+                queryRequest = QueryRequest.plan(taskKey.getQueryId());
+                awaitExecutorResponse = true;
             } else if (queryType == PREDICT) {
                 // @formatter:off
                 taskKey = queryStorageCache.predictQuery(
@@ -604,13 +601,9 @@ public class QueryManagementService implements QueryRequestHandler {
                         query,
                         currentUser,
                         downgradedAuthorizations);
-
-                sendRequestAwaitResponse(
-                        QueryRequest.predict(taskKey.getQueryId()),
-                        computedPool,
-                        true,
-                        callStartTimeMillis);
                 // @formatter:on
+                queryRequest = QueryRequest.predict(taskKey.getQueryId());
+                awaitExecutorResponse = true;
             }
             
             if (taskKey == null) {
@@ -619,12 +612,35 @@ public class QueryManagementService implements QueryRequestHandler {
             }
             
             // update the query metric
-            BaseQueryMetric baseQueryMetric = getBaseQueryMetric();
+            BaseQueryMetric requestBaseQueryMetric = baseQueryMetric.get();
             if (queryType == DEFINE || queryType == CREATE) {
-                baseQueryMetric.setQueryId(taskKey.getQueryId());
-                baseQueryMetric.setLifecycle(BaseQueryMetric.Lifecycle.DEFINED);
-                baseQueryMetric.populate(query);
-                baseQueryMetric.setProxyServers(getDNs(currentUser));
+                requestBaseQueryMetric.setQueryId(taskKey.getQueryId());
+                requestBaseQueryMetric.setLifecycle(BaseQueryMetric.Lifecycle.DEFINED);
+                requestBaseQueryMetric.populate(query);
+                requestBaseQueryMetric.setProxyServers(getDNs(currentUser));
+            }
+            
+            try {
+                // @formatter:off
+                queryMetricClient.submit(
+                        new QueryMetricClient.Request.Builder()
+                                .withUser(serverUserDetailsSupplier.get())
+                                .withMetric(requestBaseQueryMetric)
+                                .withMetricType(QueryMetricType.DISTRIBUTED)
+                                .build());
+                // @formatter:on
+            } catch (Exception e) {
+                log.error("Error updating query metric", e);
+            }
+            
+            if (queryRequest != null) {
+                // @formatter:off
+                sendRequestAwaitResponse(
+                        queryRequest,
+                        computedPool,
+                        awaitExecutorResponse,
+                        callStartTimeMillis);
+                // @formatter:on
             }
             
             return taskKey;
@@ -739,7 +755,7 @@ public class QueryManagementService implements QueryRequestHandler {
             }
             
             if (queryId != null && !(qe instanceof NoResultsQueryException)) {
-                getBaseQueryMetric().setError(qe);
+                baseQueryMetric.get().setError(qe);
             }
             
             throw qe;
@@ -804,7 +820,7 @@ public class QueryManagementService implements QueryRequestHandler {
             }
             
             if (!(qe instanceof NoResultsQueryException)) {
-                getBaseQueryMetric().setError(qe);
+                baseQueryMetric.get().setError(qe);
             }
             
             throw qe;
@@ -851,9 +867,9 @@ public class QueryManagementService implements QueryRequestHandler {
             QueryLogic<?> queryLogic = queryLogicFactory.getQueryLogic(queryStatus.getQuery().getQueryLogicName(), currentUser);
             
             // update query metrics
-            BaseQueryMetric baseQueryMetric = getBaseQueryMetric();
-            baseQueryMetric.setQueryId(queryId);
-            baseQueryMetric.setQueryLogic(queryLogicName);
+            BaseQueryMetric requestBaseQueryMetric = baseQueryMetric.get();
+            requestBaseQueryMetric.setQueryId(queryId);
+            requestBaseQueryMetric.setQueryLogic(queryLogicName);
             
             // @formatter:off
             final NextCall nextCall = new NextCall.Builder()
@@ -875,7 +891,7 @@ public class QueryManagementService implements QueryRequestHandler {
                 ResultsPage<Object> resultsPage = nextCall.getFuture().get();
                 
                 // update the query metric
-                nextCall.updateQueryMetric(baseQueryMetric);
+                nextCall.updateQueryMetric(requestBaseQueryMetric);
                 
                 // format the response
                 if (!resultsPage.getResults().isEmpty()) {
@@ -898,7 +914,7 @@ public class QueryManagementService implements QueryRequestHandler {
                     if (nextCall.isCanceled()) {
                         log.debug("Query [{}]: Canceled while handling next call", queryId);
                         throw new QueryCanceledQueryException(DatawaveErrorCode.QUERY_CANCELED, MessageFormat.format("{0} canceled;", queryId));
-                    } else if (baseQueryMetric.getLifecycle() == BaseQueryMetric.Lifecycle.NEXTTIMEOUT) {
+                    } else if (requestBaseQueryMetric.getLifecycle() == BaseQueryMetric.Lifecycle.NEXTTIMEOUT) {
                         log.debug("Query [{}]: Timed out during next call", queryId);
                         throw new TimeoutQueryException(DatawaveErrorCode.QUERY_TIMEOUT, MessageFormat.format("{0} timed out.", queryId));
                     } else {
@@ -1130,16 +1146,16 @@ public class QueryManagementService implements QueryRequestHandler {
                 QueryLogic<?> logic = queryLogicFactory.getQueryLogic(queryStatus.getQuery().getQueryLogicName());
                 if (logic.getCollectQueryMetrics()) {
                     // update query metrics
-                    BaseQueryMetric baseQueryMetric = getBaseQueryMetric();
-                    baseQueryMetric.setQueryId(queryId);
-                    baseQueryMetric.setLifecycle(BaseQueryMetric.Lifecycle.CANCELLED);
-                    baseQueryMetric.setLastUpdated(new Date());
+                    BaseQueryMetric requestBaseQueryMetric = baseQueryMetric.get();
+                    requestBaseQueryMetric.setQueryId(queryId);
+                    requestBaseQueryMetric.setLifecycle(BaseQueryMetric.Lifecycle.CANCELLED);
+                    requestBaseQueryMetric.setLastUpdated(new Date());
                     try {
                         // @formatter:off
                         queryMetricClient.submit(
                                 new QueryMetricClient.Request.Builder()
                                         .withUser((DatawaveUserDetails) logic.getServerUser())
-                                        .withMetric(baseQueryMetric.duplicate())
+                                        .withMetric(requestBaseQueryMetric.duplicate())
                                         .withMetricType(QueryMetricType.DISTRIBUTED)
                                         .build());
                         // @formatter:on
@@ -1337,16 +1353,16 @@ public class QueryManagementService implements QueryRequestHandler {
             QueryLogic<?> logic = queryLogicFactory.getQueryLogic(queryStatus.getQuery().getQueryLogicName());
             if (logic.getCollectQueryMetrics()) {
                 // update query metrics
-                BaseQueryMetric baseQueryMetric = getBaseQueryMetric();
-                baseQueryMetric.setQueryId(queryId);
-                baseQueryMetric.setLifecycle(BaseQueryMetric.Lifecycle.CLOSED);
-                baseQueryMetric.setLastUpdated(new Date());
+                BaseQueryMetric requestBaseQueryMetric = baseQueryMetric.get();
+                requestBaseQueryMetric.setQueryId(queryId);
+                requestBaseQueryMetric.setLifecycle(BaseQueryMetric.Lifecycle.CLOSED);
+                requestBaseQueryMetric.setLastUpdated(new Date());
                 try {
                     // @formatter:off
                     queryMetricClient.submit(
                             new QueryMetricClient.Request.Builder()
                                     .withUser((DatawaveUserDetails) logic.getServerUser())
-                                    .withMetric(baseQueryMetric.duplicate())
+                                    .withMetric(requestBaseQueryMetric.duplicate())
                                     .withMetricType(QueryMetricType.DISTRIBUTED)
                                     .build());
                     // @formatter:on
@@ -2147,7 +2163,8 @@ public class QueryManagementService implements QueryRequestHandler {
                     MultiValueMap<String,String> parameters, DatawaveUserDetails currentUser) throws BadRequestQueryException {
         
         // if we haven't already, validate the markings
-        if (getSecurityMarking().toColumnVisibilityString() == null) {
+        SecurityMarking requestSecurityMarking = querySecurityMarking.get();
+        if (requestSecurityMarking.toColumnVisibilityString() == null) {
             validateSecurityMarkings(parameters);
         }
         
@@ -2172,7 +2189,7 @@ public class QueryManagementService implements QueryRequestHandler {
                         .withParams(parameters)
                         .withQueryExpression(query)
                         .withDatawaveUserDetails(currentUser)
-                        .withMarking(getSecurityMarking())
+                        .withMarking(requestSecurityMarking)
                         .withAuditType(auditType)
                         .withQueryLogic(logicName)
                         .build();
@@ -2205,14 +2222,23 @@ public class QueryManagementService implements QueryRequestHandler {
     /**
      * Gets the pool name for this request.
      * <p>
-     * If no pool is specified in the query parameters, the default pool will be used.
+     * If no pool is specified in the query parameters, the default pool will be used. If a pool override is specified, we will always use that.
      *
      * @return the pool name for this query
      */
-    protected String getPoolName(String pool, boolean isAdminUser) {
-        QueryParameters queryParameters = getQueryParameters();
-        return (isAdminUser && (queryParameters.getPool() != null)) ? queryParameters.getPool()
-                        : ((pool != null) ? pool : queryProperties.getDefaultParams().getPool());
+    protected String getPoolName(String requestedPool, boolean isAdminUser) {
+        QueryParameters requestQueryParameters = queryParameters.get();
+        String pool = null;
+        if (queryProperties.getPoolOverride() != null) {
+            pool = queryProperties.getPoolOverride();
+        } else if (isAdminUser && (requestQueryParameters.getPool() != null)) {
+            pool = requestQueryParameters.getPool();
+        } else if (requestedPool != null) {
+            pool = requestedPool;
+        } else {
+            pool = queryProperties.getDefaultParams().getPool();
+        }
+        return pool;
     }
     
     /**
@@ -2280,9 +2306,9 @@ public class QueryManagementService implements QueryRequestHandler {
      */
     protected int getMaxConcurrentTasks(QueryLogic<?> queryLogic) {
         // if there's an override, use it
-        QueryParameters queryParameters = getQueryParameters();
-        if (queryParameters.isMaxConcurrentTasksOverridden()) {
-            return queryParameters.getMaxConcurrentTasks();
+        QueryParameters requestQueryParameters = queryParameters.get();
+        if (requestQueryParameters.isMaxConcurrentTasksOverridden()) {
+            return requestQueryParameters.getMaxConcurrentTasks();
         }
         // if the query logic has a limit, use it
         else if (queryLogic.getMaxConcurrentTasks() > 0) {
@@ -2313,12 +2339,12 @@ public class QueryManagementService implements QueryRequestHandler {
         String userDn = currentUser.getPrimaryUser().getDn().subjectDN();
         List<String> dnList = getDNs(currentUser);
         
-        QueryParameters queryParameters = getQueryParameters();
-        SecurityMarking securityMarking = getSecurityMarking();
+        QueryParameters requestQueryParameters = queryParameters.get();
+        SecurityMarking requestSecurityMarking = querySecurityMarking.get();
         
         Query query = responseObjectFactory.getQueryImpl();
-        query.initialize(userDn, dnList, queryLogicName, queryParameters, queryParameters.getUnknownParameters(parameters));
-        query.setColumnVisibility(securityMarking.toColumnVisibilityString());
+        query.initialize(userDn, dnList, queryLogicName, requestQueryParameters, requestQueryParameters.getUnknownParameters(parameters));
+        query.setColumnVisibility(requestSecurityMarking.toColumnVisibilityString());
         query.setUncaughtExceptionHandler(new QueryUncaughtExceptionHandler());
         Thread.currentThread().setUncaughtExceptionHandler(query.getUncaughtExceptionHandler());
         if (queryId != null) {
@@ -2403,9 +2429,9 @@ public class QueryManagementService implements QueryRequestHandler {
         parameters.remove(AuditParameters.QUERY_AUDIT_TYPE);
         
         // Ensure that all required parameters exist prior to validating the values.
-        QueryParameters queryParameters = getQueryParameters();
+        QueryParameters requestQueryParameters = queryParameters.get();
         try {
-            queryParameters.validate(parameters);
+            requestQueryParameters.validate(parameters);
         } catch (IllegalArgumentException e) {
             log.error("Unable to validate query parameters", e);
             throw new BadRequestQueryException("Unable to validate query parameters.", e, HttpStatus.SC_BAD_REQUEST + "-1");
@@ -2413,23 +2439,23 @@ public class QueryManagementService implements QueryRequestHandler {
         
         // The pageSize and expirationDate checks will always be false when called from the RemoteQueryExecutor.
         // Leaving for now until we can test to ensure that is always the case.
-        if (queryParameters.getPagesize() <= 0) {
-            log.error("Invalid page size: {}", queryParameters.getPagesize());
+        if (requestQueryParameters.getPagesize() <= 0) {
+            log.error("Invalid page size: {}", requestQueryParameters.getPagesize());
             throw new BadRequestQueryException(DatawaveErrorCode.INVALID_PAGE_SIZE);
         }
         
         long pageMinTimeoutMillis = queryProperties.getExpiration().getPageMinTimeoutMillis();
         long pageMaxTimeoutMillis = queryProperties.getExpiration().getPageMaxTimeoutMillis();
-        long pageTimeoutMillis = TimeUnit.MINUTES.toMillis(queryParameters.getPageTimeout());
-        if (queryParameters.getPageTimeout() != -1 && (pageTimeoutMillis < pageMinTimeoutMillis || pageTimeoutMillis > pageMaxTimeoutMillis)) {
-            log.error("Invalid page timeout: {}", queryParameters.getPageTimeout());
+        long pageTimeoutMillis = TimeUnit.MINUTES.toMillis(requestQueryParameters.getPageTimeout());
+        if (requestQueryParameters.getPageTimeout() != -1 && (pageTimeoutMillis < pageMinTimeoutMillis || pageTimeoutMillis > pageMaxTimeoutMillis)) {
+            log.error("Invalid page timeout: {}", requestQueryParameters.getPageTimeout());
             throw new BadRequestQueryException(DatawaveErrorCode.INVALID_PAGE_TIMEOUT);
         }
         
         // Ensure begin date does not occur after the end date (if dates are not null)
-        if ((queryParameters.getBeginDate() != null && queryParameters.getEndDate() != null)
-                        && queryParameters.getBeginDate().after(queryParameters.getEndDate())) {
-            log.error("Invalid begin and/or end date: {}", queryParameters.getBeginDate() + " - " + queryParameters.getEndDate());
+        if ((requestQueryParameters.getBeginDate() != null && requestQueryParameters.getEndDate() != null)
+                        && requestQueryParameters.getBeginDate().after(requestQueryParameters.getEndDate())) {
+            log.error("Invalid begin and/or end date: {}", requestQueryParameters.getBeginDate() + " - " + requestQueryParameters.getEndDate());
             throw new BadRequestQueryException(DatawaveErrorCode.BEGIN_DATE_AFTER_END_DATE);
         }
     }
@@ -2489,9 +2515,9 @@ public class QueryManagementService implements QueryRequestHandler {
         }
         
         // always check against the max
-        QueryParameters queryParameters = getQueryParameters();
-        if (queryLogic.getMaxPageSize() > 0 && queryParameters.getPagesize() > queryLogic.getMaxPageSize()) {
-            log.error("Invalid page size: {} vs {}", queryParameters.getPagesize(), queryLogic.getMaxPageSize());
+        QueryParameters requestQueryParameters = queryParameters.get();
+        if (queryLogic.getMaxPageSize() > 0 && requestQueryParameters.getPagesize() > queryLogic.getMaxPageSize()) {
+            log.error("Invalid page size: {} vs {}", requestQueryParameters.getPagesize(), queryLogic.getMaxPageSize());
             throw new BadRequestQueryException(DatawaveErrorCode.PAGE_SIZE_TOO_LARGE, MessageFormat.format("Max = {0}.", queryLogic.getMaxPageSize()));
         }
         
@@ -2499,9 +2525,9 @@ public class QueryManagementService implements QueryRequestHandler {
         if (!currentUser.getPrimaryUser().getRoles().contains(queryProperties.getPrivilegedRole())) {
             // validate the max results override relative to the max results on a query logic
             // privileged users however can set whatever they want
-            if (queryParameters.isMaxResultsOverridden() && queryLogic.getMaxResults() >= 0) {
-                if (queryParameters.getMaxResultsOverride() < 0 || (queryLogic.getMaxResults() < queryParameters.getMaxResultsOverride())) {
-                    log.error("Invalid max results override: {} vs {}", queryParameters.getMaxResultsOverride(), queryLogic.getMaxResults());
+            if (requestQueryParameters.isMaxResultsOverridden() && queryLogic.getMaxResults() >= 0) {
+                if (requestQueryParameters.getMaxResultsOverride() < 0 || (queryLogic.getMaxResults() < requestQueryParameters.getMaxResultsOverride())) {
+                    log.error("Invalid max results override: {} vs {}", requestQueryParameters.getMaxResultsOverride(), queryLogic.getMaxResults());
                     throw new BadRequestQueryException(DatawaveErrorCode.INVALID_MAX_RESULTS_OVERRIDE,
                                     MessageFormat.format("Max = {0}.", queryLogic.getMaxResults()));
                 }
@@ -2509,9 +2535,11 @@ public class QueryManagementService implements QueryRequestHandler {
             
             // validate the max concurrent tasks override relative to the max concurrent tasks on a query logic
             // privileged users however can set whatever they want
-            if (queryParameters.isMaxConcurrentTasksOverridden() && queryLogic.getMaxConcurrentTasks() >= 0) {
-                if (queryParameters.getMaxConcurrentTasks() < 0 || (queryLogic.getMaxConcurrentTasks() < queryParameters.getMaxConcurrentTasks())) {
-                    log.error("Invalid max concurrent tasks override: {} vs {}", queryParameters.getMaxConcurrentTasks(), queryLogic.getMaxConcurrentTasks());
+            if (requestQueryParameters.isMaxConcurrentTasksOverridden() && queryLogic.getMaxConcurrentTasks() >= 0) {
+                if (requestQueryParameters.getMaxConcurrentTasks() < 0
+                                || (queryLogic.getMaxConcurrentTasks() < requestQueryParameters.getMaxConcurrentTasks())) {
+                    log.error("Invalid max concurrent tasks override: {} vs {}", requestQueryParameters.getMaxConcurrentTasks(),
+                                    queryLogic.getMaxConcurrentTasks());
                     throw new BadRequestQueryException(DatawaveErrorCode.INVALID_MAX_CONCURRENT_TASKS_OVERRIDE,
                                     MessageFormat.format("Max = {0}.", queryLogic.getMaxConcurrentTasks()));
                 }
@@ -2535,7 +2563,7 @@ public class QueryManagementService implements QueryRequestHandler {
      */
     public void validateSecurityMarkings(MultiValueMap<String,String> parameters) throws BadRequestQueryException {
         try {
-            getSecurityMarking().validate(parameters);
+            querySecurityMarking.get().validate(parameters);
         } catch (IllegalArgumentException e) {
             log.error("Failed security markings validation", e);
             throw new BadRequestQueryException(DatawaveErrorCode.SECURITY_MARKING_CHECK_ERROR, e);
@@ -2559,7 +2587,7 @@ public class QueryManagementService implements QueryRequestHandler {
         // These are parameters that aren't passed in by the user, but rather are computed from other sources.
         PrivateAuditConstants.stripPrivateParameters(parameters);
         parameters.add(PrivateAuditConstants.LOGIC_CLASS, queryLogicName);
-        parameters.set(PrivateAuditConstants.COLUMN_VISIBILITY, getSecurityMarking().toColumnVisibilityString());
+        parameters.set(PrivateAuditConstants.COLUMN_VISIBILITY, querySecurityMarking.get().toColumnVisibilityString());
         parameters.add(PrivateAuditConstants.USER_DN, userDn);
     }
     
@@ -2574,42 +2602,61 @@ public class QueryManagementService implements QueryRequestHandler {
     }
     
     public QueryParameters getQueryParameters() {
-        if (queryParametersOverride.get() != null) {
-            return queryParametersOverride.get();
-        } else {
-            return queryParameters;
-        }
+        return queryParameters.get();
     }
     
     public SecurityMarking getSecurityMarking() {
-        if (securityMarkingOverride.get() != null) {
-            return securityMarkingOverride.get();
-        } else {
-            return securityMarking;
-        }
+        return querySecurityMarking.get();
     }
     
     public BaseQueryMetric getBaseQueryMetric() {
-        if (baseQueryMetricOverride.get() != null) {
-            return baseQueryMetricOverride.get();
-        } else {
-            return baseQueryMetric;
-        }
+        return baseQueryMetric.get();
     }
     
     public ThreadLocal<QueryParameters> getQueryParametersOverride() {
-        return queryParametersOverride;
+        return queryParameters.getThreadLocalOverride();
     }
     
     public ThreadLocal<SecurityMarking> getSecurityMarkingOverride() {
-        return securityMarkingOverride;
+        return querySecurityMarking.getThreadLocalOverride();
     }
     
     public ThreadLocal<BaseQueryMetric> getBaseQueryMetricOverride() {
-        return baseQueryMetricOverride;
+        return baseQueryMetric.getThreadLocalOverride();
     }
     
     public List<String> getDNs(DatawaveUserDetails user) {
         return user.getProxiedUsers().stream().map(u -> u.getDn().subjectDN()).collect(Collectors.toList());
+    }
+    
+    private class RequestScopeBeanSupplier<T> implements Supplier<T> {
+        private final T requestScopeBean;
+        private final ThreadLocal<T> threadLocalOverride;
+        
+        public RequestScopeBeanSupplier(T requestScopeBean) {
+            this.requestScopeBean = requestScopeBean;
+            this.threadLocalOverride = new ThreadLocal<>();
+        }
+        
+        @Override
+        public T get() {
+            if (threadLocalOverride.get() != null) {
+                return threadLocalOverride.get();
+            } else {
+                // get the underlying object if this is a request-scoped bean
+                if (requestScopeBean instanceof Advised) {
+                    try {
+                        return (T) ((Advised) requestScopeBean).getTargetSource().getTarget();
+                    } catch (Exception e) {
+                        log.warn("Unable to get target object for the request-scoped bean {}", requestScopeBean);
+                    }
+                }
+                return requestScopeBean;
+            }
+        }
+        
+        public ThreadLocal<T> getThreadLocalOverride() {
+            return threadLocalOverride;
+        }
     }
 }
