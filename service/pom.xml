@@ -22,7 +22,7 @@
         <version.hadoop>3.3.4</version.hadoop>
         <version.microservice.query-api>1.0.0</version.microservice.query-api>
         <version.microservice.starter-audit>4.0.4-SNAPSHOT</version.microservice.starter-audit>
-        <version.microservice.starter-cached-results>1.0.9-SNAPSHOT</version.microservice.starter-cached-results>
+        <version.microservice.starter-cached-results>1.0.10-SNAPSHOT</version.microservice.starter-cached-results>
         <version.microservice.starter-query>1.0.9-SNAPSHOT</version.microservice.starter-query>
         <version.webjars.foundation>6.4.3-1</version.webjars.foundation>
         <version.webjars.jquery>3.3.1-1</version.webjars.jquery>
