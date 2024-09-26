@@ -13,6 +13,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -292,7 +293,7 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
     private ObjectMapper createJSONObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JaxbAnnotationModule());
-        mapper.configure(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME, true);
+        JsonMapper.builder().configure(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME, true);
         return mapper;
     }
     
