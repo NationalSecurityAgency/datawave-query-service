@@ -5,6 +5,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.web.context.annotation.RequestScope;
 
 import datawave.marking.ColumnVisibilitySecurityMarking;
@@ -18,6 +19,11 @@ import datawave.microservice.querymetric.QueryMetricFactoryImpl;
 
 @Configuration
 public class QueryServiceConfiguration {
+    
+    @Bean
+    public WebSecurityCustomizer ignorePoolHealthEndpoint() {
+        return (web) -> web.ignoring().antMatchers("/v1/pool/{poolName}/health");
+    }
     
     @Bean
     @RequestScope
