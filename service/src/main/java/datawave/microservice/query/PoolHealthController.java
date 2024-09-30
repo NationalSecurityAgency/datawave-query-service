@@ -20,7 +20,6 @@ import datawave.microservice.authorization.user.DatawaveUserDetails;
 import datawave.microservice.query.config.QueryProperties;
 import datawave.microservice.query.executor.status.cache.ExecutorPoolStatus;
 import datawave.microservice.query.executor.status.cache.ExecutorStatusCache;
-import datawave.webservice.result.GenericResponse;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,13 +44,23 @@ public class PoolHealthController {
         this.queryProperties = queryProperties;
         this.executorStatusCache = executorStatusCache;
     }
-    
+
+    // NOTE: This endpoint is unauthenticated, as configured in QueryServiceConfiguration.java
     @RequestMapping(path = "{poolName}/health", method = {RequestMethod.GET}, produces = {"application/json"})
     public ResponseEntity<PoolHealth> health(@Parameter(description = "The query pool name", example = "default") @PathVariable String poolName,
+                    @Parameter(description = "The conneciton pool name") @RequestParam(required = false) String connectionPool) {
+        return getPoolHealth(poolName, connectionPool, null);
+    }
+    
+    @RequestMapping(path = "{poolName}/status", method = {RequestMethod.GET}, produces = {"application/json"})
+    public ResponseEntity<PoolHealth> status(@Parameter(description = "The query pool name", example = "default") @PathVariable String poolName,
                     @Parameter(description = "The conneciton pool name") @RequestParam(required = false) String connectionPool,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) {
-        
-        boolean isAdminUser = !Collections.disjoint(currentUser.getPrimaryUser().getRoles(), managerRoles);
+        return getPoolHealth(poolName, connectionPool, currentUser);
+    }
+    
+    protected ResponseEntity<PoolHealth> getPoolHealth(String poolName, String connectionPool, DatawaveUserDetails currentUser) {
+        boolean isAdminUser = currentUser != null && !Collections.disjoint(currentUser.getPrimaryUser().getRoles(), managerRoles);
         
         connectionPool = (connectionPool != null) ? connectionPool : defaultConnectionPool;
         
@@ -115,6 +124,7 @@ public class PoolHealthController {
         }
         
         return responseEntity;
+        
     }
     
     public static class PoolHealth {
