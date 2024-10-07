@@ -291,10 +291,10 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
     }
     
     private ObjectMapper createJSONObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JaxbAnnotationModule());
-        JsonMapper.builder().configure(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME, true);
-        return mapper;
+        JsonMapper.Builder builder = JsonMapper.builder();
+        return builder.configure(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME, true)
+                .addModule(new JaxbAnnotationModule())
+                .build();
     }
     
     protected List<DefaultEventQueryResponse> parseJSONBaseQueryResponses(String responseBody) throws JsonProcessingException {
