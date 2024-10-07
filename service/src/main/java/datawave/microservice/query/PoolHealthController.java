@@ -44,7 +44,7 @@ public class PoolHealthController {
         this.queryProperties = queryProperties;
         this.executorStatusCache = executorStatusCache;
     }
-
+    
     // NOTE: This endpoint is unauthenticated, as configured in QueryServiceConfiguration.java
     @RequestMapping(path = "{poolName}/health", method = {RequestMethod.GET}, produces = {"application/json"})
     public ResponseEntity<PoolHealth> health(@Parameter(description = "The query pool name", example = "default") @PathVariable String poolName,
