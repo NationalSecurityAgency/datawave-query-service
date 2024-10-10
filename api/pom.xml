@@ -19,7 +19,7 @@
     <properties>
         <datawave.webservice.namespace>http://webservice.datawave.nsa/v1</datawave.webservice.namespace>
         <version.microservice.base-rest-responses>4.0.0</version.microservice.base-rest-responses>
-        <version.microservice.type-utils>3.0.0</version.microservice.type-utils>
+        <version.microservice.type-utils>3.1.2-SNAPSHOT</version.microservice.type-utils>
         <version.validation-api>2.0.2</version.validation-api>
     </properties>
     <dependencyManagement>

@@ -674,10 +674,21 @@ public class QueryManagementService implements QueryRequestHandler {
                         
                         // did the request fail?
                         QueryStatus queryStatus = queryStorageCache.getQueryStatus(request.getQueryId());
-                        if (queryStatus.getQueryState() == FAIL) {
-                            log.error("Query {} failed for queryId {}: {}", request.getMethod().name(), request.getQueryId(), queryStatus.getFailureMessage());
-                            throw new QueryException(queryStatus.getErrorCode(), "Query " + request.getMethod().name() + " failed for queryId "
-                                            + request.getQueryId() + ": " + queryStatus.getFailureMessage());
+                        if (!queryStatus.isRunning()) {
+                            if (queryStatus.getQueryState() == FAIL) {
+                                log.error("Query {} failed for queryId {}: {}", request.getMethod().name(), request.getQueryId(),
+                                                queryStatus.getFailureMessage());
+                                throw new QueryException(queryStatus.getErrorCode(), "Query " + request.getMethod().name() + " failed for queryId "
+                                                + request.getQueryId() + ": " + queryStatus.getFailureMessage());
+                            } else if (queryStatus.getQueryState() == CANCEL) {
+                                log.error("Query {} failed for queryId {}: {}", request.getMethod().name(), request.getQueryId(),
+                                                queryStatus.getFailureMessage());
+                                throw new QueryCanceledQueryException(DatawaveErrorCode.QUERY_CANCELED,
+                                                MessageFormat.format("Query {0} canceled for queryId {1}", request.getMethod().name(), request.getQueryId()));
+                            } else if (queryStatus.getQueryState() == CLOSE) {
+                                log.error("Query {} was closed for queryId {}", request.getMethod().name(), request.getQueryId());
+                                isFinished = true;
+                            }
                         }
                     } catch (InterruptedException e) {
                         log.warn("Interrupted while waiting for query {} latch for queryId {}", request.getMethod().name(), request.getQueryId());
