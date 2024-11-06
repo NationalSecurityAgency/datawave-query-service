@@ -1,6 +1,7 @@
 package datawave.microservice.query.monitor;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ import datawave.webservice.query.exception.QueryException;
 public class MonitorTask implements Callable<Void> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     
+    private final List<QueryStatus> queryStatusList;
     private final MonitorProperties monitorProperties;
     private final QueryExpirationProperties expirationProperties;
     private final MonitorStatusCache monitorStatusCache;
@@ -29,9 +31,10 @@ public class MonitorTask implements Callable<Void> {
     private final QueryManagementService queryManagementService;
     private final QueryMetricFactory queryMetricFactory;
     
-    public MonitorTask(MonitorProperties monitorProperties, QueryExpirationProperties expirationProperties, MonitorStatusCache monitorStatusCache,
-                    QueryStorageCache queryStorageCache, QueryResultsManager queryQueueManager, QueryManagementService queryManagementService,
-                    QueryMetricFactory queryMetricFactory) {
+    public MonitorTask(List<QueryStatus> queryStatusList, MonitorProperties monitorProperties, QueryExpirationProperties expirationProperties,
+                    MonitorStatusCache monitorStatusCache, QueryStorageCache queryStorageCache, QueryResultsManager queryQueueManager,
+                    QueryManagementService queryManagementService, QueryMetricFactory queryMetricFactory) {
+        this.queryStatusList = queryStatusList;
         this.monitorProperties = monitorProperties;
         this.expirationProperties = expirationProperties;
         this.monitorStatusCache = monitorStatusCache;
@@ -69,7 +72,7 @@ public class MonitorTask implements Callable<Void> {
     // 2) Is the user idle? If so, close the query
     // 3) Are there any other conditions that we should check for?
     private void monitor(long currentTimeMillis) {
-        for (QueryStatus status : queryStorageCache.getQueryStatus()) {
+        for (QueryStatus status : queryStatusList) {
             String queryId = status.getQueryKey().getQueryId();
             
             // if the query is not running

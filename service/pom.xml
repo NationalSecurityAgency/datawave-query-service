@@ -8,7 +8,7 @@
         <relativePath>../../../microservice-service-parent/pom.xml</relativePath>
     </parent>
     <artifactId>query-service</artifactId>
-    <version>1.0.7-SNAPSHOT</version>
+    <version>1.0.12-SNAPSHOT</version>
     <description>DATAWAVE Query Microservice</description>
     <url>https://github.com/NationalSecurityAgency/datawave-query-service</url>
     <scm>
@@ -20,9 +20,10 @@
     <properties>
         <start-class>datawave.microservice.query.QueryService</start-class>
         <version.datawave.query-api>1.0.0</version.datawave.query-api>
+        <version.datawave.starter>4.0.4</version.microservice.starter>
         <version.datawave.starter-audit>4.0.3</version.datawave.starter-audit>
-        <version.datawave.starter-cached-results>1.0.6</version.datawave.starter-cached-results>
-        <version.datawave.starter-query>1.0.5</version.datawave.starter-query>
+        <version.datawave.starter-cached-results>1.0.10</version.datawave.starter-cached-results>
+        <version.datawave.starter-query>1.0.8</version.datawave.starter-query>
         <version.hadoop>3.3.4</version.hadoop>
         <version.webjars.foundation>6.4.3-1</version.webjars.foundation>
         <version.webjars.jquery>3.3.1-1</version.webjars.jquery>
@@ -34,6 +35,11 @@
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>query-api</artifactId>
                 <version>${version.datawave.query-api}</version>
+            </dependency>
+            <dependency>
+                <groupId>gov.nsa.datawave.microservice</groupId>
+                <artifactId>spring-boot-starter-datawave</artifactId>
+                <version>${version.microservice.starter}</version>
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
@@ -133,6 +139,13 @@
             </dependency>
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
+                <artifactId>spring-boot-starter-datawave</artifactId>
+                <version>${version.datawave.starter}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>spring-boot-starter-datawave-cached-results</artifactId>
                 <version>${version.datawave.starter-cached-results}</version>
                 <type>pom</type>
@@ -157,6 +170,10 @@
     <dependencies>
         <!-- Don't sort the import scope dependencies since we are relying on them to manage various artifact versions -->
         <?SORTPOM IGNORE?>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>spring-boot-starter-datawave</artifactId>
+        </dependency>
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>spring-boot-starter-datawave-query</artifactId>
