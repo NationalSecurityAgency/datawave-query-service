@@ -117,9 +117,7 @@ public class QueryController {
         this.querySessionIdContext = querySessionIdContext;
     }
     
-    /**
-     * @see QueryManagementService#define(String, MultiValueMap, String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#define(String, MultiValueMap, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Defines a query using the given query logic and parameters.",
@@ -246,17 +244,15 @@ public class QueryController {
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.CREATE)
     @RequestMapping(path = "{queryLogic}/define", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
-    public GenericResponse<String> define(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogic,
+    public GenericResponse<String> define(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogicName,
                     @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
                     @AuthenticationPrincipal DatawaveUserDetails currentUser) throws QueryException {
-        GenericResponse<String> response = queryManagementService.define(queryLogic, parameters, getPool(headers), currentUser);
+        GenericResponse<String> response = queryManagementService.define(queryLogicName, parameters, getPool(headers), currentUser);
         querySessionIdContext.setQueryId(response.getResult());
         return response;
     }
     
-    /**
-     * @see QueryManagementService#listQueryLogic(DatawaveUserDetails)
-     */
+    // @see QueryManagementService#listQueryLogic(DatawaveUserDetails)
     @Operation(summary = "Gets a list of descriptions for the configured query logics, sorted by query logic name.",
                     description = "The descriptions include things like the audit type, optional and required parameters, required roles, and response class.")
     @Timed(name = "dw.query.listQueryLogic", absolute = true)
@@ -266,9 +262,7 @@ public class QueryController {
         return queryManagementService.listQueryLogic(currentUser);
     }
     
-    /**
-     * @see QueryManagementService#create(String, MultiValueMap, String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#create(String, MultiValueMap, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Creates a query using the given query logic and parameters.",
@@ -406,9 +400,7 @@ public class QueryController {
         return response;
     }
     
-    /**
-     * @see QueryManagementService#plan(String, MultiValueMap, String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#plan(String, MultiValueMap, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Generates a query plan using the given query logic and parameters.",
@@ -557,9 +549,7 @@ public class QueryController {
         return queryManagementService.plan(queryLogic, parameters, getPool(headers), currentUser);
     }
     
-    /**
-     * @see QueryManagementService#predict(String, MultiValueMap, String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#predict(String, MultiValueMap, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Generates a query prediction using the given query logic and parameters.",
@@ -689,10 +679,8 @@ public class QueryController {
         return queryManagementService.predict(queryLogic, parameters, getPool(headers), currentUser);
     }
     
-    /**
-     * @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails)
-     * @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
-     */
+    // @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails)
+    // @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
     // @formatter:off
     @Operation(
             summary = "Creates an event lookup query using the query logic associated with the given uuid type(s) and parameters, and returns the first page of results.",
@@ -837,10 +825,8 @@ public class QueryController {
         }
     }
     
-    /**
-     * @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails)
-     * @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
-     */
+    // @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails)
+    // @see LookupService#lookupUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
     // @formatter:off
     @Operation(
             summary = "Creates an event lookup query using the query logic associated with the given uuid type(s) and parameters, and returns the first page of results.",
@@ -989,10 +975,8 @@ public class QueryController {
         }
     }
     
-    /**
-     * @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
-     * @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
-     */
+    // @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
+    // @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails, StreamingResponseListener)
     // @formatter:off
     @Operation(
             summary = "Creates a content lookup query using the query logic associated with the given uuid type(s) and parameters, and returns the first page of results.",
@@ -1137,10 +1121,8 @@ public class QueryController {
         }
     }
     
-    /**
-     * @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
-     * @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
-     */
+    // @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
+    // @see LookupService#lookupContentUUID(MultiValueMap, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Creates a batch content lookup query using the query logic associated with the given uuid type(s) and parameters, and returns the first page of results.",
@@ -1289,9 +1271,7 @@ public class QueryController {
         }
     }
     
-    /**
-     * @see TranslateIdService#translateId(String, MultiValueMap, String, DatawaveUserDetails)
-     */
+    // @see TranslateIdService#translateId(String, MultiValueMap, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Get one or more ID(s), if any, that correspond to the given ID.",
@@ -1411,9 +1391,7 @@ public class QueryController {
         return translateIdService.translateId(id, parameters, getPool(headers), currentUser);
     }
     
-    /**
-     * @see TranslateIdService#translateIds(MultiValueMap, String, DatawaveUserDetails)
-     */
+    // @see TranslateIdService#translateIds(MultiValueMap, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Get the ID(s), if any, associated with the specified IDs.",
@@ -1538,9 +1516,7 @@ public class QueryController {
         return translateIdService.translateIds(parameters, getPool(headers), currentUser);
     }
     
-    /**
-     * @see QueryManagementService#createAndNext(String, MultiValueMap, String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#createAndNext(String, MultiValueMap, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Creates a query using the given query logic and parameters, and returns the first page of results.",
@@ -1684,9 +1660,7 @@ public class QueryController {
         return response;
     }
     
-    /**
-     * @see QueryManagementService#next(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#next(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets the next page of results for the specified query.",
@@ -1734,9 +1708,7 @@ public class QueryController {
         return queryManagementService.next(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#cancel(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#cancel(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Cancels the specified query.",
@@ -1776,9 +1748,7 @@ public class QueryController {
         return queryManagementService.cancel(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#adminCancel(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#adminCancel(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Cancels the specified query using admin privileges.",
@@ -1818,9 +1788,7 @@ public class QueryController {
         return queryManagementService.adminCancel(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#close(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#close(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Closes the specified query.",
@@ -1860,9 +1828,7 @@ public class QueryController {
         return queryManagementService.close(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#adminClose(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#adminClose(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Closes the specified query using admin privileges.",
@@ -1902,9 +1868,7 @@ public class QueryController {
         return queryManagementService.adminClose(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#reset(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#reset(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Stops, and restarts the specified query.",
@@ -1953,9 +1917,7 @@ public class QueryController {
         return response;
     }
     
-    /**
-     * @see QueryManagementService#remove(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#remove(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Removes the specified query from query storage.",
@@ -1991,9 +1953,7 @@ public class QueryController {
         return queryManagementService.remove(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#adminRemove(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#adminRemove(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Removes the specified query from query storage using admin privileges.",
@@ -2026,9 +1986,7 @@ public class QueryController {
         return queryManagementService.adminRemove(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#update(String, MultiValueMap, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#update(String, MultiValueMap, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Updates the specified query.",
@@ -2160,9 +2118,7 @@ public class QueryController {
         return queryManagementService.update(queryId, parameters, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#duplicate(String, MultiValueMap, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#duplicate(String, MultiValueMap, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Creates a copy of the specified query.",
@@ -2288,9 +2244,7 @@ public class QueryController {
         return queryManagementService.duplicate(queryId, parameters, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#list(String, String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#list(String, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets a list of queries for the calling user.",
@@ -2314,9 +2268,7 @@ public class QueryController {
         return queryManagementService.list(queryId, queryName, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#adminList(String, String, String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#adminList(String, String, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets a list of queries for the specified user using admin privileges.",
@@ -2343,9 +2295,7 @@ public class QueryController {
         return queryManagementService.adminList(queryId, queryName, user, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#list(String, String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#list(String, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets the matching query for the calling user.",
@@ -2368,9 +2318,7 @@ public class QueryController {
         return queryManagementService.list(queryId, null, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#plan(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#plan(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets the plan for the given query for the calling user.")
@@ -2402,9 +2350,7 @@ public class QueryController {
         return queryManagementService.plan(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#predictions(String, DatawaveUserDetails)
-     */
+    // @see QueryManagementService#predictions(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets the predictions for the given query for the calling user.")
@@ -2436,9 +2382,7 @@ public class QueryController {
         return queryManagementService.predictions(queryId, currentUser);
     }
     
-    /**
-     * @see QueryManagementService#adminCancelAll(DatawaveUserDetails)
-     */
+    // @see QueryManagementService#adminCancelAll(DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Cancels all queries using admin privileges.",
@@ -2470,9 +2414,7 @@ public class QueryController {
         return queryManagementService.adminCancelAll(currentUser);
     }
     
-    /**
-     * @see QueryManagementService#adminCloseAll(DatawaveUserDetails)
-     */
+    // @see QueryManagementService#adminCloseAll(DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Closes all queries using admin privileges.",
@@ -2504,9 +2446,7 @@ public class QueryController {
         return queryManagementService.adminCloseAll(currentUser);
     }
     
-    /**
-     * @see QueryManagementService#adminRemoveAll(DatawaveUserDetails)
-     */
+    // @see QueryManagementService#adminRemoveAll(DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Removes all queries from query storage using admin privileges.",
@@ -2535,9 +2475,7 @@ public class QueryController {
         return queryManagementService.adminRemoveAll(currentUser);
     }
     
-    /**
-     * @see StreamingService#createAndExecute(String, MultiValueMap, String, DatawaveUserDetails, DatawaveUserDetails, StreamingResponseListener)
-     */
+    // @see StreamingService#createAndExecute(String, MultiValueMap, String, DatawaveUserDetails, DatawaveUserDetails, StreamingResponseListener)
     // @formatter:off
     @Operation(
             summary = "Creates a query using the given query logic and parameters, and streams back all pages of results.",
@@ -2683,9 +2621,7 @@ public class QueryController {
         return createStreamingResponse(emitter, contentType);
     }
     
-    /**
-     * @see StreamingService#execute(String, DatawaveUserDetails, DatawaveUserDetails, StreamingResponseListener)
-     */
+    // @see StreamingService#execute(String, DatawaveUserDetails, DatawaveUserDetails, StreamingResponseListener)
     // @formatter:off
     @Operation(
             summary = "Gets all pages of results for the given query and streams them back.",

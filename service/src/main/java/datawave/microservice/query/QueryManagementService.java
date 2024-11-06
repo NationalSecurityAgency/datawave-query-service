@@ -2235,6 +2235,11 @@ public class QueryManagementService implements QueryRequestHandler {
      * <p>
      * If no pool is specified in the query parameters, the default pool will be used. If a pool override is specified, we will always use that.
      *
+     * @param requestedPool
+     *            The requested pool name
+     * @param isAdminUser
+     *            Is the user an admin
+     *            
      * @return the pool name for this query
      */
     protected String getPoolName(String requestedPool, boolean isAdminUser) {
