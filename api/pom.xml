@@ -18,8 +18,8 @@
     </scm>
     <properties>
         <datawave.webservice.namespace>http://webservice.datawave.nsa/v1</datawave.webservice.namespace>
-        <version.microservice.base-rest-responses>4.0.0</version.microservice.base-rest-responses>
-        <version.microservice.type-utils>3.0.0</version.microservice.type-utils>
+        <version.datawave.base-rest-responses>4.0.0</version.datawave.base-rest-responses>
+        <version.datawave.type-utils>3.0.0</version.datawave.type-utils>
         <version.validation-api>2.0.2</version.validation-api>
     </properties>
     <dependencyManagement>
@@ -27,7 +27,7 @@
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>base-rest-responses</artifactId>
-                <version>${version.microservice.base-rest-responses}</version>
+                <version>${version.datawave.base-rest-responses}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>log4j</artifactId>
@@ -42,7 +42,7 @@
             <dependency>
                 <groupId>gov.nsa.datawave.microservice</groupId>
                 <artifactId>type-utils</artifactId>
-                <version>${version.microservice.type-utils}</version>
+                <version>${version.datawave.type-utils}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>slf4j-reload4j</artifactId>
