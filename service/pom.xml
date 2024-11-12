@@ -19,13 +19,13 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.query.QueryService</start-class>
-        <!-- re-add microservice.hazelcast-common -->
         <version.datawave.query-api>1.0.0</version.datawave.query-api>
         <version.datawave.starter>4.0.4</version.datawave.starter>
         <version.datawave.starter-audit>4.0.3</version.datawave.starter-audit>
         <version.datawave.starter-cached-results>1.0.10</version.datawave.starter-cached-results>
         <version.datawave.starter-query>1.0.8</version.datawave.starter-query>
         <version.hadoop>3.3.4</version.hadoop>
+        <version.swagger.v3>2.2.0</version.swagger.v3>
         <version.webjars.foundation>6.4.3-1</version.webjars.foundation>
         <version.webjars.jquery>3.3.1-1</version.webjars.jquery>
         <version.webjars.locator-core>0.30</version.webjars.locator-core>
@@ -176,6 +176,15 @@
             <artifactId>spring-boot-starter-datawave</artifactId>
         </dependency>
         <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>spring-boot-starter-datawave-query</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>gov.nsa.datawave.microservice</groupId>
+            <artifactId>spring-boot-starter-datawave-cached-results</artifactId>
+        </dependency>
+        <?SORTPOM RESUME?>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
@@ -211,24 +220,8 @@
         </dependency>
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
-            <artifactId>hazelcast-common</artifactId>
-            <version>${version.microservice.hazelcast-common}</version>
-        </dependency>
-        <!-- Don't sort the import scope dependencies since we are relying on them to manage various artifact versions -->
-        <?SORTPOM IGNORE?>
-        <dependency>
-            <groupId>gov.nsa.datawave.microservice</groupId>
-            <artifactId>spring-boot-starter-datawave-query</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>gov.nsa.datawave.microservice</groupId>
-            <artifactId>spring-boot-starter-datawave-cached-results</artifactId>
-        </dependency>
-        <?SORTPOM RESUME?>
-        <dependency>
-            <groupId>gov.nsa.datawave.microservice</groupId>
             <artifactId>query-api</artifactId>
-            <version>${version.microservice.query-api}</version>
+            <version>${version.datawave.query-api}</version>
         </dependency>
         <dependency>
             <groupId>gov.nsa.datawave.microservice</groupId>
