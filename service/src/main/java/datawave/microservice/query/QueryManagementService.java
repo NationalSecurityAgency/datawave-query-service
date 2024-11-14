@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +39,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.bus.BusProperties;
@@ -57,6 +57,7 @@ import datawave.core.common.audit.PrivateAuditConstants;
 import datawave.core.query.cache.ResultsPage;
 import datawave.core.query.logic.QueryLogic;
 import datawave.core.query.logic.QueryLogicFactory;
+import datawave.core.query.logic.WritesQuerySubplanMetrics;
 import datawave.core.query.util.QueryUtil;
 import datawave.marking.SecurityMarking;
 import datawave.microservice.audit.AuditClient;
@@ -76,6 +77,7 @@ import datawave.microservice.query.util.QueryStatusUpdateUtil;
 import datawave.microservice.querymetric.BaseQueryMetric;
 import datawave.microservice.querymetric.QueryMetricClient;
 import datawave.microservice.querymetric.QueryMetricType;
+import datawave.microservice.querymetric.RangeCounts;
 import datawave.security.util.ProxiedEntityUtils;
 import datawave.webservice.common.audit.AuditParameters;
 import datawave.webservice.common.audit.Auditor;
@@ -618,6 +620,10 @@ public class QueryManagementService implements QueryRequestHandler {
                 requestBaseQueryMetric.setLifecycle(BaseQueryMetric.Lifecycle.DEFINED);
                 requestBaseQueryMetric.populate(query);
                 requestBaseQueryMetric.setProxyServers(getDNs(currentUser));
+                if (queryLogic instanceof WritesQuerySubplanMetrics) {
+                    ((WritesQuerySubplanMetrics) queryLogic).setQueryMetric(requestBaseQueryMetric);
+                }
+
             }
             
             try {
@@ -881,7 +887,17 @@ public class QueryManagementService implements QueryRequestHandler {
             BaseQueryMetric requestBaseQueryMetric = baseQueryMetric.get();
             requestBaseQueryMetric.setQueryId(queryId);
             requestBaseQueryMetric.setQueryLogic(queryLogicName);
-            
+            if (queryLogic instanceof WritesQuerySubplanMetrics) {
+                ((WritesQuerySubplanMetrics) queryLogic).setQueryMetric(requestBaseQueryMetric);
+                // HashMap<String,RangeCounts> test = new HashMap<>();
+                // RangeCounts testRange = new RangeCounts();
+                // testRange.setShardRangeCount(33);
+                // testRange.setDocumentRangeCount(32);
+                // test.put("GENRE == ADVENTURE", testRange);
+                // ((WritesQuerySubplanMetrics) queryLogic).getQueryMetric().setSubPlans(test);
+                // requestBaseQueryMetric.setSubPlans(((WritesQuerySubplanMetrics) queryLogic).getQueryMetric().getSubPlans());
+            }
+
             // @formatter:off
             final NextCall nextCall = new NextCall.Builder()
                     .setQueryProperties(queryProperties)
