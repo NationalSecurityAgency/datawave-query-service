@@ -242,7 +242,7 @@ public class QueryController {
     @Timed(name = "dw.query.defineQuery", absolute = true)
     @GenerateQuerySessionId(cookieBasePath = "/query/v1/query/")
     @EnrichQueryMetrics(methodType = EnrichQueryMetrics.MethodType.CREATE)
-    @RequestMapping(path = "{queryLogic}/define", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
+    @RequestMapping(path = "{queryLogicName}/define", method = {RequestMethod.POST}, produces = {"application/xml", "text/xml", "application/json", "text/yaml",
             "text/x-yaml", "application/x-yaml", "application/x-protobuf", "application/x-protostuff"})
     public GenericResponse<String> define(@Parameter(description = "The query logic", example = "EventQuery") @PathVariable String queryLogicName,
                     @Parameter(hidden = true) @RequestParam MultiValueMap<String,String> parameters, @RequestHeader HttpHeaders headers,
