@@ -31,6 +31,7 @@ import org.springframework.web.util.UriComponents;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule;
 
 import datawave.core.query.configuration.GenericQueryConfiguration;
@@ -290,10 +291,8 @@ public class StreamingServiceTest extends AbstractQueryServiceTest {
     }
     
     private ObjectMapper createJSONObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JaxbAnnotationModule());
-        mapper.configure(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME, true);
-        return mapper;
+        JsonMapper.Builder builder = JsonMapper.builder();
+        return builder.configure(MapperFeature.USE_WRAPPER_NAME_AS_PROPERTY_NAME, true).addModule(new JaxbAnnotationModule()).build();
     }
     
     protected List<DefaultEventQueryResponse> parseJSONBaseQueryResponses(String responseBody) throws JsonProcessingException {
