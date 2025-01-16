@@ -25,7 +25,7 @@
         <version.datawave.starter-audit>4.0.3</version.datawave.starter-audit>
         <version.datawave.starter-cached-results>1.0.10</version.datawave.starter-cached-results>
         <version.datawave.starter-query>1.0.8</version.datawave.starter-query>
-        <version.hadoop>3.3.5</version.hadoop>
+        <version.hadoop>3.3.6</version.hadoop>
         <version.swagger.v3>2.2.0</version.swagger.v3>
         <version.webjars.foundation>6.4.3-1</version.webjars.foundation>
         <version.webjars.jquery>3.3.1-1</version.webjars.jquery>
