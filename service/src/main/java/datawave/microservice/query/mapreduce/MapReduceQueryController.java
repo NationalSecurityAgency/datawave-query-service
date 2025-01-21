@@ -62,9 +62,7 @@ public class MapReduceQueryController {
         this.mapReduceQueryManagementService = mapReduceQueryManagementService;
     }
     
-    /**
-     * @see MapReduceQueryManagementService#listConfigurations(String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#listConfigurations(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets a list of the available map reduce jobs and their configurations.",
@@ -87,9 +85,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.listConfigurations(jobType, currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#oozieSubmit(MultiValueMap, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#oozieSubmit(MultiValueMap, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Execute a configured oozie workflow.",
@@ -144,9 +140,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.oozieSubmit(parameters, currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#submit(MultiValueMap, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#submit(MultiValueMap, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Execute a configured map reduce job.",
@@ -233,9 +227,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.submit(parameters, currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#cancel(String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#cancel(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Cancels the specified query.",
@@ -272,9 +264,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.cancel(id, currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#adminCancel(String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#adminCancel(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Cancels the specified query using admin privileges.",
@@ -308,9 +298,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.adminCancel(id, currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#restart(String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#restart(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Stops, and restarts the specified query.",
@@ -351,9 +339,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.restart(id, currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#list(String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#list(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets a list of result info for the specified query for the calling user.",
@@ -375,9 +361,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.list(id, currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#getFile(String,String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#getFile(String,String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets a result file for the specified query for the calling user.",
@@ -409,9 +393,7 @@ public class MapReduceQueryController {
         // @formatter:on
     }
     
-    /**
-     * @see MapReduceQueryManagementService#getAllFiles(String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#getAllFiles(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets all result files for the specified query for the calling user.",
@@ -463,9 +445,7 @@ public class MapReduceQueryController {
         // @formatter:on
     }
     
-    /**
-     * @see MapReduceQueryManagementService#list(DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#list(DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets a list of result info for all map reduce queries owned by the calling user.",
@@ -486,9 +466,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.list(currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#remove(String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#remove(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Removes the specified map reduce query from query storage.",
@@ -519,9 +497,7 @@ public class MapReduceQueryController {
         return mapReduceQueryManagementService.remove(id, currentUser);
     }
     
-    /**
-     * @see MapReduceQueryManagementService#adminRemove(String, DatawaveUserDetails)
-     */
+    // @see MapReduceQueryManagementService#adminRemove(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Removes the specified map reduce query from query storage using admin privileges.",
