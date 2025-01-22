@@ -4,11 +4,11 @@
     <parent>
         <groupId>gov.nsa.datawave.microservice</groupId>
         <artifactId>datawave-microservice-service-parent</artifactId>
-        <version>5.0.0</version>
+        <version>5.0.1-depfix</version>
         <relativePath>../../../microservice-service-parent/pom.xml</relativePath>
     </parent>
     <artifactId>query-service</artifactId>
-    <version>1.0.12-SNAPSHOT</version>
+    <version>1.0.12-depfix</version>
     <description>DATAWAVE Query Microservice</description>
     <url>https://github.com/NationalSecurityAgency/datawave-query-service</url>
     <scm>
@@ -19,12 +19,12 @@
     </scm>
     <properties>
         <start-class>datawave.microservice.query.QueryService</start-class>
-        <version.datawave.hazelcast-common>4.0.2</version.datawave.hazelcast-common>
-        <version.datawave.query-api>1.0.0</version.datawave.query-api>
-        <version.datawave.starter>4.0.4</version.datawave.starter>
-        <version.datawave.starter-audit>4.0.3</version.datawave.starter-audit>
-        <version.datawave.starter-cached-results>1.0.10</version.datawave.starter-cached-results>
-        <version.datawave.starter-query>1.0.8</version.datawave.starter-query>
+        <version.datawave.hazelcast-common>4.0.3-depfix</version.datawave.hazelcast-common>
+        <version.datawave.query-api>1.0.1-depfix</version.datawave.query-api>
+        <version.datawave.starter>4.0.5-depfix</version.datawave.starter>
+        <version.datawave.starter-audit>4.0.4-depfix</version.datawave.starter-audit>
+        <version.datawave.starter-cached-results>1.0.11-depfix</version.datawave.starter-cached-results>
+        <version.datawave.starter-query>1.0.9-depfix</version.datawave.starter-query>
         <version.hadoop>3.3.6</version.hadoop>
         <version.swagger.v3>2.2.0</version.swagger.v3>
         <version.webjars.foundation>6.4.3-1</version.webjars.foundation>
