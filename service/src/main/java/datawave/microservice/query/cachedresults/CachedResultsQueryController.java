@@ -49,9 +49,7 @@ public class CachedResultsQueryController {
         this.cachedResultsQueryService = cachedResultsQueryService;
     }
     
-    /**
-     * @see CachedResultsQueryService#load(String, String, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#load(String, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(summary = "Loads a query into MySQL using the given defined query ID and parameters.")
     @ApiResponses({
@@ -67,9 +65,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.load(definedQueryId, alias, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#create(String, MultiValueMap, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#create(String, MultiValueMap, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Creates a MySQL query which will be run against the loaded results.",
@@ -111,9 +107,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.create(key, parameters, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#loadAndCreate(String, MultiValueMap, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#loadAndCreate(String, MultiValueMap, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Loads a query into MySQL using the given defined query ID and parameters, and creates a MySQL query which will be run against the loaded results",
@@ -155,9 +149,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.loadAndCreate(definedQueryId, parameters, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#getRows(String, Integer, Integer, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#getRows(String, Integer, Integer, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets the requested rows from rowBegin to rowEnd for the specified query.")
@@ -176,9 +168,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.getRows(key, rowBegin, rowEnd, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#status(String, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#status(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets the status for the specified query.")
@@ -196,9 +186,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.status(key, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#describe(String, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#describe(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Gets the description for the specified query.")
@@ -214,9 +202,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.describe(key, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#cancel(String, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#cancel(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(summary = "Cancels the specified query.")
     // @formatter:on
@@ -229,9 +215,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.cancel(key, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#adminCancel(String, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#adminCancel(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(summary = "Cancels the specified query using admin privileges.")
     // @formatter:on
@@ -243,9 +227,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.adminCancel(key, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#close(String, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#close(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(summary = "Closes the specified query.")
     // @formatter:on
@@ -258,9 +240,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.close(key, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#adminClose(String, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#adminClose(String, DatawaveUserDetails)
     // @formatter:off
     @Operation(summary = "Closes the specified query using admin privileges.")
     // @formatter:on
@@ -272,9 +252,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.adminClose(key, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#setAlias(String, String, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#setAlias(String, String, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Sets the alias for the specified query.")
@@ -292,9 +270,7 @@ public class CachedResultsQueryController {
         return cachedResultsQueryService.setAlias(key, alias, currentUser);
     }
     
-    /**
-     * @see CachedResultsQueryService#update(String, String, String, String, String, Integer, DatawaveUserDetails)
-     */
+    // @see CachedResultsQueryService#update(String, String, String, String, String, Integer, DatawaveUserDetails)
     // @formatter:off
     @Operation(
             summary = "Updates the cached results query.",
